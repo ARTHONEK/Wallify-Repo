@@ -4,33 +4,14 @@
   "wallpapers": [
     {
       "id": "m3-shapes-dynamic",
-      "name": "M3 Shapes Dynamic HD",
+      "name": "Material 3 Shapes",
       "author": "Rooni",
       "version": "1.2.0",
-      "description": "Интерактивные Material 3 фигуры с поддержкой системных Monet акцентов и плавной анимацией обводки на экране блокировки.",
+      "description": "Динамические живые обои в стиле Material You / Monet. Автоматическая подстройка под системную цветовую схему Android 12+, эффект фокусировки экрана блокировки с плавным разрастанием 8px обводки и адаптацией под 120 Гц.",
       "path": "wallpapers/m3-shapes-dynamic",
       "main": "index.html",
-      "useGyroscope": false
-    },
-    {
-      "id": "m3-shapes-touch",
-      "name": "M3 Shapes Touch & Swipe",
-      "author": "Rooni",
-      "version": "1.0.0",
-      "description": "Фигуры Material 3 отталкиваются от пальца пользователя и плавно смещаются при свайпах рабочих столов лаунчера.",
-      "path": "wallpapers/m3-shapes-touch",
-      "main": "index.html",
-      "useGyroscope": false
-    },
-    {
-      "id": "m3-shapes-gyro",
-      "name": "M3 Shapes Gyro Physics",
-      "author": "Rooni",
-      "version": "1.0.0",
-      "description": "Фигуры Material 3 имеют физику гравитации и перекатываются при наклонах смартфона через гироскоп.",
-      "path": "wallpapers/m3-shapes-gyro",
-      "main": "index.html",
-      "useGyroscope": true
+      "useGyroscope": false,
+      "stars": 42
     }
   ]
 }

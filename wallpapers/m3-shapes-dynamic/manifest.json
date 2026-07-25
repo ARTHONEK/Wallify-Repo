@@ -1,0 +1,9 @@
+{
+  "name": "Neon Cyber Grid",
+  "description": "Интерактивные неоновые обои с реакцией на блокировку, тему Monet и касания",
+  "author": "Rooni Studio",
+  "version": "1.0.0",
+  "minAppVersion": ">=1.0.0",
+  "main": "index.html",
+  "settingsPath": "settings/index.html"
+}

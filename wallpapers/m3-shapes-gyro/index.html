@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M3 Shapes Gyro Physics</title>
+    <style>
+        :root {
+            --bg: #141218;
+            --surface: #211F26;
+            --primary: #6750A4;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body { width: 100vw; height: 100vh; background-color: var(--bg); overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let renderScale = 0.8;
+        let gravityX = 0;
+        let gravityY = 0.5;
+
+        function resizeCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.floor(window.innerWidth * dpr * renderScale);
+            canvas.height = Math.floor(window.innerHeight * dpr * renderScale);
+            ctx.resetTransform();
+            ctx.scale(dpr * renderScale, dpr * renderScale);
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        let isLocked = false;
+        let isPaused = false;
+        let themeColors = { bg: '#141218', surface: '#211F26', primary: '#6750A4' };
+
+        class GyroShape {
+            constructor(id, type, radius) {
+                this.id = id;
+                this.type = type;
+                this.radius = radius;
+                this.x = Math.random() * (window.innerWidth - radius * 2) + radius;
+                this.y = Math.random() * (window.innerHeight - radius * 2) + radius;
+                this.vx = 0;
+                this.vy = 0;
+            }
+
+            update() {
+                if (isPaused) return;
+
+                // Применяем гравитацию гироскопа
+                this.vx += gravityX * 0.15;
+                this.vy += gravityY * 0.15;
+
+                // Сопротивление среды / Затухание
+                this.vx *= 0.96;
+                this.vy *= 0.96;
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+
+                if (this.x - this.radius < 0) { this.x = this.radius; this.vx *= -0.7; }
+                if (this.x + this.radius > w) { this.x = w - this.radius; this.vx *= -0.7; }
+                if (this.y - this.radius < 0) { this.y = this.radius; this.vy *= -0.7; }
+                if (this.y + this.radius > h) { this.y = h - this.radius; this.vy *= -0.7; }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                ctx.fillStyle = themeColors.surface;
+                ctx.strokeStyle = themeColors.primary;
+                ctx.lineWidth = isLocked ? 8 : 0;
+
+                ctx.beginPath();
+                if (this.type === 'circle') ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                else ctx.roundRect(-this.radius, -this.radius, this.radius * 2, this.radius * 2, this.radius * 0.4);
+
+                ctx.fill();
+                if (isLocked) ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        const shapes = [
+            new GyroShape(1, 'circle', 65),
+            new GyroShape(2, 'squircle', 60),
+            new GyroShape(3, 'circle', 55),
+            new GyroShape(4, 'squircle', 70)
+        ];
+
+        resizeCanvas();
+
+        function render() {
+            if (isPaused) return;
+
+            ctx.fillStyle = themeColors.bg;
+            ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+            for (let shape of shapes) {
+                shape.update();
+                shape.draw();
+            }
+            requestAnimationFrame(render);
+        }
+        render();
+
+        window.addEventListener('wallpaperGyroscope', (e) => {
+            if (e.detail) {
+                // Наклон смартфона меняет гравитацию фигур!
+                gravityX = (e.detail.roll || 0) * -0.2;
+                gravityY = (e.detail.pitch || 0) * 0.2;
+            }
+        });
+
+        window.addEventListener('wallpaperUpdate', (e) => {
+            if (e.detail && e.detail.accentColors) {
+                themeColors.bg = e.detail.accentColors.background;
+                themeColors.surface = e.detail.accentColors.surfaceContainer;
+                themeColors.primary = e.detail.accentColors.primary;
+                document.body.style.backgroundColor = themeColors.bg;
+                isLocked = !e.detail.isUnlocked;
+            }
+        });
+
+        window.addEventListener('wallpaperPause', () => { isPaused = true; });
+        window.addEventListener('wallpaperResume', () => { if (isPaused) { isPaused = false; render(); } });
+    </script>
+</body>
+</html>

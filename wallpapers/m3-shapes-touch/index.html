@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M3 Shapes Touch & Swipe</title>
+    <style>
+        :root {
+            --bg: #141218;
+            --surface: #211F26;
+            --primary: #6750A4;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body { width: 100vw; height: 100vh; background-color: var(--bg); overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let renderScale = 0.8;
+        let xOffsetShift = 0; // Смещение от свайпа лаунчера
+
+        function resizeCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.floor(window.innerWidth * dpr * renderScale);
+            canvas.height = Math.floor(window.innerHeight * dpr * renderScale);
+            ctx.resetTransform();
+            ctx.scale(dpr * renderScale, dpr * renderScale);
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        let isLocked = false;
+        let isPaused = false;
+        let themeColors = { bg: '#141218', surface: '#211F26', primary: '#6750A4' };
+
+        class TouchShape {
+            constructor(id, type, radius) {
+                this.id = id;
+                this.type = type;
+                this.radius = radius;
+                this.baseX = Math.random() * (window.innerWidth - radius * 2) + radius;
+                this.y = Math.random() * (window.innerHeight - radius * 2) + radius;
+                this.vx = (Math.random() - 0.5) * 1.0;
+                this.vy = (Math.random() - 0.5) * 1.0;
+            }
+
+            update(touchPos) {
+                if (isPaused) return;
+
+                this.baseX += this.vx;
+                this.y += this.vy;
+
+                const currentX = this.baseX + xOffsetShift;
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+
+                if (currentX - this.radius < -100) this.baseX = w + this.radius - xOffsetShift;
+                if (currentX + this.radius > w + 100) this.baseX = -this.radius - xOffsetShift;
+                if (this.y - this.radius < 0) { this.y = this.radius; this.vy *= -1; }
+                if (this.y + this.radius > h) { this.y = h - this.radius; this.vy *= -1; }
+
+                // Реакция на палец/тач пользователя
+                if (touchPos) {
+                    let dx = currentX - touchPos.x;
+                    let dy = this.y - touchPos.y;
+                    let dist = Math.hypot(dx, dy);
+                    if (dist < 180 && dist > 0) {
+                        let force = (180 - dist) / 180;
+                        this.vx += (dx / dist) * force * 1.8;
+                        this.vy += (dy / dist) * force * 1.8;
+                    }
+                }
+            }
+
+            draw() {
+                const drawX = this.baseX + xOffsetShift;
+                ctx.save();
+                ctx.translate(drawX, this.y);
+
+                ctx.fillStyle = themeColors.surface;
+                ctx.strokeStyle = themeColors.primary;
+                ctx.lineWidth = isLocked ? 8 : 0;
+
+                ctx.beginPath();
+                if (this.type === 'circle') ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                else ctx.roundRect(-this.radius, -this.radius, this.radius * 2, this.radius * 2, this.radius * 0.4);
+
+                ctx.fill();
+                if (isLocked) ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        const shapes = [
+            new TouchShape(1, 'circle', 65),
+            new TouchShape(2, 'squircle', 60),
+            new TouchShape(3, 'circle', 55),
+            new TouchShape(4, 'squircle', 70)
+        ];
+
+        let activeTouch = null;
+        window.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) {
+                activeTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+        });
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                activeTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+        });
+        window.addEventListener('touchend', () => { activeTouch = null; });
+
+        resizeCanvas();
+
+        function render() {
+            if (isPaused) return;
+
+            ctx.fillStyle = themeColors.bg;
+            ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+            for (let shape of shapes) {
+                shape.update(activeTouch);
+                shape.draw();
+            }
+            requestAnimationFrame(render);
+        }
+        render();
+
+        window.addEventListener('wallpaperOffset', (e) => {
+            if (e.detail && typeof e.detail.xOffset === 'number') {
+                // Смещение при свайпе рабочих столов лаунчера
+                xOffsetShift = (e.detail.xOffset - 0.5) * -160;
+            }
+        });
+
+        window.addEventListener('wallpaperUpdate', (e) => {
+            if (e.detail && e.detail.accentColors) {
+                themeColors.bg = e.detail.accentColors.background;
+                themeColors.surface = e.detail.accentColors.surfaceContainer;
+                themeColors.primary = e.detail.accentColors.primary;
+                document.body.style.backgroundColor = themeColors.bg;
+                isLocked = !e.detail.isUnlocked;
+            }
+        });
+
+        window.addEventListener('wallpaperPause', () => { isPaused = true; });
+        window.addEventListener('wallpaperResume', () => { if (isPaused) { isPaused = false; render(); } });
+    </script>
+</body>
+</html>

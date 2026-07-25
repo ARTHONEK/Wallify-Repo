@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки обоев</title>
+    <style>
+        :root {
+            --accent-primary: #6750A4;
+            --accent-secondary: #625B71;
+            --bg-color: #141218;
+            --card-bg: rgba(255, 255, 255, 0.06);
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: #ffffff;
+            transition: background-color 0.4s ease;
+        }
+
+        .container {
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            color: var(--accent-primary);
+            font-size: 22px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .setting-group {
+            margin-bottom: 16px;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.35);
+            color: #ffffff;
+            box-sizing: border-box;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--accent-primary);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 16px;
+            background: var(--accent-primary);
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: opacity 0.2s;
+        }
+
+        button:active {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2 id="wallpaperTitle">Настройки Neon Cyber Grid</h2>
+
+        <div class="setting-group">
+            <label for="speed">Скорость пульсации</label>
+            <select id="speed">
+                <option value="slow">Медленная (12с)</option>
+                <option value="normal" selected>Обычная (8с)</option>
+                <option value="fast">Быстрая (4с)</option>
+            </select>
+        </div>
+
+        <div class="setting-group">
+            <label for="customText">Пользовательский заголовок</label>
+            <input type="text" id="customText" placeholder="Введите заголовок обоев...">
+        </div>
+
+        <button id="saveBtn">Сохранить настройки</button>
+    </div>
+
+    <script>
+        function applyMonetColors(metadata) {
+            if (metadata && metadata.accentColors) {
+                document.documentElement.style.setProperty('--accent-primary', metadata.accentColors.primary);
+                document.documentElement.style.setProperty('--accent-secondary', metadata.accentColors.secondary);
+                document.documentElement.style.setProperty('--bg-color', metadata.accentColors.background);
+            }
+        }
+
+        window.addEventListener('wallpaperUpdate', (e) => {
+            applyMonetColors(e.detail);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.WallpaperEngine) {
+                applyMonetColors(window.WallpaperEngine.getMetadata());
+
+                const currentSpeed = window.WallpaperEngine.getSetting('speed', 'normal');
+                const currentText = window.WallpaperEngine.getSetting('customText', 'Neon Cyber Grid');
+                
+                document.getElementById('speed').value = currentSpeed;
+                document.getElementById('customText').value = currentText;
+            }
+
+            document.getElementById('saveBtn').addEventListener('click', () => {
+                const speed = document.getElementById('speed').value;
+                const text = document.getElementById('customText').value;
+
+                if (window.WallpaperEngine) {
+                    window.WallpaperEngine.saveSetting('speed', speed);
+                    window.WallpaperEngine.saveSetting('customText', text);
+                    alert('Настройки обоев успешно сохранены!');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M3 Dynamic Shapes HD</title>
+    <style>
+        :root {
+            --bg: #141218;
+            --surface: #211F26;
+            --primary: #6750A4;
+            --secondary: #625B71;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--bg);
+            overflow: hidden;
+            position: relative;
+            transition: background-color 0.5s ease;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let renderScale = 0.8; // 80% по умолчанию
+
+        function resizeCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+
+            canvas.width = Math.floor(w * dpr * renderScale);
+            canvas.height = Math.floor(h * dpr * renderScale);
+
+            ctx.resetTransform();
+            ctx.scale(dpr * renderScale, dpr * renderScale);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        let isLocked = false;
+        let isPaused = false;
+        let currentStrokeWidth = 0.0;
+        let targetStrokeWidth = 0.0;
+
+        let themeColors = {
+            bg: '#141218',
+            surface: '#211F26',
+            primary: '#6750A4',
+            secondary: '#625B71'
+        };
+
+        // Векторные M3 фигуры со ВСЕМИ скругленными углами (без острых 0px углов)
+        class M3Shape {
+            constructor(id, type, radius) {
+                this.id = id;
+                this.type = type; // 'circle', 'squircle', 'pill', 'rounded_diamond'
+                this.radius = radius;
+                this.x = Math.random() * (window.innerWidth - radius * 2) + radius;
+                this.y = Math.random() * (window.innerHeight - radius * 2) + radius;
+                this.vx = (Math.random() - 0.5) * 1.2;
+                this.vy = (Math.random() - 0.5) * 1.2;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.vRot = (Math.random() - 0.5) * 0.01;
+            }
+
+            update(shapes) {
+                if (isPaused) return;
+
+                this.x += this.vx;
+                this.y += this.vy;
+                this.rotation += this.vRot;
+
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+
+                if (this.x - this.radius < 0) { this.x = this.radius; this.vx *= -1; }
+                if (this.x + this.radius > w) { this.x = w - this.radius; this.vx *= -1; }
+                if (this.y - this.radius < 0) { this.y = this.radius; this.vy *= -1; }
+                if (this.y + this.radius > h) { this.y = h - this.radius; this.vy *= -1; }
+
+                // Бесконтактное отталкивание (никакого соприкосновения и наложения вплотную)
+                for (let other of shapes) {
+                    if (other.id === this.id) continue;
+                    let dx = other.x - this.x;
+                    let dy = other.y - this.y;
+                    let dist = Math.hypot(dx, dy);
+                    let minDist = this.radius + other.radius + 40;
+
+                    if (dist < minDist && dist > 0) {
+                        let overlap = (minDist - dist) * 0.04;
+                        let nx = dx / dist;
+                        let ny = dy / dist;
+
+                        this.x -= nx * overlap;
+                        this.y -= ny * overlap;
+                        other.x += nx * overlap;
+                        other.y += ny * overlap;
+
+                        this.vx -= nx * 0.015;
+                        this.vy -= ny * 0.015;
+                        other.vx += nx * 0.015;
+                        other.vy += ny * 0.015;
+                    }
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                ctx.fillStyle = themeColors.surface;
+                ctx.strokeStyle = themeColors.primary;
+                ctx.lineWidth = currentStrokeWidth;
+
+                ctx.beginPath();
+
+                if (this.type === 'circle') {
+                    ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                } else if (this.type === 'squircle') {
+                    let r = this.radius;
+                    let corner = r * 0.45; // Скругление M3
+                    ctx.roundRect(-r, -r, r * 2, r * 2, corner);
+                } else if (this.type === 'pill') {
+                    let w = this.radius * 1.5;
+                    let h = this.radius * 0.85;
+                    ctx.roundRect(-w, -h, w * 2, h * 2, h);
+                } else if (this.type === 'rounded_diamond') {
+                    let r = this.radius * 0.9;
+                    ctx.roundRect(-r, -r, r * 2, r * 2, 28);
+                }
+
+                ctx.fill();
+                if (currentStrokeWidth > 0.1) {
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+        }
+
+        const shapes = [
+            new M3Shape(1, 'circle', 70),
+            new M3Shape(2, 'squircle', 65),
+            new M3Shape(3, 'pill', 60),
+            new M3Shape(4, 'rounded_diamond', 55),
+            new M3Shape(5, 'circle', 50),
+            new M3Shape(6, 'squircle', 58)
+        ];
+
+        resizeCanvas();
+
+        function render() {
+            if (isPaused) return;
+
+            // Плавнейшая интерполяция толщины 8px обводки при разблокировке!
+            currentStrokeWidth += (targetStrokeWidth - currentStrokeWidth) * 0.1;
+
+            ctx.fillStyle = themeColors.bg;
+            ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+            for (let shape of shapes) {
+                shape.update(shapes);
+                shape.draw();
+            }
+
+            requestAnimationFrame(render);
+        }
+        render();
+
+        function updateMetadata(data) {
+            if (!data) return;
+
+            if (data.accentColors) {
+                themeColors.bg = data.accentColors.background;
+                themeColors.surface = data.accentColors.surfaceContainer;
+                themeColors.primary = data.accentColors.primary;
+                themeColors.secondary = data.accentColors.secondary;
+                document.body.style.backgroundColor = themeColors.bg;
+            }
+
+            isLocked = !data.isUnlocked || data.screen === 'lock';
+            targetStrokeWidth = isLocked ? 8.0 : 0.0;
+
+            // Настройка качества рендеринга из SharedPreferences
+            if (window.WallpaperEngine && window.WallpaperEngine.getSetting) {
+                const resSetting = window.WallpaperEngine.getSetting('resolution_scale', '80');
+                const parsedScale = parseInt(resSetting) / 100.0;
+                if (parsedScale > 0.2 && parsedScale <= 1.0 && parsedScale !== renderScale) {
+                    renderScale = parsedScale;
+                    resizeCanvas();
+                }
+            }
+        }
+
+        window.addEventListener('wallpaperUpdate', (e) => updateMetadata(e.detail));
+        window.addEventListener('wallpaperUnlock', (e) => updateMetadata(e.detail));
+        window.addEventListener('wallpaperThemeChange', (e) => updateMetadata(e.detail));
+
+        window.addEventListener('wallpaperScreenOn', () => {
+            // Эффект прилёта / импульса фигур при включении экрана!
+            for (let shape of shapes) {
+                shape.vx = (Math.random() - 0.5) * 3.5;
+                shape.vy = (Math.random() - 0.5) * 3.5;
+            }
+        });
+
+        window.addEventListener('wallpaperScreenOff', () => {
+            // Экран выключился
+        });
+
+        window.addEventListener('wallpaperPause', () => {
+            isPaused = true;
+        });
+
+        window.addEventListener('wallpaperResume', () => {
+            if (isPaused) {
+                isPaused = false;
+                render();
+            }
+        });
+    </script>
+</body>
+</html>

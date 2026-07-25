@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Настройки обоев</title>
+    <title>Настройки Material 3 Shapes</title>
     <style>
         :root {
             --accent-primary: #6750A4;
@@ -49,7 +49,7 @@
             font-weight: bold;
         }
 
-        input[type="text"], select {
+        select {
             width: 100%;
             padding: 12px;
             border-radius: 12px;
@@ -61,7 +61,7 @@
             outline: none;
         }
 
-        input[type="text"]:focus, select:focus {
+        select:focus {
             border-color: var(--accent-primary);
         }
 
@@ -87,20 +87,25 @@
 <body>
 
     <div class="container">
-        <h2 id="wallpaperTitle">Настройки Neon Cyber Grid</h2>
+        <h2>Настройки Material 3 Shapes</h2>
 
         <div class="setting-group">
-            <label for="speed">Скорость пульсации</label>
+            <label for="speed">Скорость движения</label>
             <select id="speed">
-                <option value="slow">Медленная (12с)</option>
-                <option value="normal" selected>Обычная (8с)</option>
-                <option value="fast">Быстрая (4с)</option>
+                <option value="slow">Медленная (Режим энергосбережения)</option>
+                <option value="normal" selected>Стандартная (Плавная)</option>
+                <option value="fast">Динамичная (Высокая скорость)</option>
             </select>
         </div>
 
         <div class="setting-group">
-            <label for="customText">Пользовательский заголовок</label>
-            <input type="text" id="customText" placeholder="Введите заголовок обоев...">
+            <label for="shapeCount">Количество фигур на экране</label>
+            <select id="shapeCount">
+                <option value="4">4 фигуры (Минимализм)</option>
+                <option value="6" selected>6 фигур (Стандарт)</option>
+                <option value="8">8 фигур (Насыщенно)</option>
+                <option value="12">12 фигур (Максимум)</option>
+            </select>
         </div>
 
         <button id="saveBtn">Сохранить настройки</button>
@@ -115,29 +120,42 @@
             }
         }
 
+        function loadSavedValues() {
+            if (window.WallpaperEngine && window.WallpaperEngine.getSetting) {
+                applyMonetColors(window.WallpaperEngine.getMetadata());
+
+                const savedSpeed = window.WallpaperEngine.getSetting('speed', 'normal');
+                const savedCount = window.WallpaperEngine.getSetting('shapeCount', '6');
+
+                const speedEl = document.getElementById('speed');
+                const countEl = document.getElementById('shapeCount');
+
+                if (speedEl && savedSpeed) speedEl.value = savedSpeed;
+                if (countEl && savedCount) countEl.value = savedCount;
+            }
+        }
+
         window.addEventListener('wallpaperUpdate', (e) => {
             applyMonetColors(e.detail);
+            loadSavedValues();
+        });
+
+        window.addEventListener('wallpaperEngineReady', () => {
+            loadSavedValues();
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-            if (window.WallpaperEngine) {
-                applyMonetColors(window.WallpaperEngine.getMetadata());
-
-                const currentSpeed = window.WallpaperEngine.getSetting('speed', 'normal');
-                const currentText = window.WallpaperEngine.getSetting('customText', 'Neon Cyber Grid');
-                
-                document.getElementById('speed').value = currentSpeed;
-                document.getElementById('customText').value = currentText;
-            }
+            loadSavedValues();
+            setTimeout(loadSavedValues, 150);
 
             document.getElementById('saveBtn').addEventListener('click', () => {
                 const speed = document.getElementById('speed').value;
-                const text = document.getElementById('customText').value;
+                const count = document.getElementById('shapeCount').value;
 
-                if (window.WallpaperEngine) {
+                if (window.WallpaperEngine && window.WallpaperEngine.saveSetting) {
                     window.WallpaperEngine.saveSetting('speed', speed);
-                    window.WallpaperEngine.saveSetting('customText', text);
-                    alert('Настройки обоев успешно сохранены!');
+                    window.WallpaperEngine.saveSetting('shapeCount', count);
+                    alert('Настройки обоев сохранены!');
                 }
             });
         });

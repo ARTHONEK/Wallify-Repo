@@ -1,24 +1,28 @@
 # 🎨 Wallify Repository
 
 > **Wallify** — Create your own live wallpapers!
-> Официальный открытый каталог живых обоев для Android-приложения **Wallify** от [RnPlugins](https://t.me/RnPlugins) и [Rooni](https://rooni.dev).
+> Официальный открытый каталог живых обоев для Android-приложения **Wallify** от [Rooni](https://rooni.dev) ([@RnPlugins](https://t.me/RnPlugins)).
 
-Здесь любой разработчик может опубликовать свой интерактивный комплект обоев на **HTML5 / CSS3 / JavaScript / Canvas / WebGL**, с доступом к системной теме Material You (Monet) и внешним API (погода, нейросети, часы, курсы валют и музыка).
+Каждый разработчик может выложить свои интерактивные живые обои на **HTML5 / CSS3 / JavaScript / Canvas / WebGL** в каталог приложения!
 
 ---
 
-## 🚀 Как устроен комплект обоев?
+## 🚀 Как работает каталог и интеграция обоев?
 
-Каждый комплект обоев представляет собой отдельную папку или ZIP-архив со следующей структурой:
+Каждый комплект обоев может быть как отдельным веб-проектом, так и создаваться в **вашем собственном GitHub-репозитории** (например: `github.com/username/my-cool-wallpaper`).
+
+В каталоге **Wallify-Repo** хранится единый индекс `index.json`, откуда приложение **Wallify** загружает список доступных обоев, их иконки, описания и ссылки на загрузку.
+
+### Структура папки обоев:
 
 ```text
 my-cool-wallpaper/
-├── manifest.json       # Описание, автор, версия и точки входа
+├── manifest.json       # Метаданные: название, автор, версия, логика
 ├── index.html          # Главная страница обоев
-├── cover.jpg           # Обложка для каталога в приложении (500x500 или 9:16)
-├── icon.png            # Миникарточка / Иконка обоев
+├── cover.jpg           # Превью-обложка (500x500 или 9:16)
+├── icon.png            # Иконка обоев
 └── settings/
-    └── index.html      # (Опционально) Страница кастомных настроек обоев
+    └── index.html      # (Опционально) Страница настроек обоев
 ```
 
 ---
@@ -35,33 +39,35 @@ my-cool-wallpaper/
   "main": "index.html",
   "cover": "cover.jpg",
   "icon": "icon.png",
+  "useGyroscope": false,
   "settingsPath": "settings/index.html"
 }
 ```
 
 ---
 
-## ⚡ Доступ к API и Метаданным (`window.WallpaperEngine`)
+## ⚡ Доступ к API и событиям (`window.WallpaperEngine`)
 
-В ваше HTML5 приложение автоматически внедряется объект `window.WallpaperEngine`:
+Приложению доступен объект `window.WallpaperEngine` и следующие события:
 
 ```javascript
-// 1. Получить текущие системные метаданные (Monet цвета, замок экрана, тема)
+// 1. Системные цвета Monet и состояние замка
 const metadata = window.WallpaperEngine.getMetadata();
 console.log(metadata.theme); // 'dark' или 'light'
 console.log(metadata.isUnlocked); // true (разблокирован) или false (экран блокировки)
-console.log(metadata.accentColors.primary); // Системный акцентный цвет Monet (#6750A4)
+console.log(metadata.accentColors.primary); // Системный акцент Monet (#6750A4)
 
-// 2. Сохранить пользовательскую настройку обоев
-window.WallpaperEngine.saveSetting('fps_limit', '60');
-
-// 3. Считать сохранённую настройку
-const myFps = window.WallpaperEngine.getSetting('fps_limit', '60');
-
-// 4. События обновления в реальном времени:
+// 2. События реального времени
 window.addEventListener('wallpaperUpdate', (e) => {
-    const data = e.detail;
-    // Данные обновились (смена темы или цвета)
+    // Цвета или темы обновились
+});
+
+window.addEventListener('wallpaperGyroscope', (e) => {
+    // Данные гироскопа (roll, pitch, x, y, z) - только если в manifest.json указан "useGyroscope": true
+});
+
+window.addEventListener('wallpaperOffset', (e) => {
+    // Смещение рабочих столов лаунчера (detail.xOffset)
 });
 
 window.addEventListener('wallpaperScreenOn', () => {
@@ -73,31 +79,34 @@ window.addEventListener('wallpaperScreenOff', () => {
 });
 
 window.addEventListener('wallpaperUnlock', (e) => {
-    // Экран только что разблокировали пальцем/паролем
+    // Экран разблокирован
 });
 
 window.addEventListener('wallpaperPause', () => {
-    // Обои поставлены на паузу (остановите анимации для экономии батареи)
+    // Анимации заморожены для экономии батареи
 });
 
 window.addEventListener('wallpaperResume', () => {
-    // Обои сняты с паузы
+    // Анимации возобновлены
 });
 ```
 
 ---
 
-## 📤 Как добавить свои обои в этот каталог?
+## 📤 Как добавить свои обои в каталог?
 
-1. Сделайте **Fork** этого репозитория.
-2. Создайте папку со своими обоями в директории `wallpapers/your-wallpaper-name/`.
+1. Создайте свой открытый GitHub-репозиторий с обоями (или папочку со своими обоями).
+2. Сделайте **Fork** этого репозитория `Wallify-Repo`.
 3. Добавьте запись о своих обоях в `index.json`.
 4. Отправьте **Pull Request (PR)**!
 
-При отправке PR наш автоматический бот (GitHub Actions) быстро проверит корректность `manifest.json` и отсутствие опасных вызовов, после чего PR будет принят и опубликован в каталоге приложения!
+### Как модерируются PR?
+- Наш GitHub Actions бот автоматически проверит валидность `manifest.json`.
+- После проверки PR одобряется и обои мгновенно появляются в приложении Wallify!
+- Для обновления ваших обоев достаточно отправить короткий PR с новым номером версии `version` в `index.json`.
 
 ---
 
-### 💬 Сообщество и контакты
+### 💬 Сообщество и автор
 - Telegram канал: [@RnPlugins](https://t.me/RnPlugins)
 - Автор: [rooni.dev](https://rooni.dev)

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-26T00:00:00Z",
+  "updatedAt": "2026-07-26T23:20:00Z",
   "wallpapers": [
     {
       "id": "m3-shapes-dynamic",
@@ -12,6 +12,28 @@
       "main": "index.html",
       "useGyroscope": false,
       "stars": 42
+    },
+    {
+      "id": "m3-shapes-gyro",
+      "name": "M3 Shapes Gyro Physics",
+      "author": "Rooni",
+      "version": "1.0.0",
+      "description": "Фигуры Material 3 имеют физику гравитации под управлением гироскопа телефона.",
+      "path": "wallpapers/m3-shapes-gyro",
+      "main": "index.html",
+      "useGyroscope": true,
+      "stars": 28
+    },
+    {
+      "id": "m3-shapes-touch",
+      "name": "M3 Shapes Touch & Swipe",
+      "author": "Rooni",
+      "version": "1.0.0",
+      "description": "Фигуры Material 3 реагируют на тачи пальцем и свайпы рабочих столов.",
+      "path": "wallpapers/m3-shapes-touch",
+      "main": "index.html",
+      "useGyroscope": false,
+      "stars": 35
     }
   ]
 }

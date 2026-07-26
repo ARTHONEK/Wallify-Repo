@@ -5,22 +5,26 @@
 
 Каждый разработчик может выложить свои интерактивные живые обои на **HTML5 / CSS3 / JavaScript / Canvas / WebGL** в каталог приложения!
 
+> [!IMPORTANT]
+> 📖 **[Полное техническое руководство разработчика обоев (WALLPAPER_API.md)](WALLPAPER_API.md)**
+> Для получения подробных сведений о работе движка, метаданных, локальном HTTP-сервере, Material You палитре и хранилище настроек изучите файл [`WALLPAPER_API.md`](WALLPAPER_API.md).
+
 ---
 
 ## 🚀 Как работает каталог и интеграция обоев?
 
-Каждый комплект обоев может быть как отдельным веб-проектом, так и создаваться в **вашем собственном GitHub-репозитории** (например: `github.com/username/my-cool-wallpaper`).
+Каждый комплект обоев представляет собой независимый HTML5-проект с файлом `manifest.json`.
 
-В каталоге **Wallify-Repo** хранится единый индекс `index.json`, откуда приложение **Wallify** загружает список доступных обоев, их иконки, описания и ссылки на загрузку.
+В репозитории **Wallify-Repo** хранится единый индекс [`index.json`](index.json), откуда приложение **Wallify** загружает каталог доступных обоев, их обложки, описания и версии.
 
 ### Структура папки обоев:
 
 ```text
 my-cool-wallpaper/
-├── manifest.json       # Метаданные: название, автор, версия, логика
-├── index.html          # Главная страница обоев
-├── cover.jpg           # Превью-обложка (500x500 или 9:16)
-├── icon.png            # Иконка обоев
+├── manifest.json       # Метаданные: название, автор, версия, параметры
+├── index.html          # Главная страница обоев (точка входа)
+├── cover.jpg           # Превью-обложка обоев (500x500 или 9:16)
+├── icon.png            # Иконка обоев (если нет обложки)
 └── settings/
     └── index.html      # (Опционально) Страница настроек обоев
 ```
@@ -31,16 +35,17 @@ my-cool-wallpaper/
 
 ```json
 {
-  "name": "Cyberpunk AI Clock",
+  "name": "Material 3 Shapes",
+  "description": "Плавающие фигуры в палитре системы Monet",
   "author": "Rooni",
-  "version": "1.0.0",
-  "minAppVersion": "1.0.0",
-  "description": "Интерактивные живые часы в стиле киберпанк с динамическими цветами Monet.",
-  "main": "index.html",
+  "version": "1.2.0",
+  "minAppVersion": ">=1.0.0",
   "cover": "cover.jpg",
   "icon": "icon.png",
+  "main": "index.html",
+  "settingsPath": "settings/index.html",
   "useGyroscope": false,
-  "settingsPath": "settings/index.html"
+  "isLite": false
 }
 ```
 
@@ -48,46 +53,43 @@ my-cool-wallpaper/
 
 ## ⚡ Доступ к API и событиям (`window.WallpaperEngine`)
 
-Приложению доступен объект `window.WallpaperEngine` и следующие события:
+После загрузки страницы движок предоставляет глобальный объект `window.WallpaperEngine` и отправляет событие `wallpaperEngineReady`:
 
 ```javascript
-// 1. Системные цвета Monet и состояние замка
-const metadata = window.WallpaperEngine.getMetadata();
-console.log(metadata.theme); // 'dark' или 'light'
-console.log(metadata.isUnlocked); // true (разблокирован) или false (экран блокировки)
-console.log(metadata.accentColors.primary); // Системный акцент Monet (#6750A4)
+// 1. Инициализация при готовности движка
+window.addEventListener('wallpaperEngineReady', (e) => {
+    const metadata = e.detail;
+    console.log(metadata.theme); // 'dark' или 'light'
+    console.log(metadata.isUnlocked); // true (разблокирован) или false (экран блокировки)
+    console.log(metadata.accentColors.primary); // Системный акцент Material You / Monet (#D0BCFF)
+});
 
-// 2. События реального времени
+// 2. Работа с настройками
+const engine = window.WallpaperEngine;
+if (engine) {
+    const speed = engine.getSetting('speed', 'normal');
+    engine.saveSetting('speed', 'fast');
+}
+
+// 3. Основные события реального времени
 window.addEventListener('wallpaperUpdate', (e) => {
-    // Цвета или темы обновились
+    // Изменение темы, цветов или разблокировки
 });
 
 window.addEventListener('wallpaperGyroscope', (e) => {
-    // Данные гироскопа (roll, pitch, x, y, z) - только если в manifest.json указан "useGyroscope": true
+    // Данные акселерометра/гироскопа (pitch, roll, x, y, z) - если в manifest.json указано "useGyroscope": true
 });
 
 window.addEventListener('wallpaperOffset', (e) => {
-    // Смещение рабочих столов лаунчера (detail.xOffset)
-});
-
-window.addEventListener('wallpaperScreenOn', () => {
-    // Дисплей включился (отличный момент для прилёта элементов!)
-});
-
-window.addEventListener('wallpaperScreenOff', () => {
-    // Дисплей выключился
-});
-
-window.addEventListener('wallpaperUnlock', (e) => {
-    // Экран разблокирован
+    // Пролистывание рабочих столов (detail.xOffset)
 });
 
 window.addEventListener('wallpaperPause', () => {
-    // Анимации заморожены для экономии батареи
+    // Обои поставлены на паузу (заморозка анимаций для сохранения заряда)
 });
 
 window.addEventListener('wallpaperResume', () => {
-    // Анимации возобновлены
+    // Возобновление анимации
 });
 ```
 
@@ -95,18 +97,13 @@ window.addEventListener('wallpaperResume', () => {
 
 ## 📤 Как добавить свои обои в каталог?
 
-1. Создайте свой открытый GitHub-репозиторий с обоями (или папочку со своими обоями).
+1. Создайте папку со своими обоями (или репозиторий).
 2. Сделайте **Fork** этого репозитория `Wallify-Repo`.
-3. Добавьте запись о своих обоях в `index.json`.
+3. Добавьте свои обои в папку `wallpapers/<id-обоев>/` и внесите запись в `index.json`.
 4. Отправьте **Pull Request (PR)**!
-
-### Как модерируются PR?
-- Наш GitHub Actions бот автоматически проверит валидность `manifest.json`.
-- После проверки PR одобряется и обои мгновенно появляются в приложении Wallify!
-- Для обновления ваших обоев достаточно отправить короткий PR с новым номером версии `version` в `index.json`.
 
 ---
 
 ### 💬 Сообщество и автор
-- Telegram канал: [@RnPlugins](https://t.me/RnPlugins)
-- Автор: [rooni.dev](https://rooni.dev)
+- Telegram-канал: [@RnPlugins](https://t.me/RnPlugins)
+- Разработчик: [rooni.dev](https://rooni.dev)

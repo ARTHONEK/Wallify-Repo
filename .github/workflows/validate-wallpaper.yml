@@ -3,6 +3,9 @@ name: Validate Wallpaper PR
 on:
   pull_request:
     branches: [ main ]
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   validate:
@@ -11,13 +14,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          node-version: 18
+          python-version: '3.11'
 
-      - name: Validate JSON & Manifest Files
-        run: |
-          echo "Checking index.json format..."
-          node -e "JSON.parse(require('fs').readFileSync('index.json', 'utf8'))"
-          echo "Validation complete!"
+      - name: Validate catalog and bundles
+        run: python3 scripts/validate_catalog.py

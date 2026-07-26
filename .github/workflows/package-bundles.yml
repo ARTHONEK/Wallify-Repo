@@ -1,0 +1,60 @@
+name: Package Bundles
+
+# Собирает каждый комплект в ZIP и обновляет постоянный релиз `bundles`.
+# Ссылки на архивы стабильны и указаны в index.json как downloadUrl:
+#   https://github.com/<owner>/<repo>/releases/download/bundles/<id>.zip
+#
+# Без этого архива приложение забирает из репозитория только точку входа и
+# manifest.json — комплекты со страницей настроек, обложкой и ассетами приедут
+# на устройство неполными.
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'wallpapers/**'
+      - 'index.json'
+      - '.github/workflows/package-bundles.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate before packaging
+        run: python3 scripts/validate_catalog.py
+
+      - name: Build ZIP for each bundle
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for dir in wallpapers/*/; do
+            id="$(basename "$dir")"
+            # Файлы кладём в корень архива — так их ждёт установщик.
+            (cd "$dir" && zip -r -q "$GITHUB_WORKSPACE/dist/$id.zip" . -x '.*')
+            echo "собран dist/$id.zip"
+          done
+          ls -lh dist
+
+      - name: Publish rolling release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if ! gh release view bundles >/dev/null 2>&1; then
+            gh release create bundles \
+              --title "Wallpaper bundles" \
+              --notes "Архивы комплектов, пересобираются автоматически при каждом изменении в wallpapers/. Ссылки в этом релизе постоянны и используются как downloadUrl в index.json."
+          fi
+          gh release upload bundles dist/*.zip --clobber

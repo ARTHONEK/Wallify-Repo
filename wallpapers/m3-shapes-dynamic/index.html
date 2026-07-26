@@ -43,7 +43,10 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
-        let renderScale = 0.8;
+        // Рисуем в полном разрешении CSS-пикселей. Приложение и так растеризует страницу
+        // в масштабе из настройки «Качество рендеринга» (по умолчанию 80 %) — уменьшать
+        // канвас ещё раз значит мылить фигуры дважды.
+        const renderScale = 1.0;
 
         function resizeCanvas() {
             const dpr = window.devicePixelRatio || 1;
@@ -236,17 +239,6 @@
 
             isLocked = !data.isUnlocked || data.screen === 'lock';
             targetStrokeWidth = isLocked ? 8.0 : 0.0;
-
-            if (window.WallpaperEngine && window.WallpaperEngine.getSetting) {
-                try {
-                    const resSetting = window.WallpaperEngine.getSetting('resolution_scale', '80');
-                    const parsedScale = parseInt(resSetting) / 100.0;
-                    if (!isNaN(parsedScale) && parsedScale > 0.2 && parsedScale <= 1.0 && parsedScale !== renderScale) {
-                        renderScale = parsedScale;
-                        resizeCanvas();
-                    }
-                } catch(e){}
-            }
         }
 
         window.addEventListener('wallpaperUpdate', (e) => updateMetadata(e.detail));

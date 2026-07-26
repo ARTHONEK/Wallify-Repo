@@ -1,8 +1,11 @@
 {
   "name": "M3 Shapes Touch & Swipe",
+  "description": "Фигуры Material 3 реагируют на тачи пальцем и свайпы рабочих столов. Требуется включённый проброс касаний в настройках приложения.",
   "author": "Rooni",
-  "version": "1.0.0",
-  "description": "Фигуры Material 3 реагируют на тачи пальцем и свайпы рабочих столов.",
+  "version": "1.0.1",
+  "minAppVersion": ">=1.0.0",
+  "cover": "cover.png",
   "main": "index.html",
-  "useGyroscope": false
+  "useGyroscope": false,
+  "isLite": true
 }

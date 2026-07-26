@@ -3,30 +3,89 @@
 > **Wallify** — Create your own live wallpapers!
 > Официальный открытый каталог живых обоев для Android-приложения **Wallify** от [Rooni](https://rooni.dev) ([@RnPlugins](https://t.me/RnPlugins)).
 
-Каждый разработчик может выложить свои интерактивные живые обои на **HTML5 / CSS3 / JavaScript / Canvas / WebGL** в каталог приложения!
+Каждый разработчик может выложить свои интерактивные живые обои на **HTML5 / CSS3 / JavaScript / Canvas** в каталог приложения.
 
 > [!IMPORTANT]
 > 📖 **[Полное техническое руководство разработчика обоев (WALLPAPER_API.md)](WALLPAPER_API.md)**
-> Для получения подробных сведений о работе движка, метаданных, локальном HTTP-сервере, Material You палитре и хранилище настроек изучите файл [`WALLPAPER_API.md`](WALLPAPER_API.md).
+> Движок, метаданные, события, локальный HTTP-сервер, палитра Material You, хранилище настроек — всё описано там. Этот файл рассказывает только про устройство каталога.
+>
+> 📝 **[Как отправить свои обои (CONTRIBUTING.md)](CONTRIBUTING.md)**
 
 ---
 
-## 🚀 Как работает каталог и интеграция обоев?
+## 🚀 Как устроен каталог
 
-Каждый комплект обоев представляет собой независимый HTML5-проект с файлом `manifest.json`.
-
-В репозитории **Wallify-Repo** хранится единый индекс [`index.json`](index.json), откуда приложение **Wallify** загружает каталог доступных обоев, их обложки, описания и версии.
-
-### Структура папки обоев:
+Комплект обоев — это независимый HTML5-проект с файлом `manifest.json`. Все комплекты лежат в папке `wallpapers/`, а корневой [`index.json`](index.json) — единственный индекс, откуда приложение Wallify берёт список обоев, версии, описания и ссылки на архивы.
 
 ```text
-my-cool-wallpaper/
-├── manifest.json       # Метаданные: название, автор, версия, параметры
-├── index.html          # Главная страница обоев (точка входа)
-├── cover.jpg           # Превью-обложка обоев (500x500 или 9:16)
-├── icon.png            # Иконка обоев (если нет обложки)
-└── settings/
-    └── index.html      # (Опционально) Страница настроек обоев
+Wallify-Repo/
+├── index.json                      # Индекс каталога — его читает приложение
+├── wallpapers/
+│   └── my-cool-wallpaper/
+│       ├── manifest.json           # Метаданные комплекта
+│       ├── index.html              # Точка входа
+│       ├── README.md               # Показывается на странице комплекта
+│       ├── cover.png               # Обложка карточки (9:16 или 500x500)
+│       └── settings/
+│           └── index.html          # (Опционально) страница настроек
+└── scripts/
+    ├── validate_catalog.py         # Проверка каталога, её же гоняет CI
+    └── make_covers.py              # Генератор обложек-заглушек
+```
+
+---
+
+## 📇 Формат `index.json`
+
+Это единственный файл, который вы обязаны отредактировать, добавляя обои. Одна запись — один комплект.
+
+```json
+{
+  "version": 1,
+  "updatedAt": "2026-07-26T23:45:00Z",
+  "wallpapers": [
+    {
+      "id": "my-cool-wallpaper",
+      "name": "My Cool Wallpaper",
+      "author": "Nickname",
+      "version": "1.0.0",
+      "description": "Короткое описание для карточки в каталоге.",
+      "path": "wallpapers/my-cool-wallpaper",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": true,
+      "stars": 0,
+      "createdAt": "2026-07-26T00:00:00Z",
+      "updatedAt": "2026-07-26T00:00:00Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/my-cool-wallpaper.zip"
+    }
+  ]
+}
+```
+
+| Поле | Обязательно | Описание |
+|---|---|---|
+| `id` | да | Уникальный идентификатор: строчные латинские буквы, цифры, дефис. Совпадает с именем папки |
+| `name` | да | Название. По нему приложение сопоставляет установленные обои с каталогом, поэтому оно **обязано совпадать** с `name` в манифесте |
+| `author` | да | Автор, совпадает с манифестом |
+| `version` | да | `MAJOR.MINOR.PATCH`, совпадает с манифестом. По ней определяется наличие обновления |
+| `description` | да | Краткое описание для карточки |
+| `path` | да | Путь к папке комплекта: `wallpapers/<id>` |
+| `main` | нет | Точка входа, по умолчанию `index.html` |
+| `useGyroscope` | нет | Должно совпадать с манифестом, иначе сенсор не зарегистрируется |
+| `isLite` | нет | Пометка «энергоэффективные», влияет на фильтр в каталоге |
+| `stars` | нет | Сортировка по популярности. В новых записях ставьте `0` |
+| `createdAt` / `updatedAt` | нет | ISO 8601. Без них сортировка «Сначала новые» превращается в порядок строк файла |
+| `downloadUrl` | нет, но нужен | Прямая ссылка на ZIP-архив комплекта |
+
+### Про `downloadUrl`
+
+Если ссылки нет, приложение может забрать из репозитория **только `main` и `manifest.json`**. Комплект со страницей настроек, обложкой, шрифтами или отдельными скриптами приедет на устройство неполным — например, кнопка настроек в карточке просто не появится.
+
+Архивы собираются автоматически: воркфлоу [`package-bundles.yml`](.github/workflows/package-bundles.yml) при каждом изменении в `wallpapers/` пакует каждую папку в ZIP и кладёт в постоянный релиз `bundles`. Ссылка предсказуема, её и указывайте:
+
+```text
+https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/<id>.zip
 ```
 
 ---
@@ -35,13 +94,12 @@ my-cool-wallpaper/
 
 ```json
 {
-  "name": "Material 3 Shapes",
-  "description": "Плавающие фигуры в палитре системы Monet",
-  "author": "Rooni",
-  "version": "1.2.0",
+  "name": "My Cool Wallpaper",
+  "description": "Короткое описание для карточки в каталоге.",
+  "author": "Nickname",
+  "version": "1.0.0",
   "minAppVersion": ">=1.0.0",
-  "cover": "cover.jpg",
-  "icon": "icon.png",
+  "cover": "cover.png",
   "main": "index.html",
   "settingsPath": "settings/index.html",
   "useGyroscope": false,
@@ -49,58 +107,40 @@ my-cool-wallpaper/
 }
 ```
 
+Поля `name`, `author`, `version` и `useGyroscope` обязаны совпадать с записью в `index.json` — CI это проверяет. Подробное описание каждого поля — в [WALLPAPER_API.md, раздел 3](WALLPAPER_API.md).
+
 ---
 
-## ⚡ Доступ к API и событиям (`window.WallpaperEngine`)
+## ⚡ API движка
 
-После загрузки страницы движок предоставляет глобальный объект `window.WallpaperEngine` и отправляет событие `wallpaperEngineReady`:
+Движок отдаёт странице объект `window.WallpaperEngine` и события `wallpaperEngineReady`, `wallpaperUpdate`, `wallpaperGyroscope`, `wallpaperOffset`, `wallpaperPause`, `wallpaperResume` и другие.
 
-```javascript
-// 1. Инициализация при готовности движка
-window.addEventListener('wallpaperEngineReady', (e) => {
-    const metadata = e.detail;
-    console.log(metadata.theme); // 'dark' или 'light'
-    console.log(metadata.isUnlocked); // true (разблокирован) или false (экран блокировки)
-    console.log(metadata.accentColors.primary); // Системный акцент Material You / Monet (#D0BCFF)
-});
+Полное описание с примерами — **[WALLPAPER_API.md](WALLPAPER_API.md)**. Дублировать его здесь мы не будем: два описания одного API разъедутся на первом же изменении движка.
 
-// 2. Работа с настройками
-const engine = window.WallpaperEngine;
-if (engine) {
-    const speed = engine.getSetting('speed', 'normal');
-    engine.saveSetting('speed', 'fast');
-}
+> [!WARNING]
+> **Про WebGL.** По умолчанию страница растеризуется процессором. DOM, CSS-анимации, 2D-канвас и SVG работают надёжно, а вот WebGL, `backdrop-filter` и `mix-blend-mode` идут через композитор и могут не попасть в кадр — вплоть до чёрного экрана на части прошивок. Если строите обои на WebGL, обязательно проверьте их на реальном устройстве и предусмотрите запасной вариант. Подробности — в [разделе 12 руководства](WALLPAPER_API.md).
 
-// 3. Основные события реального времени
-window.addEventListener('wallpaperUpdate', (e) => {
-    // Изменение темы, цветов или разблокировки
-});
+---
 
-window.addEventListener('wallpaperGyroscope', (e) => {
-    // Данные акселерометра/гироскопа (pitch, roll, x, y, z) - если в manifest.json указано "useGyroscope": true
-});
+## 📤 Как добавить свои обои в каталог
 
-window.addEventListener('wallpaperOffset', (e) => {
-    // Пролистывание рабочих столов (detail.xOffset)
-});
+1. Сделайте **Fork** репозитория.
+2. Положите комплект в `wallpapers/<id>/` и внесите запись в `index.json`.
+3. Прогоните проверку локально:
 
-window.addEventListener('wallpaperPause', () => {
-    // Обои поставлены на паузу (заморозка анимаций для сохранения заряда)
-});
-
-window.addEventListener('wallpaperResume', () => {
-    // Возобновление анимации
-});
+```bash
+python3 scripts/validate_catalog.py
 ```
 
+4. Отправьте **Pull Request**.
+
+Полный список требований и частые ошибки — в [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ---
 
-## 📤 Как добавить свои обои в каталог?
+## 📜 Лицензия
 
-1. Создайте папку со своими обоями (или репозиторий).
-2. Сделайте **Fork** этого репозитория `Wallify-Repo`.
-3. Добавьте свои обои в папку `wallpapers/<id-обоев>/` и внесите запись в `index.json`.
-4. Отправьте **Pull Request (PR)**!
+Код каталога и документация — под [MIT](LICENSE). Авторские права на каждый комплект остаются за его автором; отправляя PR, автор публикует свои обои на условиях MIT, чтобы приложение и пользователи могли их скачивать и устанавливать.
 
 ---
 

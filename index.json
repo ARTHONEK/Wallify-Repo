@@ -1,39 +1,51 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-26T23:20:00Z",
+  "updatedAt": "2026-07-26T23:45:00Z",
   "wallpapers": [
     {
       "id": "m3-shapes-dynamic",
       "name": "Material 3 Shapes",
       "author": "Rooni",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "description": "Динамические живые обои в стиле Material You / Monet. Автоматическая подстройка под системную цветовую схему Android 12+, эффект фокусировки экрана блокировки с плавным разрастанием 8px обводки и адаптацией под 120 Гц.",
       "path": "wallpapers/m3-shapes-dynamic",
       "main": "index.html",
       "useGyroscope": false,
-      "stars": 42
+      "isLite": false,
+      "stars": 42,
+      "createdAt": "2026-07-25T17:52:01Z",
+      "updatedAt": "2026-07-26T23:45:00Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-dynamic.zip"
     },
     {
       "id": "m3-shapes-gyro",
       "name": "M3 Shapes Gyro Physics",
       "author": "Rooni",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "description": "Фигуры Material 3 имеют физику гравитации под управлением гироскопа телефона.",
       "path": "wallpapers/m3-shapes-gyro",
       "main": "index.html",
       "useGyroscope": true,
-      "stars": 28
+      "isLite": false,
+      "stars": 28,
+      "createdAt": "2026-07-25T17:52:01Z",
+      "updatedAt": "2026-07-26T23:45:00Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-gyro.zip"
     },
     {
       "id": "m3-shapes-touch",
       "name": "M3 Shapes Touch & Swipe",
       "author": "Rooni",
-      "version": "1.0.0",
-      "description": "Фигуры Material 3 реагируют на тачи пальцем и свайпы рабочих столов.",
+      "version": "1.0.1",
+      "description": "Фигуры Material 3 реагируют на тачи пальцем и свайпы рабочих столов. Требуется включённый проброс касаний в настройках приложения.",
       "path": "wallpapers/m3-shapes-touch",
       "main": "index.html",
       "useGyroscope": false,
-      "stars": 35
+      "isLite": true,
+      "stars": 35,
+      "createdAt": "2026-07-25T17:52:01Z",
+      "updatedAt": "2026-07-26T23:45:00Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-touch.zip"
     }
   ]
 }

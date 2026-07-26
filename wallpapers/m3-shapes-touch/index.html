@@ -24,7 +24,9 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
-        let renderScale = 0.8;
+        // Полное разрешение: качество рендеринга задаётся настройкой приложения,
+        // повторное уменьшение здесь только мылит края фигур.
+        const renderScale = 1.0;
         let xOffsetShift = 0; // Смещение от свайпа лаунчера
 
         function resizeCanvas() {

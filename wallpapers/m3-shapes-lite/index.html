@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Material 3 Shapes (Lite)</title>
+    <style>
+        :root {
+            --bg-color: #141218;
+        }
+
+        * { box-sizing: border-box; }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            transition: background-color 0.4s ease;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+
+        let width = window.innerWidth || 1080;
+        let height = window.innerHeight || 2400;
+        let dpr = window.devicePixelRatio || 1;
+
+        let shapeColor = '#2B2930';
+        let bgColor = '#141218';
+        let isUnlocked = true;
+        let isPaused = false;
+        let currentBorderAlpha = 0.0;
+        
+        let animProgress = 1.0; 
+        let animStartTime = 0;
+        let isNeedResetTime = true;
+        let lastFrameTimestamp = performance.now();
+        let currentDurationMs = 2500;
+        
+        let durationUnlock = 2500;
+        let durationScreenOn = 1200;
+        let durationScreenOff = 400;
+
+        let animFrameId = null;
+        let shapes = [];
+
+        function initShapes() {
+            const minDim = Math.min(width, height);
+            const baseSize = minDim * 0.22;
+
+            shapes = [
+                { x: width * 0.26, y: height * 0.18, size: baseSize * 1.1, angle: 0.2, speed: 2.2, type: 'rect' },
+                { x: width * 0.74, y: height * 0.24, size: baseSize * 1.2, angle: 0.8, speed: -1.8, type: 'circle' },
+                { x: width * 0.32, y: height * 0.46, size: baseSize * 1.0, angle: 1.4, speed: 2.0, type: 'pill' },
+                { x: width * 0.78, y: height * 0.54, size: baseSize * 1.15, angle: 0.5, speed: -2.3, type: 'rect' },
+                { x: width * 0.24, y: height * 0.78, size: baseSize * 1.1, angle: 2.1, speed: 1.6, type: 'circle' },
+                { x: width * 0.70, y: height * 0.84, size: baseSize * 1.25, angle: 1.1, speed: -1.9, type: 'pill' }
+            ];
+        }
+
+        function resize() {
+            dpr = window.devicePixelRatio || 1;
+            width = window.innerWidth || 1080;
+            height = window.innerHeight || 2400;
+
+            canvas.width = Math.round(width * dpr);
+            canvas.height = Math.round(height * dpr);
+
+            initShapes();
+            drawFrame();
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function drawRoundRect(ctx, x, y, w, h, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + w - radius, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+            ctx.lineTo(x + w, y + h - radius);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+            ctx.lineTo(x + radius, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        function triggerAnimation(durationMs = 2500) {
+            if (isPaused) return;
+            currentDurationMs = durationMs;
+            isNeedResetTime = true; // Фиксируем точку отсчета от момента 1-го тика кадров
+            if (!animFrameId) {
+                lastFrameTimestamp = performance.now();
+                loop();
+            }
+        }
+
+        function loop() {
+            if (isPaused) {
+                animFrameId = null;
+                return;
+            }
+
+            const now = performance.now();
+            if (isNeedResetTime) {
+                animStartTime = now;
+                lastFrameTimestamp = now;
+                isNeedResetTime = false;
+            }
+
+            const elapsed = Math.max(0, now - animStartTime);
+
+            // Ограничение дельта-времени первого кадра для полного устранения скачков
+            const dtSeconds = Math.min((now - lastFrameTimestamp) / 1000, 0.033);
+            lastFrameTimestamp = now;
+
+            const targetBorderAlpha = isUnlocked ? 0.0 : 0.95;
+            currentBorderAlpha += (targetBorderAlpha - currentBorderAlpha) * 0.15;
+
+            if (elapsed >= currentDurationMs && Math.abs(currentBorderAlpha - targetBorderAlpha) < 0.005) {
+                animProgress = 0.0;
+                currentBorderAlpha = targetBorderAlpha;
+                drawFrame();
+                animFrameId = null;
+                return;
+            }
+
+            const t = Math.min(1.0, elapsed / currentDurationMs);
+            // Плавное сглаживание безинерционного разгона
+            animProgress = Math.pow(1 - t, 2.5);
+
+            shapes.forEach(s => {
+                s.angle += (s.speed * 1.1) * dtSeconds * animProgress;
+            });
+
+            drawFrame();
+            animFrameId = requestAnimationFrame(loop);
+        }
+
+        function drawFrame() {
+            ctx.save();
+            ctx.scale(dpr, dpr);
+
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, width, height);
+
+            shapes.forEach((s) => {
+                ctx.save();
+                ctx.translate(s.x, s.y);
+                ctx.rotate(s.angle);
+
+                ctx.fillStyle = shapeColor;
+                ctx.globalAlpha = 0.95;
+
+                if (currentBorderAlpha > 0.01) {
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${currentBorderAlpha.toFixed(2)})`;
+                    ctx.lineWidth = 6;
+                } else {
+                    ctx.lineWidth = 0;
+                }
+
+                if (s.type === 'circle') {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, s.size / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    if (currentBorderAlpha > 0.01) ctx.stroke();
+                } else if (s.type === 'rect') {
+                    const r = 28;
+                    const w = s.size, h = s.size;
+                    drawRoundRect(ctx, -w/2, -h/2, w, h, r);
+                    ctx.fill();
+                    if (currentBorderAlpha > 0.01) ctx.stroke();
+                } else {
+                    const r = 36;
+                    const w = s.size * 1.25, h = s.size * 0.75;
+                    drawRoundRect(ctx, -w/2, -h/2, w, h, r);
+                    ctx.fill();
+                    if (currentBorderAlpha > 0.01) ctx.stroke();
+                }
+
+                ctx.restore();
+            });
+
+            ctx.restore();
+        }
+
+        function updateState(metadata) {
+            if (!metadata) return;
+
+            if (metadata.accentColors) {
+                shapeColor = metadata.accentColors.surfaceContainer || metadata.accentColors.surface || '#2B2930';
+                bgColor = metadata.accentColors.background || '#141218';
+                document.documentElement.style.setProperty('--bg-color', bgColor);
+            }
+
+            if (metadata.animationDurationUnlock) durationUnlock = metadata.animationDurationUnlock * 1000;
+            if (metadata.animationDurationScreenOn) durationScreenOn = metadata.animationDurationScreenOn * 1000;
+            if (metadata.animationDurationScreenOff) durationScreenOff = metadata.animationDurationScreenOff * 1000;
+
+            if (typeof metadata.isUnlocked === 'boolean') {
+                isUnlocked = metadata.isUnlocked;
+            }
+
+            triggerAnimation(isUnlocked ? durationUnlock : durationScreenOff);
+        }
+
+        window.addEventListener('wallpaperEngineReady', () => {
+            if (window.WallpaperEngine) updateState(window.WallpaperEngine.getMetadata());
+        });
+
+        window.addEventListener('wallpaperUpdate', (e) => updateState(e.detail));
+        
+        window.addEventListener('wallpaperUnlock', (e) => {
+            isUnlocked = true;
+            triggerAnimation(durationUnlock);
+        });
+
+        window.addEventListener('wallpaperScreenOn', (e) => {
+            triggerAnimation(durationScreenOn);
+        });
+
+        window.addEventListener('wallpaperScreenOff', (e) => {
+            isUnlocked = false;
+            currentBorderAlpha = 0.95;
+            triggerAnimation(durationScreenOff);
+        });
+
+        window.addEventListener('wallpaperPause', () => {
+            isPaused = true;
+            if (animFrameId) {
+                cancelAnimationFrame(animFrameId);
+                animFrameId = null;
+            }
+        });
+
+        window.addEventListener('wallpaperResume', () => {
+            isPaused = false;
+            triggerAnimation(durationScreenOn);
+        });
+
+        triggerAnimation(durationUnlock);
+    </script>
+</body>
+</html>

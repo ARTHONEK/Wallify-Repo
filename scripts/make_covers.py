@@ -59,9 +59,69 @@ BUNDLES = {
         ("circle", 250, 880, 74, 0, SURFACE_HIGH, 0),
         ("squircle", 520, 930, 96, -10, SURFACE, 0),
     ],
+    "m3-shapes-lite": [
+        # Lite замирает в статике: фигуры разложены ровно, без наклонов.
+        ("circle", 230, 320, 84, 0, SURFACE, 0),
+        ("squircle", 520, 430, 96, 0, SURFACE_HIGH, 0),
+        ("pill", 250, 700, 76, 0, SURFACE_HIGH, 0),
+        ("circle", 510, 880, 88, 0, SURFACE, 0),
+    ],
+    "m3-expressive-shapes": [
+        # Экспрессивный вариант: крупнее, с выраженными обводками.
+        ("squircle", 210, 300, 112, -10, SURFACE, 8),
+        ("circle", 540, 250, 84, 0, SURFACE_HIGH, 0),
+        ("rounded_diamond", 300, 620, 104, 30, SURFACE_HIGH, 8),
+        ("pill", 545, 700, 92, -20, SURFACE, 0),
+        ("circle", 240, 960, 96, 0, SURFACE, 8),
+        ("squircle", 540, 1040, 80, 18, SURFACE_HIGH, 0),
+    ],
+    # Фото-обои рисуются не фигурами, а градиентом по умолчанию — см. GRADIENT_BUNDLES.
+    "photo-blur-dynamics": [],
 }
 
 TOUCH_POINT = (380, 670)  # центр «касания» для m3-shapes-touch
+
+# Комплекты, у которых обложка — это их собственный фон по умолчанию, а не фигуры.
+# Значения взяты из CSS комплекта, чтобы обложка совпадала с тем, что видит
+# пользователь до выбора своего фото.
+GRADIENT_BUNDLES = {
+    "photo-blur-dynamics": {
+        "linear": ((79, 55, 139), (0, 0, 0)),      # 225deg #4f378b → #000
+        "radial": ((125, 82, 96), (30, 25, 43)),   # circle at 30% 20% #7d5260 → #1e192b
+        "radial_center": (0.30, 0.20),
+    },
+}
+
+
+def make_gradient_cover(spec):
+    """Диагональный градиент с радиальным пятном поверх — как в CSS комплекта."""
+    w, h = WIDTH, HEIGHT
+    base = Image.new("RGB", (w, h))
+    px = base.load()
+
+    (lr0, lg0, lb0), (lr1, lg1, lb1) = spec["linear"]
+    (rr0, rg0, rb0), (rr1, rg1, rb1) = spec["radial"]
+    cx, cy = spec["radial_center"]
+    cx, cy = cx * w, cy * h
+    max_r = math.hypot(max(cx, w - cx), max(cy, h - cy)) * 0.6
+
+    for y in range(h):
+        for x in range(w):
+            # 225deg в CSS идёт из правого верхнего угла в левый нижний.
+            t = ((w - x) / w + y / h) / 2
+            r = lr0 + (lr1 - lr0) * t
+            g = lg0 + (lg1 - lg0) * t
+            b = lb0 + (lb1 - lb0) * t
+
+            d = min(math.hypot(x - cx, y - cy) / max_r, 1.0)
+            k = 1.0 - d
+            r += (rr0 - r) * k * 0.85 + (rr1 - r) * (1 - k) * 0.15
+            g += (rg0 - g) * k * 0.85 + (rg1 - g) * (1 - k) * 0.15
+            b += (rb0 - b) * k * 0.85 + (rb1 - b) * (1 - k) * 0.15
+
+            px[x, y] = (int(r), int(g), int(b))
+
+    return base.filter(ImageFilter.GaussianBlur(2))
 
 
 def rounded_rect(draw, box, radius, fill, outline, width):
@@ -139,7 +199,11 @@ def main():
             print(f"пропуск: нет папки {bundle_dir}")
             continue
         target = os.path.join(bundle_dir, "cover.png")
-        make_cover(bundle_id, shapes).save(target, "PNG", optimize=True)
+        if bundle_id in GRADIENT_BUNDLES:
+            cover = make_gradient_cover(GRADIENT_BUNDLES[bundle_id])
+        else:
+            cover = make_cover(bundle_id, shapes)
+        cover.save(target, "PNG", optimize=True)
         written.append((os.path.relpath(target, ROOT), os.path.getsize(target)))
 
     for path, size in written:

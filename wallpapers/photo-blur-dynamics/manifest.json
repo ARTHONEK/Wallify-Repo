@@ -1,0 +1,12 @@
+{
+  "name": "Photo Blur Dynamics",
+  "description": "Ваши фотографии как обои: отдельная для рабочего стола, отдельная для экрана блокировки, с кинематографичным переходом из размытия в фокус.",
+  "author": "Rooni",
+  "version": "1.0.0",
+  "minAppVersion": ">=1.0.0",
+  "cover": "cover.png",
+  "main": "index.html",
+  "settingsPath": "settings/index.html",
+  "useGyroscope": false,
+  "isLite": false
+}

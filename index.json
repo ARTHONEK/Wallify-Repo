@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-26T23:45:00Z",
+  "updatedAt": "2026-07-26T20:30:00Z",
   "wallpapers": [
     {
       "id": "m3-shapes-dynamic",
@@ -12,7 +12,7 @@
       "main": "index.html",
       "useGyroscope": false,
       "isLite": false,
-      "stars": 42,
+      "cover": "cover.png",
       "createdAt": "2026-07-25T17:52:01Z",
       "updatedAt": "2026-07-26T23:45:00Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-dynamic.zip"
@@ -27,7 +27,7 @@
       "main": "index.html",
       "useGyroscope": true,
       "isLite": false,
-      "stars": 28,
+      "cover": "cover.png",
       "createdAt": "2026-07-25T17:52:01Z",
       "updatedAt": "2026-07-26T23:45:00Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-gyro.zip"
@@ -42,10 +42,55 @@
       "main": "index.html",
       "useGyroscope": false,
       "isLite": true,
-      "stars": 35,
+      "cover": "cover.png",
       "createdAt": "2026-07-25T17:52:01Z",
       "updatedAt": "2026-07-26T23:45:00Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-touch.zip"
+    },
+    {
+      "id": "m3-shapes-lite",
+      "name": "Material 3 Shapes (Lite)",
+      "author": "Rooni",
+      "version": "1.0.0",
+      "description": "Энергоэффективные живые обои Material You. Анимация запускается на 2.5 сек при включении и разблокировке, затем замирает в идеальную статику.",
+      "path": "wallpapers/m3-shapes-lite",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": true,
+      "cover": "cover.png",
+      "createdAt": "2026-07-26T20:30:00Z",
+      "updatedAt": "2026-07-26T20:30:00Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-lite.zip"
+    },
+    {
+      "id": "m3-expressive-shapes",
+      "name": "Material 3 Expressive Shapes",
+      "author": "Pavlk",
+      "version": "1.2.1",
+      "description": "Крупные выразительные фигуры Material 3 с мягким дрейфом и эффектом фокусировки на экране блокировки. Цвета берутся из системной палитры Material You.",
+      "path": "wallpapers/m3-expressive-shapes",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.png",
+      "createdAt": "2026-07-26T20:30:00Z",
+      "updatedAt": "2026-07-26T20:30:00Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-expressive-shapes.zip"
+    },
+    {
+      "id": "photo-blur-dynamics",
+      "name": "Photo Blur Dynamics",
+      "author": "Rooni",
+      "version": "1.0.0",
+      "description": "Ваши фотографии как обои: отдельная для рабочего стола, отдельная для экрана блокировки, с кинематографичным переходом из размытия в фокус.",
+      "path": "wallpapers/photo-blur-dynamics",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.png",
+      "createdAt": "2026-07-26T20:30:00Z",
+      "updatedAt": "2026-07-26T20:30:00Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/photo-blur-dynamics.zip"
     }
   ]
 }

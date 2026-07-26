@@ -54,7 +54,7 @@ Wallify-Repo/
       "main": "index.html",
       "useGyroscope": false,
       "isLite": true,
-      "stars": 0,
+      "cover": "cover.png",
       "createdAt": "2026-07-26T00:00:00Z",
       "updatedAt": "2026-07-26T00:00:00Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/my-cool-wallpaper.zip"
@@ -74,9 +74,12 @@ Wallify-Repo/
 | `main` | нет | Точка входа, по умолчанию `index.html` |
 | `useGyroscope` | нет | Должно совпадать с манифестом, иначе сенсор не зарегистрируется |
 | `isLite` | нет | Пометка «энергоэффективные», влияет на фильтр в каталоге |
-| `stars` | нет | Сортировка по популярности. В новых записях ставьте `0` |
+| `cover` | нет | Имя файла обложки внутри папки комплекта, по умолчанию `cover.png` |
 | `createdAt` / `updatedAt` | нет | ISO 8601. Без них сортировка «Сначала новые» превращается в порядок строк файла |
 | `downloadUrl` | нет, но нужен | Прямая ссылка на ZIP-архив комплекта |
+
+Поля `stars` больше нет: приложение показывает настоящие счётчики скачиваний из GitHub
+Releases, сопоставляя их с именем файла из `downloadUrl`. В старых записях оно игнорируется.
 
 ### Про `downloadUrl`
 

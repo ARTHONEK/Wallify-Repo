@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Blur Dynamics</title>
+    <style>
+        :root {
+            --blur-amount: 16px;
+            --anim-duration: 0.6s;
+            --accent-color: #6750A4;
+            --bg-color: #141218;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: system-ui, -apple-system, sans-serif;
+            /* Слои увеличиваются до scale(1.12) и вылезают за экран. Без жёсткой
+               привязки к вьюпорту документ от этого становился прокручиваемым:
+               фото уезжало за кадр и появлялся скролл. */
+            position: fixed;
+            inset: 0;
+            overscroll-behavior: none;
+            touch-action: none;
+        }
+
+        /* Отдельный контейнер с обрезкой: масштабированные слои клипятся здесь,
+           а не полагаются на overflow корня документа. */
+        #stage {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            contain: strict;
+        }
+
+        .layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: opacity var(--anim-duration) cubic-bezier(0.4, 0.0, 0.2, 1),
+                        filter var(--anim-duration) cubic-bezier(0.4, 0.0, 0.2, 1),
+                        transform var(--anim-duration) cubic-bezier(0.4, 0.0, 0.2, 1);
+            will-change: opacity, filter, transform;
+        }
+
+        .default-home-bg {
+            background: radial-gradient(circle at 30% 20%, #7d5260 0%, #1e192b 60%),
+                        linear-gradient(135deg, #6750a4 0%, #21005d 100%);
+        }
+
+        .default-lock-bg {
+            background: radial-gradient(circle at 70% 80%, #984061 0%, #1c1b1f 60%),
+                        linear-gradient(225deg, #4f378b 0%, #000000 100%);
+        }
+
+        .state-locked #lockLayer {
+            opacity: 1;
+            filter: blur(var(--blur-amount));
+            transform: scale(1.06);
+            z-index: 2;
+        }
+
+        .state-locked #homeLayer {
+            opacity: 0;
+            filter: blur(calc(var(--blur-amount) * 1.5));
+            transform: scale(1.1);
+            z-index: 1;
+        }
+
+        .state-unlocked #lockLayer {
+            opacity: 0;
+            filter: blur(calc(var(--blur-amount) * 2));
+            transform: scale(1.12);
+            z-index: 1;
+        }
+
+        .state-unlocked #homeLayer {
+            opacity: 1;
+            filter: blur(0px);
+            transform: scale(1.0);
+            z-index: 2;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.35) 100%);
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="state-unlocked">
+
+    <div id="stage">
+        <div id="homeLayer" class="layer default-home-bg"></div>
+        <div id="lockLayer" class="layer default-lock-bg"></div>
+        <div class="overlay"></div>
+    </div>
+
+    <script>
+        const homeLayer = document.getElementById('homeLayer');
+        const lockLayer = document.getElementById('lockLayer');
+
+        function formatImgUrl(urlStr) {
+            if (!urlStr) return '';
+            if (urlStr.startsWith('http://') || urlStr.startsWith('https://') || urlStr.startsWith('blob:') || urlStr.startsWith('data:')) {
+                return urlStr;
+            }
+            return 'http://127.0.0.1:8088/' + urlStr.replace(/^\/+/, '');
+        }
+
+        function updateWallpaperState(metadata) {
+            if (!metadata) return;
+
+            if (metadata.accentColors) {
+                document.documentElement.style.setProperty('--accent-color', metadata.accentColors.primary);
+                document.documentElement.style.setProperty('--bg-color', metadata.accentColors.background);
+            }
+
+            if (window.WallpaperEngine && window.WallpaperEngine.getSetting) {
+                const homeImg = window.WallpaperEngine.getSetting('homePhoto', '');
+                const lockImg = window.WallpaperEngine.getSetting('lockPhoto', '');
+                const blurVal = window.WallpaperEngine.getSetting('blurAmount', '16');
+                const animSpeed = window.WallpaperEngine.getSetting('animSpeed', '0.6');
+
+                document.documentElement.style.setProperty('--blur-amount', blurVal + 'px');
+                document.documentElement.style.setProperty('--anim-duration', animSpeed + 's');
+
+                const formattedHome = formatImgUrl(homeImg);
+                const formattedLock = formatImgUrl(lockImg);
+
+                if (formattedHome) {
+                    homeLayer.style.backgroundImage = `url('${formattedHome}')`;
+                    homeLayer.classList.remove('default-home-bg');
+                } else {
+                    homeLayer.style.backgroundImage = '';
+                    homeLayer.classList.add('default-home-bg');
+                }
+
+                if (formattedLock) {
+                    lockLayer.style.backgroundImage = `url('${formattedLock}')`;
+                    lockLayer.classList.remove('default-lock-bg');
+                } else {
+                    lockLayer.style.backgroundImage = '';
+                    lockLayer.classList.add('default-lock-bg');
+                }
+            }
+
+            if (metadata.isUnlocked === false) {
+                document.body.classList.remove('state-unlocked');
+                document.body.classList.add('state-locked');
+            } else {
+                document.body.classList.remove('state-locked');
+                document.body.classList.add('state-unlocked');
+            }
+        }
+
+        window.addEventListener('wallpaperUpdate', (e) => updateWallpaperState(e.detail));
+        window.addEventListener('wallpaperUnlock', (e) => updateWallpaperState(e.detail));
+        window.addEventListener('wallpaperScreenOff', (e) => {
+            document.body.classList.remove('state-unlocked');
+            document.body.classList.add('state-locked');
+        });
+        window.addEventListener('wallpaperScreenOn', (e) => {
+            if (window.WallpaperEngine && window.WallpaperEngine.getMetadata) {
+                updateWallpaperState(window.WallpaperEngine.getMetadata());
+            }
+        });
+
+        window.addEventListener('wallpaperEngineReady', () => {
+            if (window.WallpaperEngine && window.WallpaperEngine.getMetadata) {
+                updateWallpaperState(window.WallpaperEngine.getMetadata());
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.WallpaperEngine && window.WallpaperEngine.getMetadata) {
+                updateWallpaperState(window.WallpaperEngine.getMetadata());
+            }
+        });
+    </script>
+</body>
+</html>

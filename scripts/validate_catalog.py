@@ -98,8 +98,10 @@ def check_entry(entry, position, seen_ids):
         error(where, "isLite: должно быть true или false")
     if "useGyroscope" in entry and not isinstance(entry["useGyroscope"], bool):
         error(where, "useGyroscope: должно быть true или false")
-    if "stars" in entry and not isinstance(entry["stars"], int):
-        error(where, "stars: должно быть целым числом")
+    if "stars" in entry:
+        warn(where, "stars: поле устарело, популярность берётся из счётчиков GitHub Releases")
+    if "cover" in entry and not isinstance(entry["cover"], str):
+        error(where, "cover: должно быть строкой — имя файла обложки внутри папки комплекта")
 
     path = entry.get("path", "")
     if not path.startswith("wallpapers/"):

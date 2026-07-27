@@ -1,7 +1,7 @@
 ## 🎨 Заявка на добавление обоев в каталог
 
 ### 📋 Информация об обоях:
-- **Название (`name`, одинаковое в `manifest.json` и `index.json`):**
+- **Название (`name` из `manifest.json`):**
 - **Идентификатор (`id` / имя папки):**
 - **Автор (Никнейм / Telegram):**
 - **Версия:**
@@ -12,11 +12,9 @@
 ### ✅ Чек-лист перед отправкой PR:
 
 **Каталог**
-- [ ] Комплект лежит в `wallpapers/<id>/`, запись добавлена в `index.json`.
-- [ ] `name`, `author`, `version` и `useGyroscope` совпадают в `manifest.json` и `index.json`.
-- [ ] Указан `downloadUrl` вида `https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/<id>.zip`.
-- [ ] Заполнены `createdAt`, `updatedAt` и `isLite`, обновлён `updatedAt` в корне `index.json`.
-- [ ] Локально прошла проверка `python3 scripts/validate_catalog.py`.
+- [ ] Комплект целиком лежит в новой папке `wallpapers/<id>/`.
+- [ ] `index.json` не редактировался — GitHub обновит его после merge.
+- [ ] Локально прошли `python3 scripts/generate_index.py` и `python3 scripts/validate_catalog.py`.
 
 **Комплект**
 - [ ] Есть `manifest.json` с `minAppVersion`.

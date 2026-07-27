@@ -1,7 +1,37 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-26T20:30:00Z",
+  "updatedAt": "2026-07-27T14:53:58Z",
   "wallpapers": [
+    {
+      "id": "fluids",
+      "name": "Fluids",
+      "author": "rorolb",
+      "version": "1.0.0",
+      "description": "Порт обоев Fluids из Lively Wallpaper",
+      "path": "wallpapers/fluids",
+      "main": "index.html",
+      "useGyroscope": true,
+      "isLite": false,
+      "cover": "cover.jpg",
+      "createdAt": "2026-07-27T17:30:00Z",
+      "updatedAt": "2026-07-27T14:53:58Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/fluids.zip"
+    },
+    {
+      "id": "m3-expressive-shapes",
+      "name": "Material 3 Expressive Shapes",
+      "author": "Pavlk",
+      "version": "1.2.1",
+      "description": "Крупные выразительные фигуры Material 3 с мягким дрейфом и эффектом фокусировки на экране блокировки. Цвета берутся из системной палитры Material You.",
+      "path": "wallpapers/m3-expressive-shapes",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.png",
+      "createdAt": "2026-07-26T20:30:00Z",
+      "updatedAt": "2026-07-26T20:30:00Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-expressive-shapes.zip"
+    },
     {
       "id": "m3-shapes-dynamic",
       "name": "Material 3 Shapes",
@@ -33,21 +63,6 @@
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-gyro.zip"
     },
     {
-      "id": "m3-shapes-touch",
-      "name": "M3 Shapes Touch & Swipe",
-      "author": "Rooni",
-      "version": "1.0.1",
-      "description": "Фигуры Material 3 реагируют на тачи пальцем и свайпы рабочих столов. Требуется включённый проброс касаний в настройках приложения.",
-      "path": "wallpapers/m3-shapes-touch",
-      "main": "index.html",
-      "useGyroscope": false,
-      "isLite": true,
-      "cover": "cover.png",
-      "createdAt": "2026-07-25T17:52:01Z",
-      "updatedAt": "2026-07-26T23:45:00Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-touch.zip"
-    },
-    {
       "id": "m3-shapes-lite",
       "name": "Material 3 Shapes (Lite)",
       "author": "Rooni",
@@ -63,19 +78,19 @@
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-lite.zip"
     },
     {
-      "id": "m3-expressive-shapes",
-      "name": "Material 3 Expressive Shapes",
-      "author": "Pavlk",
-      "version": "1.2.1",
-      "description": "Крупные выразительные фигуры Material 3 с мягким дрейфом и эффектом фокусировки на экране блокировки. Цвета берутся из системной палитры Material You.",
-      "path": "wallpapers/m3-expressive-shapes",
+      "id": "m3-shapes-touch",
+      "name": "M3 Shapes Touch & Swipe",
+      "author": "Rooni",
+      "version": "1.0.1",
+      "description": "Фигуры Material 3 реагируют на тачи пальцем и свайпы рабочих столов. Требуется включённый проброс касаний в настройках приложения.",
+      "path": "wallpapers/m3-shapes-touch",
       "main": "index.html",
       "useGyroscope": false,
-      "isLite": false,
+      "isLite": true,
       "cover": "cover.png",
-      "createdAt": "2026-07-26T20:30:00Z",
-      "updatedAt": "2026-07-26T20:30:00Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-expressive-shapes.zip"
+      "createdAt": "2026-07-25T17:52:01Z",
+      "updatedAt": "2026-07-26T23:45:00Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-touch.zip"
     },
     {
       "id": "photo-blur-dynamics",
@@ -91,21 +106,6 @@
       "createdAt": "2026-07-26T20:30:00Z",
       "updatedAt": "2026-07-26T20:30:00Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/photo-blur-dynamics.zip"
-    },
-    {
-      "id": "fluids",
-      "name": "Fluids",
-      "author": "rorolb",
-      "version": "1.0.0",
-      "description": "Порт обоев Fluids из Lively Wallpaper.",
-      "path": "wallpapers/fluids",
-      "main": "index.html",
-      "useGyroscope": true,
-      "isLite": false,
-      "cover": "cover.jpg",
-      "createdAt": "2026-07-27T17:30:00Z",
-      "updatedAt": "2026-07-26T17:30:00Z",
-      "downloadUrl": "https://github.com/foxdear24654-alt/wallify-wallpapers/raw/refs/heads/main/fluids.zip"
     }
   ]
 }

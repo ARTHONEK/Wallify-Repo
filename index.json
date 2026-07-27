@@ -91,6 +91,21 @@
       "createdAt": "2026-07-26T20:30:00Z",
       "updatedAt": "2026-07-26T20:30:00Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/photo-blur-dynamics.zip"
+    },
+    {
+      "id": "fluids",
+      "name": "Fluids",
+      "author": "rorolb",
+      "version": "1.0.0",
+      "description": "Порт обоев Fluids из Lively Wallpaper.",
+      "path": "wallpapers/fluids",
+      "main": "index.html",
+      "useGyroscope": true,
+      "isLite": false,
+      "cover": "cover.jpg",
+      "createdAt": "2026-07-27T17:30:00Z",
+      "updatedAt": "2026-07-26T17:30:00Z",
+      "downloadUrl": "https://github.com/foxdear24654-alt/wallify-wallpapers/raw/refs/heads/main/fluids.zip"
     }
   ]
 }

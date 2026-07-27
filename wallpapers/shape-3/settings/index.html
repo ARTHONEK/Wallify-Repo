@@ -8,7 +8,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
 
         body {
-            font-family: 'Google Sans', 'Product Sans', 'Roboto', system-ui, sans-serif;
+            font-family: 'Google Sans', 'Product Sans', 'Roboto', system-ui, -apple-system, sans-serif;
             background-color: #141218;
             color: #E6E1E5;
             margin: 0;
@@ -149,7 +149,15 @@
     <div class="setting-card switch-container setting-row">
         <span class="label" id="collisionLabel">Shapes collision</span>
         <label class="switch">
-            <input id="collision" type="checkbox" checked>
+            <input id="collision" type="checkbox">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="setting-card switch-container setting-row">
+        <span class="label" id="amoledLabel">AMOLED mode</span>
+        <label class="switch">
+            <input id="amoled" type="checkbox">
             <span class="slider"></span>
         </label>
     </div>
@@ -160,13 +168,15 @@
                 docTitle: "Wallpaper Settings",
                 titleText: "Settings",
                 sizeLabel: "Shapes size",
-                collisionLabel: "Shapes collision"
+                collisionLabel: "Shapes collision",
+                amoledLabel: "AMOLED mode (pure black)"
             },
             ru: {
                 docTitle: "Настройки обоев",
                 titleText: "Настройки",
                 sizeLabel: "Размер фигур",
-                collisionLabel: "Столкновения фигур"
+                collisionLabel: "Столкновения фигур",
+                amoledLabel: "Режим AMOLED (глубокий чёрный)"
             }
         };
 
@@ -179,33 +189,52 @@
         document.getElementById('titleText').textContent = t.titleText;
         document.getElementById('sizeLabel').textContent = t.sizeLabel;
         document.getElementById('collisionLabel').textContent = t.collisionLabel;
+        document.getElementById('amoledLabel').textContent = t.amoledLabel;
 
         document.addEventListener('DOMContentLoaded', () => {
             const sizeInput = document.getElementById('size');
             const sizeValue = document.getElementById('sizeValue');
             const collisionInput = document.getElementById('collision');
+            const amoledInput = document.getElementById('amoled');
+
+            const getVal = (key, def) => {
+                if (window.WallpaperEngine && window.WallpaperEngine.getSetting) {
+                    const val = window.WallpaperEngine.getSetting(key, def);
+                    if (val !== undefined && val !== null) return val;
+                }
+                const ls = localStorage.getItem(key);
+                return ls !== null ? ls : def;
+            };
+
+            const setVal = (key, val) => {
+                const strVal = String(val);
+                if (window.WallpaperEngine && window.WallpaperEngine.saveSetting) {
+                    window.WallpaperEngine.saveSetting(key, strVal);
+                }
+                localStorage.setItem(key, strVal);
+            };
 
             const updateUI = () => {
                 sizeValue.textContent = parseFloat(sizeInput.value).toFixed(1) + 'x';
             };
 
-            if (window.WallpaperEngine) {
-                sizeInput.value = window.WallpaperEngine.getSetting('shapeSize', '1.0');
-                collisionInput.checked = window.WallpaperEngine.getSetting('enableCollision', 'true') === 'true';
-            }
+            sizeInput.value = getVal('shapeSize', '1.0');
+            collisionInput.checked = getVal('enableCollision', 'true') === 'true';
+            amoledInput.checked = getVal('amoledMode', 'false') === 'true';
+            
             updateUI();
 
             sizeInput.addEventListener('input', () => {
                 updateUI();
-                if (window.WallpaperEngine) {
-                    window.WallpaperEngine.saveSetting('shapeSize', sizeInput.value);
-                }
+                setVal('shapeSize', sizeInput.value);
             });
 
             collisionInput.addEventListener('change', () => {
-                if (window.WallpaperEngine) {
-                    window.WallpaperEngine.saveSetting('enableCollision', collisionInput.checked);
-                }
+                setVal('enableCollision', collisionInput.checked ? 'true' : 'false');
+            });
+
+            amoledInput.addEventListener('change', () => {
+                setVal('amoledMode', amoledInput.checked ? 'true' : 'false');
             });
         });
     </script>

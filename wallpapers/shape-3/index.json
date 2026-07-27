@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-27T23:45:00Z",
+  "updatedAt": "2026-07-28T23:45:00Z",
   "wallpapers": [
     {
       "id": "shape-3",
@@ -14,7 +14,7 @@
       "isLite": false,
       "cover": "cover.png",
       "createdAt": "2026-07-26T00:00:00Z",
-      "updatedAt": "2026-07-27T00:00:00Z",
+      "updatedAt": "2026-07-28T00:00:00Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/shape-3.zip"
     }
   ]

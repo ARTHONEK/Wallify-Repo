@@ -69,20 +69,24 @@ jobs:
           fi
           for id in "${ids[@]}"; do
             dir="wallpapers/$id"
-            [[ -d "$dir" ]] || continue
+            if [[ ! -d "$dir" ]]; then
+              echo "$id.zip" >> dist/deleted-assets.txt
+              echo "будет удалён $id.zip"
+              continue
+            fi
             # Файлы кладём в корень архива — так их ждёт установщик.
             (cd "$dir" && zip -r -q "$GITHUB_WORKSPACE/dist/$id.zip" . -x '.*')
             echo "собран dist/$id.zip"
           done
           ls -lh dist
-          if compgen -G "dist/*.zip" >/dev/null; then
-            echo "found=true" >> "$GITHUB_OUTPUT"
+          if compgen -G "dist/*.zip" >/dev/null || [[ -s dist/deleted-assets.txt ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Publish rolling release
-        if: steps.bundles.outputs.found == 'true'
+        if: steps.bundles.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -92,4 +96,11 @@ jobs:
               --title "Wallpaper bundles" \
               --notes "Архивы комплектов, пересобираются автоматически при каждом изменении в wallpapers/. Ссылки в этом релизе постоянны и используются как downloadUrl в index.json."
           fi
-          gh release upload bundles dist/*.zip --clobber
+          if [[ -s dist/deleted-assets.txt ]]; then
+            while IFS= read -r asset; do
+              gh release delete-asset bundles "$asset" --yes || echo "$asset уже отсутствует"
+            done < dist/deleted-assets.txt
+          fi
+          if compgen -G "dist/*.zip" >/dev/null; then
+            gh release upload bundles dist/*.zip --clobber
+          fi

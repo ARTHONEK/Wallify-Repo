@@ -13,7 +13,8 @@ on:
     branches: [ main ]
     paths:
       - 'wallpapers/**'
-      - 'index.json'
+      - 'scripts/generate_index.py'
+      - 'scripts/validate_catalog.py'
       - '.github/workflows/package-bundles.yml'
   workflow_dispatch:
 
@@ -26,28 +27,62 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
+      - name: Generate catalog index
+        run: python3 scripts/generate_index.py
+
       - name: Validate before packaging
         run: python3 scripts/validate_catalog.py
 
-      - name: Build ZIP for each bundle
+      - name: Commit generated index
+        run: |
+          if git diff --quiet -- index.json; then
+            echo "index.json уже актуален"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.json
+          git commit -m "chore: обновить каталог обоев"
+          git push
+
+      - name: Build changed bundles
+        id: bundles
         run: |
           set -euo pipefail
           mkdir -p dist
-          for dir in wallpapers/*/; do
-            id="$(basename "$dir")"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            mapfile -t ids < <(find wallpapers -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort)
+          else
+            mapfile -t ids < <(
+              git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" -- wallpapers/ |
+              awk -F/ 'NF >= 2 {print $2}' |
+              sort -u
+            )
+          fi
+          for id in "${ids[@]}"; do
+            dir="wallpapers/$id"
+            [[ -d "$dir" ]] || continue
             # Файлы кладём в корень архива — так их ждёт установщик.
             (cd "$dir" && zip -r -q "$GITHUB_WORKSPACE/dist/$id.zip" . -x '.*')
             echo "собран dist/$id.zip"
           done
           ls -lh dist
+          if compgen -G "dist/*.zip" >/dev/null; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Publish rolling release
+        if: steps.bundles.outputs.found == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

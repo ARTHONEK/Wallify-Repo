@@ -1,0 +1,10 @@
+{
+  "name": "Fluids",
+  "description": "Порт обоев Fluids из Lively Wallpaper",
+  "author": "rorolb",
+  "version": "1.2.0",
+  "main": "index.html",
+  "settingsPath": "settings/index.html",
+  "useGyroscope": false,
+  "isLite": false
+}

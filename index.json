@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-27T14:53:58Z",
+  "updatedAt": "2026-07-27T15:06:03Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -106,6 +106,21 @@
       "createdAt": "2026-07-26T20:30:00Z",
       "updatedAt": "2026-07-26T20:30:00Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/photo-blur-dynamics.zip"
+    },
+    {
+      "id": "shape-3",
+      "name": "Shape 3",
+      "author": "wlpne",
+      "version": "2.0.0",
+      "description": "Плавающие фигуры Material 3 с физикой столкновений, изменением размеров и bulge эффект при тапе / зажатии.",
+      "path": "wallpapers/shape-3",
+      "main": "index.html",
+      "useGyroscope": true,
+      "isLite": false,
+      "cover": "cover.png",
+      "createdAt": "2026-07-27T15:06:03Z",
+      "updatedAt": "2026-07-27T15:06:03Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/shape-3.zip"
     }
   ]
 }

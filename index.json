@@ -91,36 +91,6 @@
       "createdAt": "2026-07-26T20:30:00Z",
       "updatedAt": "2026-07-26T20:30:00Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/photo-blur-dynamics.zip"
-    },
-    {
-      "id": "fluids",
-      "name": "Fluids",
-      "author": "rorolb",
-      "version": "1.0.0",
-      "description": "Порт обоев Fluids из Lively Wallpaper.",
-      "path": "wallpapers/fluids",
-      "main": "index.html",
-      "useGyroscope": true,
-      "isLite": false,
-      "cover": "cover.jpg",
-      "createdAt": "2026-07-27T17:30:00Z",
-      "updatedAt": "2026-07-26T17:30:00Z",
-      "downloadUrl": "https://github.com/foxdear24654-alt/wallify-wallpapers/raw/refs/heads/main/fluids.zip"
-    },
-    {
-      "id": "shape-3",
-      "name": "Shape 3",
-      "author": "wlpne",
-      "version": "2.0.0",
-      "description": "Плавающие фигуры Material 3 с физикой столкновений, изменением размеров и bulge эффект при тапе / зажатии.",
-      "path": "wallpapers/shape-3",
-      "main": "index.html",
-      "useGyroscope": true,
-      "isLite": false,
-      "cover": "cover.png",
-      "createdAt": "2026-07-26T00:00:00Z",
-      "updatedAt": "2026-07-27T00:00:00Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/shape-3.zip"
     }
   ]
 }

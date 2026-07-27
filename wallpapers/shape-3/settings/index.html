@@ -62,18 +62,15 @@
             const sizeValue = document.getElementById('sizeValue');
             const collisionInput = document.getElementById('collision');
 
-            // Загружаем сохраненные настройки (значения всегда строки)
             sizeInput.value = engine.getSetting('shapeSize', '1.0');
             sizeValue.textContent = parseFloat(sizeInput.value).toFixed(1);
             collisionInput.checked = engine.getSetting('enableCollision', 'true') === 'true';
 
-            // Сохраняем размер при движении ползунка
             sizeInput.addEventListener('input', () => {
                 sizeValue.textContent = parseFloat(sizeInput.value).toFixed(1);
                 engine.saveSetting('shapeSize', sizeInput.value);
             });
 
-            // Сохраняем коллизию при переключении
             collisionInput.addEventListener('change', () => {
                 engine.saveSetting('enableCollision', collisionInput.checked);
             });

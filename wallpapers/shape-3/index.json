@@ -6,7 +6,7 @@
       "id": "shape-3",
       "name": "Shape 3",
       "author": "wlpne",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "description": "Плавающие фигуры Material 3 с физикой столкновений, изменением размеров и bulge эффект при тапе / зажатии.",
       "path": "wallpapers/shape-3",
       "main": "index.html",

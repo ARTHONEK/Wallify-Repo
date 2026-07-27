@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Material 3 Shapes Wallpaper</title>
+    <style>
+        * { box-sizing: border-box; user-select: none; }
+        html, body {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            position: fixed; inset: 0; overflow: hidden;
+            background-color: #141218;
+        }
+        canvas { display: block; width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+
+        let width = 360;
+        let height = 640;
+        let dpr = 1;
+
+        let monetColors = {
+            background: '#141218', primary: '#D0BCFF', secondary: '#CCC2DC',
+            tertiary: '#EFB8C8', surfaceContainer: '#211F26', surface: '#1D192B'
+        };
+
+        let sizeMultiplier = 1.0;
+        let collisionsEnabled = true;
+
+        let isPaused = false;
+        let xOffset = 0.5;
+        let shapes = [];
+        const SHAPE_COUNT = 14;
+
+        let activePointer = null; // Трекинг зажатого пальца
+        let lastGyro = { x: null, y: null };
+        let lastTime = 0;
+
+        const FRICTION = 0.98;
+        const BOUNCE_DAMPING = 0.9;
+
+        function drawRoundRect(c, x, y, w, h, r) {
+            if (w < 2 * r) r = w / 2;
+            if (h < 2 * r) r = h / 2;
+            c.beginPath();
+            c.moveTo(x + r, y);
+            c.arcTo(x + w, y, x + w, y + h, r);
+            c.arcTo(x + w, y + h, x, y + h, r);
+            c.arcTo(x, y + h, x, y, r);
+            c.arcTo(x, y, x + w, y, r);
+            c.closePath();
+        }
+
+        class Shape {
+            constructor() {
+                this.baseSize = Math.min(width, height) * (0.08 + Math.random() * 0.1);
+                this.updateScale();
+                
+                this.x = Math.random() * (width - this.size) + this.size / 2;
+                this.y = Math.random() * (height - this.size) + this.size / 2;
+                
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.vRot = (Math.random() - 0.5) * 0.02;
+                
+                // Переменные плавного раздувания без пружины
+                this.bulge = 0;        // Текущий размер вздутия
+                this.targetBulge = 0;  // Целевой размер вздутия
+                
+                const types = ['circle', 'pill', 'roundedRect', 'm3Star'];
+                this.type = types[Math.floor(Math.random() * types.length)];
+                
+                const colorKeys = ['primary', 'secondary', 'tertiary', 'surfaceContainer'];
+                this.colorKey = colorKeys[Math.floor(Math.random() * colorKeys.length)];
+            }
+
+            updateScale() {
+                this.size = this.baseSize * sizeMultiplier;
+            }
+
+            getEffectiveSize() {
+                return this.size * Math.max(0.1, 1 + this.bulge);
+            }
+
+            update() {
+                // Плавное приближение к целевому размеру без пружинящих колебаний (LERP)
+                this.bulge += (this.targetBulge - this.bulge) * 0.12;
+
+                // Движение и трение
+                this.vx *= FRICTION;
+                this.vy *= FRICTION;
+                this.vRot *= FRICTION;
+
+                const speed = Math.hypot(this.vx, this.vy);
+                if (speed < 0.5) {
+                    this.vx += (Math.random() - 0.5) * 0.15;
+                    this.vy += (Math.random() - 0.5) * 0.15;
+                }
+                
+                if (Math.abs(this.vRot) < 0.002) {
+                    this.vRot += (Math.random() - 0.5) * 0.002;
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+                this.rotation += this.vRot;
+
+                const r = this.getEffectiveSize() / 2;
+
+                if (this.y + r > height) {
+                    this.y = height - r;
+                    this.vy = -this.vy * BOUNCE_DAMPING;
+                } else if (this.y - r < 0) {
+                    this.y = r;
+                    this.vy = -this.vy * BOUNCE_DAMPING;
+                }
+
+                if (this.x - r < 0) {
+                    this.x = r;
+                    this.vx = -this.vx * BOUNCE_DAMPING;
+                } else if (this.x + r > width) {
+                    this.x = width - r;
+                    this.vx = -this.vx * BOUNCE_DAMPING;
+                }
+            }
+
+            draw(c) {
+                c.save();
+                const parallaxX = this.x + (xOffset - 0.5) * 60;
+                
+                c.translate(parallaxX, this.y);
+                c.rotate(this.rotation);
+
+                const currentScale = Math.max(0.1, 1 + this.bulge);
+                c.scale(currentScale, currentScale);
+                
+                c.fillStyle = monetColors[this.colorKey] || monetColors.primary;
+                c.strokeStyle = monetColors.surface || '#1D192B';
+                c.lineWidth = Math.max(3, this.size * 0.06);
+
+                const r = this.size / 2;
+
+                switch (this.type) {
+                    case 'circle':
+                        c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); c.fill(); c.stroke(); break;
+                    case 'pill':
+                        drawRoundRect(c, -r * 1.3, -r * 0.65, r * 2.6, r * 1.3, r * 0.65); c.fill(); c.stroke(); break;
+                    case 'roundedRect':
+                        drawRoundRect(c, -r, -r, r * 2, r * 2, r * 0.4); c.fill(); c.stroke(); break;
+                    case 'm3Star':
+                        c.beginPath();
+                        for (let i = 0; i < 4; i++) {
+                            const angle = (i * Math.PI) / 2;
+                            const nextAngle = ((i + 1) * Math.PI) / 2;
+                            const midAngle = angle + Math.PI / 4;
+                            if (i === 0) c.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
+                            c.quadraticCurveTo(
+                                Math.cos(midAngle) * (r * 0.25), Math.sin(midAngle) * (r * 0.25),
+                                Math.cos(nextAngle) * r, Math.sin(nextAngle) * r
+                            );
+                        }
+                        c.closePath(); c.fill(); c.stroke(); break;
+                }
+                c.restore();
+            }
+        }
+
+        function resolveCollision(s1, s2) {
+            const dx = s2.x - s1.x;
+            const dy = s2.y - s1.y;
+            const dist = Math.hypot(dx, dy);
+            
+            const size1 = s1.getEffectiveSize();
+            const size2 = s2.getEffectiveSize();
+            const minDist = (size1 + size2) / 2;
+
+            if (dist < minDist && dist > 0.001) {
+                const overlap = minDist - dist;
+                const nx = dx / dist;
+                const ny = dy / dist;
+
+                s1.x -= (nx * overlap) / 2;
+                s1.y -= (ny * overlap) / 2;
+                s2.x += (nx * overlap) / 2;
+                s2.y += (ny * overlap) / 2;
+
+                const kx = s1.vx - s2.vx;
+                const ky = s1.vy - s2.vy;
+                const p = (nx * kx + ny * ky);
+
+                if (p > 0) return;
+
+                const bounce = 0.95; 
+                s1.vx -= p * nx * bounce;
+                s1.vy -= p * ny * bounce;
+                s2.vx += p * nx * bounce;
+                s2.vy += p * ny * bounce;
+
+                s1.vRot += (Math.random() - 0.5) * 0.02;
+                s2.vRot += (Math.random() - 0.5) * 0.02;
+            }
+        }
+
+        function resize() {
+            width = document.body.clientWidth || window.innerWidth || 360;
+            height = document.body.clientHeight || window.innerHeight || 640;
+            dpr = Math.min(window.devicePixelRatio || 1, 2.0);
+            
+            canvas.width = Math.round(width * dpr);
+            canvas.height = Math.round(height * dpr);
+        }
+
+        function initShapes() {
+            shapes = [];
+            for (let i = 0; i < SHAPE_COUNT; i++) {
+                shapes.push(new Shape());
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            resize();
+            initShapes();
+            lastTime = performance.now();
+            requestAnimationFrame(loop);
+        });
+        
+        window.addEventListener('resize', resize);
+
+        function updateBulgeTargets() {
+            const bulgeRadius = 260; // Радиус действия раздувания
+            const maxBulge = 0.75;    // Максимальный коэффициент раздувания (на 75% больше)
+
+            shapes.forEach(shape => {
+                if (activePointer) {
+                    const dx = shape.x - activePointer.x;
+                    const dy = shape.y - activePointer.y;
+                    const dist = Math.hypot(dx, dy);
+
+                    if (dist < bulgeRadius) {
+                        const factor = Math.pow(1 - dist / bulgeRadius, 1.5);
+                        shape.targetBulge = factor * maxBulge;
+                    } else {
+                        shape.targetBulge = 0;
+                    }
+                } else {
+                    shape.targetBulge = 0;
+                }
+            });
+        }
+
+        function loop(now) {
+            if (isPaused) return;
+            const dt = Math.min((now - lastTime) / 1000, 0.1); 
+            lastTime = now;
+
+            // Обновляем цели раздувания на основе зажатия пальца
+            updateBulgeTargets();
+
+            if (collisionsEnabled) {
+                for (let i = 0; i < shapes.length; i++) {
+                    for (let j = i + 1; j < shapes.length; j++) {
+                        resolveCollision(shapes[i], shapes[j]);
+                    }
+                }
+            }
+
+            ctx.fillStyle = monetColors.background || '#141218';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.scale(dpr, dpr);
+
+            for (let i = 0; i < shapes.length; i++) {
+                shapes[i].update();
+                shapes[i].draw(ctx);
+            }
+
+            ctx.restore();
+            requestAnimationFrame(loop);
+        }
+
+        function loadSettings() {
+            if (window.WallpaperEngine) {
+                const newSizeMultiplier = parseFloat(window.WallpaperEngine.getSetting('shapeSize', '1.0'));
+                collisionsEnabled = window.WallpaperEngine.getSetting('enableCollision', 'true') === 'true';
+
+                if (newSizeMultiplier !== sizeMultiplier) {
+                    sizeMultiplier = newSizeMultiplier;
+                    shapes.forEach(shape => shape.updateScale());
+                }
+            }
+        }
+
+        function updateState(metadata) {
+            if (!metadata) return;
+            if (metadata.accentColors) {
+                monetColors = { ...monetColors, ...metadata.accentColors };
+                document.body.style.backgroundColor = monetColors.background || '#141218';
+            }
+            loadSettings();
+        }
+
+        window.addEventListener('wallpaperEngineReady', (e) => updateState(e.detail));
+        window.addEventListener('wallpaperUpdate', (e) => updateState(e.detail));
+
+        window.addEventListener('wallpaperGyroscope', (e) => {
+            const { x, y } = e.detail;
+            if (x === undefined || y === undefined) return;
+
+            if (lastGyro.x !== null) {
+                const dx = x - lastGyro.x;
+                const dy = y - lastGyro.y;
+                
+                if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+                    shapes.forEach(shape => {
+                        shape.vx -= dx * 1.5; 
+                        shape.vy += dy * 1.5; 
+                        shape.vRot += (Math.random() - 0.5) * (Math.abs(dx) + Math.abs(dy)) * 0.05;
+                        shape.vx = Math.max(-35, Math.min(35, shape.vx));
+                        shape.vy = Math.max(-35, Math.min(35, shape.vy));
+                    });
+                }
+            }
+            lastGyro.x = x; lastGyro.y = y;
+        });
+
+        window.addEventListener('wallpaperOffset', (e) => {
+            if (e.detail && typeof e.detail.xOffset === 'number') {
+                xOffset = e.detail.xOffset;
+            }
+        });
+
+        window.addEventListener('wallpaperPause', () => {
+            isPaused = true;
+            activePointer = null;
+        });
+
+        window.addEventListener('wallpaperResume', () => {
+            if (isPaused) {
+                isPaused = false;
+                lastTime = performance.now();
+                requestAnimationFrame(loop);
+            }
+        });
+
+        // Обработка удерживания и движения пальца
+        window.addEventListener('pointerdown', (e) => {
+            activePointer = { x: e.clientX, y: e.clientY, id: e.pointerId };
+        });
+
+        window.addEventListener('pointermove', (e) => {
+            if (activePointer && activePointer.id === e.pointerId) {
+                activePointer.x = e.clientX;
+                activePointer.y = e.clientY;
+            }
+        });
+
+        const releasePointer = (e) => {
+            if (activePointer && activePointer.id === e.pointerId) {
+                activePointer = null;
+            }
+        };
+
+        window.addEventListener('pointerup', releasePointer);
+        window.addEventListener('pointercancel', releasePointer);
+    </script>
+</body>
+</html>

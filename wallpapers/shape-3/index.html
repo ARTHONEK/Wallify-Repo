@@ -10,6 +10,7 @@
             margin: 0; padding: 0; height: 100%; width: 100%;
             position: fixed; inset: 0; overflow: hidden;
             background-color: #141218;
+            transition: background-color 0.3s ease;
         }
         canvas { display: block; width: 100%; height: 100%; }
     </style>
@@ -32,13 +33,14 @@
 
         let sizeMultiplier = 1.0;
         let collisionsEnabled = true;
+        let amoledMode = false;
 
         let isPaused = false;
         let xOffset = 0.5;
         let shapes = [];
         const SHAPE_COUNT = 14;
 
-        let activePointer = null; // Трекинг зажатого пальца
+        let activePointer = null;
         let lastGyro = { x: null, y: null };
         let lastTime = 0;
 
@@ -70,9 +72,8 @@
                 this.rotation = Math.random() * Math.PI * 2;
                 this.vRot = (Math.random() - 0.5) * 0.02;
                 
-                // Переменные плавного раздувания без пружины
-                this.bulge = 0;        // Текущий размер вздутия
-                this.targetBulge = 0;  // Целевой размер вздутия
+                this.bulge = 0;
+                this.targetBulge = 0;
                 
                 const types = ['circle', 'pill', 'roundedRect', 'm3Star'];
                 this.type = types[Math.floor(Math.random() * types.length)];
@@ -90,10 +91,8 @@
             }
 
             update() {
-                // Плавное приближение к целевому размеру без пружинящих колебаний (LERP)
                 this.bulge += (this.targetBulge - this.bulge) * 0.12;
 
-                // Движение и трение
                 this.vx *= FRICTION;
                 this.vy *= FRICTION;
                 this.vRot *= FRICTION;
@@ -260,7 +259,6 @@
             const dt = Math.min((now - lastTime) / 1000, 0.1); 
             lastTime = now;
 
-            // Обновляем цели раздувания на основе зажатия пальца
             updateBulgeTargets();
 
             if (collisionsEnabled) {
@@ -271,7 +269,7 @@
                 }
             }
 
-            ctx.fillStyle = monetColors.background || '#141218';
+            ctx.fillStyle = amoledMode ? '#000000' : (monetColors.background || '#141218');
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.save();
@@ -287,22 +285,31 @@
         }
 
         function loadSettings() {
-            if (window.WallpaperEngine) {
-                const newSizeMultiplier = parseFloat(window.WallpaperEngine.getSetting('shapeSize', '1.0'));
-                collisionsEnabled = window.WallpaperEngine.getSetting('enableCollision', 'true') === 'true';
-
-                if (newSizeMultiplier !== sizeMultiplier) {
-                    sizeMultiplier = newSizeMultiplier;
-                    shapes.forEach(shape => shape.updateScale());
+            const getVal = (key, def) => {
+                if (window.WallpaperEngine && window.WallpaperEngine.getSetting) {
+                    const val = window.WallpaperEngine.getSetting(key, def);
+                    if (val !== undefined && val !== null) return val;
                 }
+                const ls = localStorage.getItem(key);
+                return ls !== null ? ls : def;
+            };
+
+            const newSizeMultiplier = parseFloat(getVal('shapeSize', '1.0'));
+            collisionsEnabled = getVal('enableCollision', 'true') === 'true';
+            amoledMode = getVal('amoledMode', 'false') === 'true';
+
+            if (newSizeMultiplier !== sizeMultiplier) {
+                sizeMultiplier = newSizeMultiplier;
+                shapes.forEach(shape => shape.updateScale());
             }
+            
+            document.body.style.backgroundColor = amoledMode ? '#000000' : (monetColors.background || '#141218');
         }
 
         function updateState(metadata) {
             if (!metadata) return;
             if (metadata.accentColors) {
                 monetColors = { ...monetColors, ...metadata.accentColors };
-                document.body.style.backgroundColor = monetColors.background || '#141218';
             }
             loadSettings();
         }

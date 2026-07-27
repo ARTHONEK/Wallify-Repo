@@ -128,12 +128,10 @@ function generateColor() {
 let _randomSplats = false;
 let _audioReact = false;
 let _accelEnabled = false;
-let _accelSensitivity = 5; 
+let _accelSensitivity = 5; // От 1 до 10
 let lastAccelX = 0;
 let lastAccelY = 0;
 let lastAccelTime = 0;
-
-// Добавьте это в вашу функцию livelyPropertyListener (внутрь switch)
 function livelyPropertyListener(name, val) {
   switch (name) {
     case "quality":
@@ -1759,15 +1757,6 @@ function hashCode(s) {
 function applyWallifySettings() {
   if (!window.WallpaperEngine) return;
 
-  const props = [
-    "audioReact", "randomSplats", "quality", "simResolution",
-    "densityDiffusion", "velocityDiffusion", "pressure", "vorticity",
-    "splatRadius", "shading", "colorful", "bloomEnable",
-    "bloomIntensity", "bloomThreshold", "sunRaysEnable", "sunRaysWeight",
-    "bgColor", "bgImgChk", "imgSelect", 
-    "accelEnabled", "accelSensitivity" // ДОБАВЛЕНО СЮДА
-  ];
-
   // Значения по умолчанию из LivelyProperties.json
   const defaults = {
     audioReact: "true",
@@ -1822,57 +1811,47 @@ window.addEventListener("wallpaperUpdate", applyWallifySettings);
 window.addEventListener('wallpaperGyroscope', (e) => {
   if (!_accelEnabled || _isSleep) return;
 
-  const { x, y } = e.detail;
+  const { x, y } = e.detail; // x и y — это ускорение в м/с²
   const now = Date.now();
   
-  // Кулдаун, чтобы не спамить (200мс между волнами)
-  if (now - lastAccelTime < 200) return;
+  // Ограничиваем частоту всплесков (не чаще чем раз в 150мс), чтобы не перегружать GPU
+  if (now - lastAccelTime < 150) return;
 
+  // Вычисляем резкость движения (дельту)
   const deltaX = x - lastAccelX;
   const deltaY = y - lastAccelY;
   
-  // Чувствительность: чем выше ползунок, тем легче вызвать всплеск
-  const threshold = (11 - _accelSensitivity) * 2.0; 
+  // Порог срабатывания зависит от настройки чувствительности
+  // Чем выше ползунок (10), тем меньше нужен порог (2)
+  const threshold = (11 - _accelSensitivity) * 1.5; 
 
-  let direction = null;
-  if (deltaX < -threshold) direction = 'RIGHT'; // Рывок вправо -> всплеск слева
-  else if (deltaX > threshold) direction = 'LEFT'; // Рывок влево -> всплеск справа
-  else if (deltaY < -threshold) direction = 'UP'; // Рывок вверх -> всплеск снизу
-  else if (deltaY > threshold) direction = 'DOWN'; // Рывок вниз -> всплеск сверху
-
-  if (direction) {
+  if (Math.abs(deltaX) > threshold || Math.abs(deltaY) > threshold) {
     const color = generateColor();
-    // Делаем цвет ярче для эффекта волны
-    color.r *= 15.0; color.g *= 15.0; color.b *= 15.0;
+    color.r *= 10.0; color.g *= 10.0; color.b *= 10.0;
 
-    const POINTS = 12; // Количество точек в линии всплеска
-    
-    for (let i = 0; i <= POINTS; i++) {
-      let splatX, splatY, fX = 0, fY = 0;
-      let offset = i / POINTS; // распределение от 0 до 1
+    let splatX, splatY, forceX = 0, forceY = 0;
 
-      switch (direction) {
-        case 'RIGHT':
-          splatX = 0.05; splatY = offset; 
-          fX = 6000; fY = (Math.random() - 0.5) * 500;
-          break;
-        case 'LEFT':
-          splatX = 0.95; splatY = offset; 
-          fX = -6000; fY = (Math.random() - 0.5) * 500;
-          break;
-        case 'UP':
-          splatX = offset; splatY = 0.05; 
-          fX = (Math.random() - 0.5) * 500; fY = 6000;
-          break;
-        case 'DOWN':
-          splatX = offset; splatY = 0.95; 
-          fX = (Math.random() - 0.5) * 500; fY = -6000;
-          break;
-      }
-      // Вызываем оригинальную функцию всплеска
-      splat(splatX, splatY, fX, fY, color);
+    // Логика: дергаем вправо (отрицательный X на датчике) -> всплеск слева направо
+    if (deltaX < -threshold) { // Рывок ВПРАВО
+      splatX = 0.1; splatY = Math.random();
+      forceX = 5000; forceY = (Math.random() - 0.5) * 1000;
+    } else if (deltaX > threshold) { // Рывок ВЛЕВО
+      splatX = 0.9; splatY = Math.random();
+      forceX = -5000; forceY = (Math.random() - 0.5) * 1000;
     }
-    lastAccelTime = now;
+
+    if (deltaY < -threshold) { // Рывок ВВЕРХ
+      splatX = Math.random(); splatY = 0.1;
+      forceY = 5000; forceX = (Math.random() - 0.5) * 1000;
+    } else if (deltaY > threshold) { // Рывок ВНИЗ
+      splatX = Math.random(); splatY = 0.9;
+      forceY = -5000; forceX = (Math.random() - 0.5) * 1000;
+    }
+
+    if (splatX !== undefined) {
+      splat(splatX, splatY, forceX, forceY, color);
+      lastAccelTime = now;
+    }
   }
 
   lastAccelX = x;

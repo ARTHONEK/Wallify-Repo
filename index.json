@@ -1,20 +1,20 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-27T19:32:21Z",
+  "updatedAt": "2026-07-27T20:03:22Z",
   "wallpapers": [
     {
       "id": "fluids",
       "name": "Fluids",
       "author": "rorolb",
-      "version": "1.0.0",
+      "version": "1.2.0",
       "description": "Порт обоев Fluids из Lively Wallpaper",
       "path": "wallpapers/fluids",
       "main": "index.html",
-      "useGyroscope": true,
+      "useGyroscope": false,
       "isLite": false,
       "cover": "cover.jpg",
       "createdAt": "2026-07-27T17:30:00Z",
-      "updatedAt": "2026-07-27T14:53:58Z",
+      "updatedAt": "2026-07-27T20:03:22Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/fluids.zip"
     },
     {

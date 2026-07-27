@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки обоев</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            padding: 24px;
+            color: #E6E1E5;
+            background: #141218;
+            margin: 0;
+        }
+        .setting-group {
+            margin-bottom: 24px;
+        }
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .value-display {
+            color: #D0BCFF;
+            font-weight: bold;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: #D0BCFF;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #D0BCFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="setting-group">
+        <label for="size">Размер фигур: <span id="sizeValue" class="value-display">1.0</span>x</label>
+        <input id="size" type="range" min="0.5" max="2.5" step="0.1" value="1.0">
+    </div>
+
+    <div class="setting-group">
+        <label class="checkbox-label">
+            <input id="collision" type="checkbox" checked>
+            Включить столкновения (коллизию)
+        </label>
+    </div>
+
+    <script>
+        window.addEventListener('wallpaperEngineReady', () => {
+            const engine = window.WallpaperEngine;
+            const sizeInput = document.getElementById('size');
+            const sizeValue = document.getElementById('sizeValue');
+            const collisionInput = document.getElementById('collision');
+
+            // Загружаем сохраненные настройки (значения всегда строки)
+            sizeInput.value = engine.getSetting('shapeSize', '1.0');
+            sizeValue.textContent = parseFloat(sizeInput.value).toFixed(1);
+            collisionInput.checked = engine.getSetting('enableCollision', 'true') === 'true';
+
+            // Сохраняем размер при движении ползунка
+            sizeInput.addEventListener('input', () => {
+                sizeValue.textContent = parseFloat(sizeInput.value).toFixed(1);
+                engine.saveSetting('shapeSize', sizeInput.value);
+            });
+
+            // Сохраняем коллизию при переключении
+            collisionInput.addEventListener('change', () => {
+                engine.saveSetting('enableCollision', collisionInput.checked);
+            });
+        });
+    </script>
+</body>
+</html>

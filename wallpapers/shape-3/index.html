@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Material 3 Shapes Wallpaper</title>
+    <title>Shape 3</title>
     <style>
         * { box-sizing: border-box; user-select: none; }
         html, body {
@@ -234,8 +234,8 @@
         window.addEventListener('resize', resize);
 
         function updateBulgeTargets() {
-            const bulgeRadius = 260; // Радиус действия раздувания
-            const maxBulge = 0.75;    // Максимальный коэффициент раздувания (на 75% больше)
+            const bulgeRadius = 260;
+            const maxBulge = 0.75;
 
             shapes.forEach(shape => {
                 if (activePointer) {
@@ -349,8 +349,7 @@
                 requestAnimationFrame(loop);
             }
         });
-
-        // Обработка удерживания и движения пальца
+        
         window.addEventListener('pointerdown', (e) => {
             activePointer = { x: e.clientX, y: e.clientY, id: e.pointerId };
         });

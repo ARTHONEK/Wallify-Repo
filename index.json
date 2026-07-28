@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-27T20:03:22Z",
+  "updatedAt": "2026-07-28T10:25:10Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -15,22 +15,7 @@
       "cover": "cover.jpg",
       "createdAt": "2026-07-27T17:30:00Z",
       "updatedAt": "2026-07-27T20:03:22Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/fluids.zip"
-    },
-    {
-      "id": "m3-expressive-shapes",
-      "name": "Material 3 Expressive Shapes",
-      "author": "Pavlk",
-      "version": "1.2.1",
-      "description": "Крупные выразительные фигуры Material 3 с мягким дрейфом и эффектом фокусировки на экране блокировки. Цвета берутся из системной палитры Material You.",
-      "path": "wallpapers/m3-expressive-shapes",
-      "main": "index.html",
-      "useGyroscope": false,
-      "isLite": false,
-      "cover": "cover.png",
-      "createdAt": "2026-07-26T20:30:00Z",
-      "updatedAt": "2026-07-26T20:30:00Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-expressive-shapes.zip"
+      "downloadUrl": "https://github.com/pavelebanavel/Wallify-Repo/releases/download/bundles/fluids.zip"
     },
     {
       "id": "m3-shapes-dynamic",
@@ -45,7 +30,7 @@
       "cover": "cover.png",
       "createdAt": "2026-07-25T17:52:01Z",
       "updatedAt": "2026-07-26T23:45:00Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-dynamic.zip"
+      "downloadUrl": "https://github.com/pavelebanavel/Wallify-Repo/releases/download/bundles/m3-shapes-dynamic.zip"
     },
     {
       "id": "m3-shapes-lite",
@@ -60,7 +45,7 @@
       "cover": "cover.png",
       "createdAt": "2026-07-26T20:30:00Z",
       "updatedAt": "2026-07-26T20:30:00Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-lite.zip"
+      "downloadUrl": "https://github.com/pavelebanavel/Wallify-Repo/releases/download/bundles/m3-shapes-lite.zip"
     },
     {
       "id": "photo-blur-dynamics",
@@ -75,7 +60,7 @@
       "cover": "cover.png",
       "createdAt": "2026-07-26T20:30:00Z",
       "updatedAt": "2026-07-26T20:30:00Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/photo-blur-dynamics.zip"
+      "downloadUrl": "https://github.com/pavelebanavel/Wallify-Repo/releases/download/bundles/photo-blur-dynamics.zip"
     },
     {
       "id": "shape-3",
@@ -90,7 +75,7 @@
       "cover": "cover.png",
       "createdAt": "2026-07-27T15:06:03Z",
       "updatedAt": "2026-07-27T19:28:54Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/shape-3.zip"
+      "downloadUrl": "https://github.com/pavelebanavel/Wallify-Repo/releases/download/bundles/shape-3.zip"
     },
     {
       "id": "yui-material",
@@ -105,7 +90,22 @@
       "cover": "cover.png",
       "createdAt": "2026-07-27T15:21:09Z",
       "updatedAt": "2026-07-27T15:21:09Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/yui-material.zip"
+      "downloadUrl": "https://github.com/pavelebanavel/Wallify-Repo/releases/download/bundles/yui-material.zip"
+    },
+    {
+      "id": "m3e-shapes",
+      "name": "M3e Shapes",
+      "author": "Pavlk",
+      "version": "1.0.0",
+      "description": "Плавающие фигуры в стиле Material 3 Expressive: динамическая палитра под системную тему, морфинг форм при столкновениях, отклик на касания. AMOLED-режим и отключение движения — в настройках.",
+      "path": "wallpapers/m3e-shapes",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.png",
+      "createdAt": "2026-07-28T10:25:10Z",
+      "updatedAt": "2026-07-28T10:25:10Z",
+      "downloadUrl": "https://github.com/pavelebanavel/Wallify-Repo/releases/download/bundles/m3e-shapes.zip"
     }
   ]
 }

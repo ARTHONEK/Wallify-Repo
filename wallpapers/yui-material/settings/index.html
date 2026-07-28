@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Yui Material — настройки</title>
+<style>
+    :root{
+        /* дефолты — как в основных обоях, до первого getMetadata() */
+        --bg: #141218;
+        --surface-container: #211F26;
+        --surface-container-high: #2B2930;
+        --primary: #D0BCFF;
+        --on-surface: #E6E1E5;
+        --on-surface-variant: #CAC4D0;
+        --outline: #938F99;
+    }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html,body{
+        margin:0; padding:0;
+        background:var(--bg);
+        color:var(--on-surface);
+        font-family: system-ui, -apple-system, "Roboto", sans-serif;
+        overscroll-behavior:none;
+    }
+    body{ padding:20px 16px 40px; }
+
+    h1{
+        font-size:22px; font-weight:500; letter-spacing:.1px;
+        margin:8px 4px 4px;
+    }
+    .subtitle{
+        font-size:14px; color:var(--on-surface-variant);
+        margin:0 4px 20px;
+    }
+
+    .card{
+        background:var(--surface-container);
+        border-radius:28px;
+        padding:18px 20px 20px;
+        margin-bottom:14px;
+    }
+    .card-header{
+        display:flex; align-items:baseline; justify-content:space-between;
+        gap:12px; margin-bottom:2px;
+    }
+    .card-title{ font-size:15px; font-weight:500; }
+    .card-value{
+        font-size:14px; font-weight:600; color:var(--primary);
+        font-variant-numeric: tabular-nums;
+        min-width:44px; text-align:right;
+    }
+    .card-hint{
+        font-size:12.5px; color:var(--on-surface-variant);
+        margin:2px 0 18px; line-height:1.4;
+    }
+
+    .slider{
+        position:relative;
+        height:28px;
+        margin:0 2px;
+        touch-action:none;
+        cursor:pointer;
+    }
+    .slider .bar{
+        position:absolute; top:50%; transform:translateY(-50%);
+        height:16px; border-radius:8px;
+    }
+    .slider .bar.active{ background:var(--primary); left:0; }
+    .slider .bar.inactive{ background:var(--surface-container-high); }
+    .slider .thumb{
+        position:absolute; top:50%;
+        width:4px; height:28px;
+        border-radius:2px;
+        background:var(--primary);
+        transform:translate(-50%,-50%);
+        box-shadow:0 1px 3px rgba(0,0,0,.35);
+    }
+    .slider .bubble{
+        position:absolute; bottom:calc(100% + 10px);
+        transform:translateX(-50%) translateY(4px) scale(.85);
+        background:var(--primary);
+        color:var(--bg);
+        font-size:12.5px; font-weight:600;
+        padding:4px 10px;
+        border-radius:12px;
+        white-space:nowrap;
+        opacity:0;
+        pointer-events:none;
+        transition:opacity .12s ease, transform .12s ease;
+        font-variant-numeric: tabular-nums;
+    }
+    .slider.dragging .bubble{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+    .slider.dragging .thumb{ box-shadow:0 2px 6px rgba(0,0,0,.45); }
+
+    .slider-ends{
+        display:flex; justify-content:space-between;
+        font-size:11.5px; color:var(--outline);
+        margin-top:6px; padding:0 1px;
+    }
+
+    .pair-gap{ height:22px; }
+
+    .reset-row{
+        display:flex; justify-content:center; margin-top:10px;
+    }
+    .reset-btn{
+        background:none; border:none;
+        color:var(--primary);
+        font-size:14px; font-weight:600;
+        font-family:inherit;
+        padding:10px 18px; border-radius:20px;
+    }
+    .reset-btn:active{ background:var(--surface-container-high); }
+</style>
+</head>
+<body>
+    <h1>Настройки обоев</h1>
+    <p class="subtitle">Изменения применяются сразу, без перезапуска</p>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Зум ассета</span>
+            <span class="card-value" id="val-yuiZoom">1.10x</span>
+        </div>
+        <p class="card-hint">Запас изображения Юи для панорамирования при наклоне телефона.</p>
+        <div class="slider" id="slider-yuiZoom"></div>
+        <div class="slider-ends"><span>0.8x</span><span>1.2x</span></div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Сглаживание акселерометра</span>
+            <span class="card-value" id="val-yuiSmoothing">0.35</span>
+        </div>
+        <p class="card-hint">Меньше — плавнее и спокойнее, больше — резче и отзывчивее на наклон.</p>
+        <div class="slider" id="slider-yuiSmoothing"></div>
+        <div class="slider-ends"><span>0 (плавно)</span><span>1 (резко)</span></div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Размер фигур — минимум</span>
+            <span class="card-value" id="val-shapeMinSize">16%</span>
+        </div>
+        <p class="card-hint">Размер самой маленькой фигуры, в процентах от меньшей стороны экрана.</p>
+        <div class="slider" id="slider-shapeMinSize"></div>
+        <div class="slider-ends"><span>4%</span><span>70%</span></div>
+
+        <div class="pair-gap"></div>
+
+        <div class="card-header">
+            <span class="card-title">Размер фигур — максимум</span>
+            <span class="card-value" id="val-shapeMaxSize">52%</span>
+        </div>
+        <p class="card-hint">Размер самой крупной фигуры.</p>
+        <div class="slider" id="slider-shapeMaxSize"></div>
+        <div class="slider-ends"><span>4%</span><span>70%</span></div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Сила акселерометра — фигуры</span>
+            <span class="card-value" id="val-shapeAccelForce">26px</span>
+        </div>
+        <p class="card-hint">Насколько сильно фигуры сдвигаются при наклоне телефона. Мелкие фигуры реагируют сильнее крупных.</p>
+        <div class="slider" id="slider-shapeAccelForce"></div>
+        <div class="slider-ends"><span>0px</span><span>60px</span></div>
+    </div>
+
+    <div class="reset-row">
+        <button class="reset-btn" id="reset">Сбросить настройки по умолчанию</button>
+    </div>
+
+<script>
+(function(){
+    const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
+    const engine = () => window.WallpaperEngine || null;
+
+    function getSetting(key, def){
+        const e = engine();
+        return e ? e.getSetting(key, String(def)) : String(def);
+    }
+    function saveSetting(key, value){
+        const e = engine();
+        if(e) e.saveSetting(key, value);
+    }
+
+    function applyTheme(meta){
+        if(!meta || !meta.accentColors) return;
+        const c = meta.accentColors;
+        const root = document.documentElement.style;
+        if(c.background)       root.setProperty('--bg', c.background);
+        if(c.surfaceContainer) root.setProperty('--surface-container', c.surfaceContainer);
+        if(c.primary)          root.setProperty('--primary', c.primary);
+
+        const light = meta.theme === 'light';
+        root.setProperty('--on-surface', light ? '#1D1B20' : '#E6E1E5');
+        root.setProperty('--on-surface-variant', light ? '#49454F' : '#CAC4D0');
+        root.setProperty('--outline', light ? '#79747E' : '#938F99');
+        // приподнятая поверхность повыше surfaceContainer — для неактивного трека/hover
+        root.setProperty('--surface-container-high', light ? '#ECE6F0' : '#2B2930');
+    }
+
+    const THUMB_W = 4, GAP = 8;
+
+    function createSlider(id, {min, max, step, def, decimals, suffix, storageKey, onChange}){
+        const root = document.getElementById('slider-' + id);
+        const valueLabel = document.getElementById('val-' + id);
+
+        const active = document.createElement('div');   active.className = 'bar active';
+        const inactive = document.createElement('div'); inactive.className = 'bar inactive';
+        const thumb = document.createElement('div');     thumb.className = 'thumb';
+        const bubble = document.createElement('div');    bubble.className = 'bubble';
+        root.append(inactive, active, thumb, bubble);
+
+        let value = clamp(parseFloat(getSetting(storageKey, def)), min, max);
+        if(!isFinite(value)) value = def;
+
+        function format(v){
+            return v.toFixed(decimals) + (suffix || '');
+        }
+
+        function render(){
+            const w = root.clientWidth;
+            const pct = (value - min) / (max - min);
+            const cx = pct * w;
+
+            thumb.style.left = cx + 'px';
+            bubble.style.left = cx + 'px';
+            bubble.textContent = format(value);
+
+            const activeW = Math.max(0, cx - THUMB_W/2 - GAP);
+            active.style.width = activeW + 'px';
+
+            const inactiveStart = Math.min(w, cx + THUMB_W/2 + GAP);
+            inactive.style.left = inactiveStart + 'px';
+            inactive.style.width = Math.max(0, w - inactiveStart) + 'px';
+
+            valueLabel.textContent = format(value);
+        }
+
+        function setFromClientX(clientX, {save} = {save:true}){
+            const rect = root.getBoundingClientRect();
+            const pct = clamp((clientX - rect.left) / rect.width, 0, 1);
+            let raw = min + pct*(max-min);
+            raw = Math.round(raw/step)*step;
+            raw = clamp(raw, min, max);
+            raw = parseFloat(raw.toFixed(4));
+            if(raw !== value){
+                value = raw;
+                render();
+                if(onChange) onChange(value, save);
+            }
+        }
+
+        root.addEventListener('pointerdown', (e) => {
+            root.setPointerCapture(e.pointerId);
+            root.classList.add('dragging');
+            setFromClientX(e.clientX);
+        });
+        root.addEventListener('pointermove', (e) => {
+            if(!root.classList.contains('dragging')) return;
+            setFromClientX(e.clientX);
+        });
+        function endDrag(e){
+            if(!root.classList.contains('dragging')) return;
+            root.classList.remove('dragging');
+            setFromClientX(e.clientX, {save:true});
+            saveSetting(storageKey, value.toFixed(decimals));
+        }
+        root.addEventListener('pointerup', endDrag);
+        root.addEventListener('pointercancel', endDrag);
+
+        window.addEventListener('resize', render);
+        render();
+
+        return {
+            get: () => value,
+            set(v, {save=true} = {}){
+                value = clamp(v, min, max);
+                render();
+                if(save) saveSetting(storageKey, value.toFixed(decimals));
+            }
+        };
+    }
+
+    let sliders = {};
+
+    function init(){
+        sliders.yuiZoom = createSlider('yuiZoom', {
+            min:0.8, max:1.2, step:0.01, def:1.10, decimals:2, suffix:'x',
+            storageKey:'yuiZoom',
+            onChange:(v,save)=>{ if(save) saveSetting('yuiZoom', v.toFixed(2)); }
+        });
+
+        sliders.yuiSmoothing = createSlider('yuiSmoothing', {
+            min:0, max:1, step:0.01, def:0.35, decimals:2, suffix:'',
+            storageKey:'yuiSmoothing',
+            onChange:(v,save)=>{ if(save) saveSetting('yuiSmoothing', v.toFixed(2)); }
+        });
+
+        const MIN_GAP = 6; // минимальный разрыв между мин. и макс. размером, в %
+
+        sliders.shapeMinSize = createSlider('shapeMinSize', {
+            min:4, max:70, step:1, def:16, decimals:0, suffix:'%',
+            storageKey:'shapeMinSize',
+            onChange:(v,save)=>{
+                if(save) saveSetting('shapeMinSize', v.toFixed(0));
+                if(sliders.shapeMaxSize && sliders.shapeMaxSize.get() < v + MIN_GAP){
+                    sliders.shapeMaxSize.set(v + MIN_GAP);
+                }
+            }
+        });
+
+        sliders.shapeMaxSize = createSlider('shapeMaxSize', {
+            min:4, max:70, step:1, def:52, decimals:0, suffix:'%',
+            storageKey:'shapeMaxSize',
+            onChange:(v,save)=>{
+                if(save) saveSetting('shapeMaxSize', v.toFixed(0));
+                if(sliders.shapeMinSize && sliders.shapeMinSize.get() > v - MIN_GAP){
+                    sliders.shapeMinSize.set(v - MIN_GAP);
+                }
+            }
+        });
+
+        sliders.shapeAccelForce = createSlider('shapeAccelForce', {
+            min:0, max:60, step:1, def:26, decimals:0, suffix:'px',
+            storageKey:'shapeAccelForce',
+            onChange:(v,save)=>{ if(save) saveSetting('shapeAccelForce', v.toFixed(0)); }
+        });
+    }
+
+    document.getElementById('reset').addEventListener('click', () => {
+        sliders.yuiZoom.set(1.10);
+        sliders.yuiSmoothing.set(0.35);
+        sliders.shapeMinSize.set(16);
+        sliders.shapeMaxSize.set(52);
+        sliders.shapeAccelForce.set(26);
+    });
+
+    window.addEventListener('wallpaperEngineReady', (e) => {
+        applyTheme(e.detail || (window.WallpaperEngine && window.WallpaperEngine.getMetadata()));
+        init();
+    });
+
+    window.addEventListener('load', () => {
+        setTimeout(() => { if(!sliders.yuiZoom) init(); }, 150);
+    });
+})();
+</script>
+</body>
+</html>

@@ -93,15 +93,33 @@
     const COLLISION_RATIO = 0.42;
 
     const MAX_OVERFLOW  = 0.4;    // фигуры уходят за края не более чем на 40% своего размера
-    const ACCEL_BASE    = 26;     // px — максимальный сдвиг от наклона при весе 1.0
     const ACCEL_SMOOTH  = 0.15;   // сглаживание акселерометра
     const SPRING_K       = 34;    // жёсткость возврата к анкорной позиции после столкновения
     const SPRING_DAMP    = 8.5;   // затухание пружины (1/сек)
     const REST_DAMP_RATE = 2.0;   // доп. затухание скорости от столкновений (1/сек)
     const MAX_PHYS_OFFSET = 46;   // px — предохранитель от чрезмерного расталкивания
 
+    // значения по умолчанию — совпадают с дефолтами слайдеров на экране настроек
+    const DEFAULTS = { minPct: 16, maxPct: 52, accel: 26 };
+    let SIZE_MIN_PCT = DEFAULTS.minPct; // % от меньшей стороны экрана
+    let SIZE_MAX_PCT = DEFAULTS.maxPct;
+    let ACCEL_BASE    = DEFAULTS.accel;  // px — максимальный сдвиг от наклона при весе 1.0
+
     const rand = (a,b) => a + Math.random()*(b-a);
     const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
+
+    function readShapeSettings(){
+        if(!window.WallpaperEngine) return { ...DEFAULTS };
+        const e = window.WallpaperEngine;
+        let minPct = parseFloat(e.getSetting('shapeMinSize', String(DEFAULTS.minPct)));
+        let maxPct = parseFloat(e.getSetting('shapeMaxSize', String(DEFAULTS.maxPct)));
+        let accel  = parseFloat(e.getSetting('shapeAccelForce', String(DEFAULTS.accel)));
+        if(!isFinite(minPct)) minPct = DEFAULTS.minPct;
+        if(!isFinite(maxPct)) maxPct = DEFAULTS.maxPct;
+        if(!isFinite(accel))  accel  = DEFAULTS.accel;
+        if(minPct > maxPct){ const t = minPct; minPct = maxPct; maxPct = t; }
+        return { minPct, maxPct, accel };
+    }
 
     let bodies = [];
     let sx = 0, sy = 0;       // сглаженные данные акселерометра (roll/pitch)
@@ -122,8 +140,10 @@
         svg.setAttribute('viewBox', `0 0 ${vw} ${vh}`);
 
         const baseUnit = Math.min(vw, vh);
-        // 5 разных размеров, тасуются между фигурами при каждой перестройке
-        const sizeFactors = [0.16, 0.22, 0.30, 0.40, 0.52];
+        // 5 разных размеров, равномерно между настраиваемыми SIZE_MIN_PCT/SIZE_MAX_PCT,
+        // тасуются между фигурами при каждой перестройке
+        const minF = SIZE_MIN_PCT/100, maxF = SIZE_MAX_PCT/100;
+        const sizeFactors = [0, 0.25, 0.5, 0.75, 1].map(t => minF + (maxF-minF)*t);
         for(let i=sizeFactors.length-1;i>0;i--){
             const j = Math.floor(Math.random()*(i+1));
             [sizeFactors[i], sizeFactors[j]] = [sizeFactors[j], sizeFactors[i]];
@@ -251,15 +271,26 @@
 
     window.addEventListener('wallpaperEngineReady', () => {
         applyColors(pullMetadata());
+        const s = readShapeSettings();
+        SIZE_MIN_PCT = s.minPct; SIZE_MAX_PCT = s.maxPct; ACCEL_BASE = s.accel;
         buildShapes();
         startLoop();
     });
-    window.addEventListener('wallpaperUpdate', (e) => applyColors(e.detail));
+    window.addEventListener('wallpaperUpdate', (e) => {
+        applyColors(e.detail);
+        // wallpaperUpdate не несёт значения настроек в detail — перечитываем явно (раздел 9)
+        const s = readShapeSettings();
+        const sizeChanged = (s.minPct !== SIZE_MIN_PCT || s.maxPct !== SIZE_MAX_PCT);
+        SIZE_MIN_PCT = s.minPct; SIZE_MAX_PCT = s.maxPct; ACCEL_BASE = s.accel;
+        if(sizeChanged) buildShapes(); // сила акселерометра подхватится на следующем кадре сама
+    });
 
     window.addEventListener('load', () => {
         setTimeout(() => {
             if(!bodies.length){
                 applyColors(pullMetadata());
+                const s = readShapeSettings();
+                SIZE_MIN_PCT = s.minPct; SIZE_MAX_PCT = s.maxPct; ACCEL_BASE = s.accel;
                 buildShapes();
                 startLoop();
             }
@@ -273,13 +304,24 @@
     const wrap = document.getElementById('yui-wrap');
     const yui  = document.getElementById('yui');
 
-    const ZOOM          = 1.10;  // зум ассета для параллакса
-    const SMOOTHING      = 0.35; // 0..1: сглаживание гироскопа, меньше — плавнее, больше — отзывчивее
     const MARGIN_SAFETY  = 0.7;  // доля от доступного запаса (ZOOM-1)/2, оставляем буфер от края
+    const YUI_DEFAULTS = { zoom: 1.10, smoothing: 0.35 }; // совпадают с дефолтами слайдеров настроек
 
+    let ZOOM = YUI_DEFAULTS.zoom;           // 0.8x..1.2x, настраивается
+    let SMOOTHING = YUI_DEFAULTS.smoothing; // 0..1, настраивается (сглаживание гироскопа)
     let sx = 0, sy = 0;          // сглаженные значения roll/pitch
 
     const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
+
+    function readYuiSettings(){
+        if(!window.WallpaperEngine) return { ...YUI_DEFAULTS };
+        const e = window.WallpaperEngine;
+        let zoom = parseFloat(e.getSetting('yuiZoom', String(YUI_DEFAULTS.zoom)));
+        let smoothing = parseFloat(e.getSetting('yuiSmoothing', String(YUI_DEFAULTS.smoothing)));
+        if(!isFinite(zoom)) zoom = YUI_DEFAULTS.zoom;
+        if(!isFinite(smoothing)) smoothing = YUI_DEFAULTS.smoothing;
+        return { zoom: clamp(zoom, 0.8, 1.2), smoothing: clamp(smoothing, 0, 1) };
+    }
 
     function syncHeightFallback(){
         if(!wrap.clientWidth) return;
@@ -302,6 +344,17 @@
     });
 
     window.addEventListener('resize', () => { syncHeightFallback(); render(); });
+
+    window.addEventListener('wallpaperEngineReady', () => {
+        const s = readYuiSettings();
+        ZOOM = s.zoom; SMOOTHING = s.smoothing;
+        render();
+    });
+    window.addEventListener('wallpaperUpdate', () => {
+        const s = readYuiSettings();
+        ZOOM = s.zoom; SMOOTHING = s.smoothing;
+        render();
+    });
 
     syncHeightFallback();
     render();

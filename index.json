@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-28T11:04:06Z",
+  "updatedAt": "2026-07-28T21:59:29Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -106,6 +106,21 @@
       "createdAt": "2026-07-28T10:25:10Z",
       "updatedAt": "2026-07-28T10:25:10Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3e-shapes.zip"
+    },
+    {
+      "id": "frosted-ice-cubes",
+      "name": "Frosted Ice Cubes",
+      "author": "Jardaken",
+      "version": "1.1.0",
+      "description": "Кубики льда: реагируют на касание, плавно возвращаются на место, есть режим гравитации и настройки фона",
+      "path": "wallpapers/frosted-ice-cubes",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.png",
+      "createdAt": "2026-07-28T21:59:29Z",
+      "updatedAt": "2026-07-28T21:59:29Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/frosted-ice-cubes.zip"
     }
   ]
 }

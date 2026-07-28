@@ -23,6 +23,7 @@ permissions:
 
 jobs:
   package:
+    if: github.repository == 'YouRooni/Wallify-Repo'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code

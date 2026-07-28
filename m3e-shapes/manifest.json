@@ -1,0 +1,11 @@
+{
+  "name": "M3e Shapes",
+  "description": "Плавающие фигуры в стиле Material 3 Expressive: динамическая палитра под системную тему, морфинг форм при столкновениях, отклик на касания. AMOLED-режим и отключение движения — в настройках.",
+  "author": "Pavlk",
+  "version": "1.0.0",
+  "main": "index.html",
+  "settingsPath": "settings/index.html",
+  "cover": "cover.png",
+  "useGyroscope": false,
+  "isLite": false
+}

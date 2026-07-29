@@ -47,7 +47,14 @@ def repository_name():
 def current_index():
     if not INDEX_PATH.exists():
         return {"version": 1, "wallpapers": []}
-    return load_json(INDEX_PATH)
+    try:
+        return load_json(INDEX_PATH)
+    except json.JSONDecodeError as error:
+        print(
+            f"Предупреждение: повреждённый index.json будет собран заново ({error})",
+            file=sys.stderr,
+        )
+        return {"version": 1, "wallpapers": []}
 
 
 def find_art(manifest, folder, field, fallbacks, fallback_field, fallback_names):

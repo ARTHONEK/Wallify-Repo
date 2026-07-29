@@ -25,7 +25,8 @@ Wallify-Repo/
 │       ├── manifest.json           # Метаданные комплекта
 │       ├── index.html              # Точка входа
 │       ├── README.md               # Показывается на странице комплекта
-│       ├── cover.png               # Обложка карточки (9:16 или 500x500)
+│       ├── cover.png               # Баннер карточки, рекомендуется 16:9
+│       ├── icon.png                # Квадратная иконка, рекомендуется 1:1
 │       └── settings/
 │           └── index.html          # (Опционально) страница настроек
 └── scripts/
@@ -56,6 +57,7 @@ Wallify-Repo/
       "useGyroscope": false,
       "isLite": true,
       "cover": "cover.png",
+      "icon": "icon.png",
       "createdAt": "2026-07-26T00:00:00Z",
       "updatedAt": "2026-07-26T00:00:00Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/my-cool-wallpaper.zip"
@@ -75,7 +77,8 @@ Wallify-Repo/
 | `main` | нет | Точка входа, по умолчанию `index.html` |
 | `useGyroscope` | нет | Должно совпадать с манифестом, иначе сенсор не зарегистрируется |
 | `isLite` | нет | Пометка «энергоэффективные», влияет на фильтр в каталоге |
-| `cover` | нет | Имя файла обложки внутри папки комплекта, по умолчанию `cover.png` |
+| `cover` | нет | Баннер комплекта. Если `icon` отсутствует, cover также используется как иконка |
+| `icon` | нет | Квадратная иконка. Если `cover` отсутствует, icon также используется как баннер |
 | `createdAt` / `updatedAt` | нет | ISO 8601. Без них сортировка «Сначала новые» превращается в порядок строк файла |
 | `downloadUrl` | генерируется | Стабильная ссылка на ZIP в релизе `bundles` |
 
@@ -104,6 +107,7 @@ https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/<id>.zip
   "version": "1.0.0",
   "minAppVersion": ">=1.0.0",
   "cover": "cover.png",
+  "icon": "icon.png",
   "main": "index.html",
   "settingsPath": "settings/index.html",
   "useGyroscope": false,

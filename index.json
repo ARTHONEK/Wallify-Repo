@@ -1,6 +1,10 @@
 {
   "version": 1,
+<<<<<<< HEAD
   "updatedAt": "2026-07-29T20:09:49Z",
+=======
+  "updatedAt": "2026-07-29T20:12:52Z",
+>>>>>>> 9673719 (fix: сохранять отдельные icon и cover в каталоге)
   "wallpapers": [
     {
       "id": "fluids",
@@ -13,6 +17,7 @@
       "useGyroscope": false,
       "isLite": false,
       "cover": "cover.jpg",
+      "icon": "icon.png",
       "createdAt": "2026-07-27T17:30:00Z",
       "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/fluids.zip"
@@ -28,6 +33,7 @@
       "useGyroscope": false,
       "isLite": false,
       "cover": "cover.png",
+      "icon": "icon.png",
       "createdAt": "2026-07-25T17:52:01Z",
       "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-dynamic.zip"
@@ -43,6 +49,7 @@
       "useGyroscope": false,
       "isLite": true,
       "cover": "cover.png",
+      "icon": "icon.png",
       "createdAt": "2026-07-26T20:30:00Z",
       "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-lite.zip"
@@ -58,6 +65,7 @@
       "useGyroscope": false,
       "isLite": false,
       "cover": "cover.png",
+      "icon": "icon.png",
       "createdAt": "2026-07-26T20:30:00Z",
       "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/photo-blur-dynamics.zip"
@@ -73,6 +81,7 @@
       "useGyroscope": true,
       "isLite": false,
       "cover": "cover.png",
+      "icon": "icon.png",
       "createdAt": "2026-07-27T15:06:03Z",
       "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/shape-3.zip"
@@ -88,6 +97,7 @@
       "useGyroscope": true,
       "isLite": false,
       "cover": "cover.png",
+      "icon": "icon.png",
       "createdAt": "2026-07-27T15:21:09Z",
       "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/yui-material.zip"
@@ -103,6 +113,7 @@
       "useGyroscope": false,
       "isLite": false,
       "cover": "cover.png",
+      "icon": "icon.png",
       "createdAt": "2026-07-28T10:25:10Z",
       "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3e-shapes.zip"
@@ -118,6 +129,7 @@
       "useGyroscope": false,
       "isLite": false,
       "cover": "cover.png",
+      "icon": "icon.png",
       "createdAt": "2026-07-28T21:59:29Z",
       "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/frosted-ice-cubes.zip"
@@ -133,8 +145,28 @@
       "useGyroscope": false,
       "isLite": false,
       "cover": "cover.png",
+<<<<<<< HEAD
       "createdAt": "2026-07-29T20:09:49Z",
       "updatedAt": "2026-07-29T20:09:49Z",
+=======
+      "icon": "icon.jpg",
+      "orientations": [
+        "portrait"
+      ],
+      "themeSupport": [
+        "light",
+        "dark"
+      ],
+      "supportsMonet": true,
+      "tags": [
+        "material",
+        "dynamic",
+        "abstract",
+        "particles"
+      ],
+      "createdAt": "2026-07-29T20:12:52Z",
+      "updatedAt": "2026-07-29T20:12:52Z",
+>>>>>>> 9673719 (fix: сохранять отдельные icon и cover в каталоге)
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/material-flow.zip"
     }
   ]

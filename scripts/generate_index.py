@@ -50,14 +50,20 @@ def current_index():
     return load_json(INDEX_PATH)
 
 
-def find_art(manifest, folder):
-    declared = manifest.get("cover") or manifest.get("icon")
+def find_art(manifest, folder, field, fallbacks, fallback_field, fallback_names):
+    declared = manifest.get(field)
     if declared:
         return declared
-    for name in ("cover.png", "cover.jpg", "cover.webp", "icon.png", "icon.jpg", "icon.webp"):
+    for name in fallbacks:
         if (folder / name).is_file():
             return name
-    return "cover.png"
+    fallback_declared = manifest.get(fallback_field)
+    if fallback_declared:
+        return fallback_declared
+    for name in fallback_names:
+        if (folder / name).is_file():
+            return name
+    return None
 
 
 def comparable(entry):
@@ -77,12 +83,36 @@ def build_entry(folder, manifest, old_entry, timestamp, repository):
         "main": manifest.get("main", "index.html"),
         "useGyroscope": bool(manifest.get("useGyroscope", False)),
         "isLite": bool(manifest.get("isLite", False)),
-        "cover": find_art(manifest, folder),
+        "cover": find_art(
+            manifest,
+            folder,
+            "cover",
+            ("cover.png", "cover.jpg", "cover.webp"),
+            "icon",
+            ("icon.png", "icon.jpg", "icon.webp"),
+        ),
+        "icon": find_art(
+            manifest,
+            folder,
+            "icon",
+            ("icon.png", "icon.jpg", "icon.webp"),
+            "cover",
+            ("cover.png", "cover.jpg", "cover.webp"),
+        ),
     }
+    for field in ("orientations", "themeSupport", "supportsMonet", "tags"):
+        if field in manifest:
+            entry[field] = manifest[field]
 
     created_at = old_entry.get("createdAt", timestamp)
     updated_at = old_entry.get("updatedAt", timestamp)
-    if old_entry and comparable(old_entry) != comparable(entry):
+    old_comparable = comparable(old_entry)
+    new_comparable = comparable(entry)
+    # Первое появление отдельного icon в схеме индекса — миграция каталога,
+    # а не обновление содержимого каждого существующего комплекта.
+    if old_entry and "icon" not in old_comparable:
+        new_comparable.pop("icon", None)
+    if old_entry and old_comparable != new_comparable:
         updated_at = timestamp
 
     entry["createdAt"] = created_at

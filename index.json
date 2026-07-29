@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "updatedAt": "2026-07-28T21:59:29Z",
+  "version": 2,
+  "updatedAt": "2026-07-29T11:00:00Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -15,7 +15,23 @@
       "cover": "cover.jpg",
       "createdAt": "2026-07-27T17:30:00Z",
       "updatedAt": "2026-07-27T20:03:22Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/fluids.zip"
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/fluids.zip",
+      "icon": "icon.png",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "themeSupport": [
+        "light",
+        "dark"
+      ],
+      "supportsMonet": true,
+      "tags": [
+        "fluid",
+        "interactive",
+        "monet",
+        "particles"
+      ]
     },
     {
       "id": "m3-shapes-dynamic",
@@ -30,7 +46,23 @@
       "cover": "cover.png",
       "createdAt": "2026-07-25T17:52:01Z",
       "updatedAt": "2026-07-26T23:45:00Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-dynamic.zip"
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-dynamic.zip",
+      "icon": "icon.png",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "themeSupport": [
+        "light",
+        "dark"
+      ],
+      "supportsMonet": true,
+      "tags": [
+        "material",
+        "shapes",
+        "monet",
+        "dynamic"
+      ]
     },
     {
       "id": "m3-shapes-lite",
@@ -45,7 +77,23 @@
       "cover": "cover.png",
       "createdAt": "2026-07-26T20:30:00Z",
       "updatedAt": "2026-07-26T20:30:00Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-lite.zip"
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-lite.zip",
+      "icon": "icon.png",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "themeSupport": [
+        "light",
+        "dark"
+      ],
+      "supportsMonet": true,
+      "tags": [
+        "material",
+        "shapes",
+        "monet",
+        "lite"
+      ]
     },
     {
       "id": "photo-blur-dynamics",
@@ -60,7 +108,23 @@
       "cover": "cover.png",
       "createdAt": "2026-07-26T20:30:00Z",
       "updatedAt": "2026-07-26T20:30:00Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/photo-blur-dynamics.zip"
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/photo-blur-dynamics.zip",
+      "icon": "icon.png",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "themeSupport": [
+        "light",
+        "dark"
+      ],
+      "supportsMonet": true,
+      "tags": [
+        "photo",
+        "blur",
+        "lockscreen",
+        "customizable"
+      ]
     },
     {
       "id": "shape-3",
@@ -75,7 +139,24 @@
       "cover": "cover.png",
       "createdAt": "2026-07-27T15:06:03Z",
       "updatedAt": "2026-07-27T19:28:54Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/shape-3.zip"
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/shape-3.zip",
+      "icon": "icon.png",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "themeSupport": [
+        "light",
+        "dark"
+      ],
+      "supportsMonet": true,
+      "tags": [
+        "material",
+        "shapes",
+        "physics",
+        "interactive",
+        "monet"
+      ]
     },
     {
       "id": "yui-material",
@@ -90,7 +171,23 @@
       "cover": "cover.png",
       "createdAt": "2026-07-27T15:21:09Z",
       "updatedAt": "2026-07-27T15:21:09Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/yui-material.zip"
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/yui-material.zip",
+      "icon": "icon.png",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "themeSupport": [
+        "light",
+        "dark"
+      ],
+      "supportsMonet": true,
+      "tags": [
+        "anime",
+        "material",
+        "gyro",
+        "monet"
+      ]
     },
     {
       "id": "m3e-shapes",
@@ -105,7 +202,24 @@
       "cover": "cover.png",
       "createdAt": "2026-07-28T10:25:10Z",
       "updatedAt": "2026-07-28T10:25:10Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3e-shapes.zip"
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3e-shapes.zip",
+      "icon": "icon.png",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "themeSupport": [
+        "light",
+        "dark"
+      ],
+      "supportsMonet": true,
+      "tags": [
+        "material",
+        "expressive",
+        "shapes",
+        "monet",
+        "interactive"
+      ]
     },
     {
       "id": "frosted-ice-cubes",
@@ -120,7 +234,24 @@
       "cover": "cover.png",
       "createdAt": "2026-07-28T21:59:29Z",
       "updatedAt": "2026-07-28T21:59:29Z",
-      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/frosted-ice-cubes.zip"
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/frosted-ice-cubes.zip",
+      "icon": "icon.png",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "themeSupport": [
+        "light",
+        "dark"
+      ],
+      "supportsMonet": true,
+      "tags": [
+        "ice",
+        "physics",
+        "interactive",
+        "monet",
+        "customizable"
+      ]
     }
   ]
 }

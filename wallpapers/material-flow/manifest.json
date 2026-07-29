@@ -1,0 +1,17 @@
+{
+  "name": "Material Flow",
+  "description": "Плавающие градиентные фигуры Material 3 с всплесками при включении и разблокировке.",
+  "author": "@YouRooni",
+  "version": "1.0.0",
+  "minAppVersion": ">=1.0.0",
+  "main": "index.html",
+  "settingsPath": "settings/index.html",
+  "icon": "icon.jpg",
+  "cover": "cover.png",
+  "orientations": ["portrait"],
+  "themeSupport": ["light", "dark"],
+  "supportsMonet": true,
+  "tags": ["material", "dynamic", "abstract", "particles"],
+  "useGyroscope": false,
+  "isLite": false
+}

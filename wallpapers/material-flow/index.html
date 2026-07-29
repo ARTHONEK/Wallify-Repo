@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Material Flow</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: #141218;
+  }
+  #bg {
+    position: absolute;
+    inset: 0;
+    transition: background 0.6s ease;
+  }
+  canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+  #grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<canvas id="scene"></canvas>
+<canvas id="grain"></canvas>
+
+<script>
+(function () {
+  // ---------- fallback defaults so it also runs in a plain browser ----------
+  const DEFAULTS = {
+    accentColors: {
+      primary: '#D0BCFF',
+      secondary: '#CCC2DC',
+      tertiary: '#EFB8C8',
+      surface: '#1D192B',
+      background: '#141218',
+      surfaceContainer: '#211F26'
+    },
+    theme: 'dark',
+    isUnlocked: true,
+    screen: 'home'
+  };
+
+  const engine = () => window.WallpaperEngine || null;
+
+  function setting(key, def) {
+    const e = engine();
+    return e ? e.getSetting(key, def) : def;
+  }
+  function settingNum(key, def) {
+    return parseFloat(setting(key, String(def)));
+  }
+  function settingBool(key, def) {
+    return setting(key, def ? 'true' : 'false') === 'true';
+  }
+
+  // ---------- user settings ----------
+  const cfg = {
+    shapeCount: 0,
+    speed: 1,
+    glow: true,
+    particles: true,
+    bgDim: 0
+  };
+
+  function loadSettings() {
+    cfg.shapeCount    = Math.round(settingNum('shapeCount', 6));
+    const speedWord   = setting('speed', 'normal');
+    cfg.speed         = speedWord === 'slow' ? 0.55 : speedWord === 'fast' ? 1.8 : 1;
+    cfg.glow          = settingBool('glow', true);
+    cfg.particles     = settingBool('particles', true);
+    cfg.bgDim         = settingNum('bgDim', 0);
+  }
+  loadSettings();
+
+  // ---------- canvas setup ----------
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  const grainCanvas = document.getElementById('grain');
+  const gctx = grainCanvas.getContext('2d');
+  const bgEl = document.getElementById('bg');
+
+  let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+
+  function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    grainCanvas.width = W;
+    grainCanvas.height = H;
+    drawGrain();
+  }
+  window.addEventListener('resize', resize);
+
+  function drawGrain() {
+    const imgData = gctx.createImageData(W, H);
+    for (let i = 0; i < imgData.data.length; i += 4) {
+      const v = Math.random() * 255;
+      imgData.data[i] = v;
+      imgData.data[i + 1] = v;
+      imgData.data[i + 2] = v;
+      imgData.data[i + 3] = 255;
+    }
+    gctx.putImageData(imgData, 0, 0);
+  }
+
+  // ---------- color state ----------
+  let colors = DEFAULTS.accentColors;
+  let theme = DEFAULTS.theme;
+
+  function hexToRgb(hex) {
+    const h = hex.replace('#', '');
+    const n = parseInt(h.length === 3
+      ? h.split('').map(c => c + c).join('')
+      : h, 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  function rgba(hex, a) {
+    const [r, g, b] = hexToRgb(hex);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  function applyBackground() {
+    const c1 = rgba(colors.background, 1);
+    const c2 = rgba(colors.surfaceContainer, 1);
+    bgEl.style.background =
+      `radial-gradient(90% 70% at 15% 10%, ${c2} 0%, transparent 60%),` +
+      `linear-gradient(160deg, ${c1} 0%, ${c1} 100%)`;
+    const dim = Math.max(0, Math.min(1, cfg.bgDim || 0));
+    bgEl.style.filter = dim > 0 ? `brightness(${1 - dim * 0.4})` : 'none';
+  }
+
+  // ---------- shapes ----------
+  let shapes = [];
+  const palette = () => [colors.primary, colors.secondary, colors.tertiary];
+
+  function makeShapes() {
+    const pal = palette();
+    shapes = [];
+    const n = Math.max(2, Math.min(20, cfg.shapeCount || 6));
+    for (let i = 0; i < n; i++) {
+      const x = Math.random(), y = Math.random();
+      shapes.push({
+        color: pal[i % pal.length],
+        x, y,                 // current anchor (what it wobbles around)
+        fromX: x, fromY: y,   // tween start
+        toX: x, toY: y,       // tween target
+        transStart: 0,
+        transDuration: 1400,
+        transitioning: false,
+        r: (0.14 + Math.random() * 0.16) * Math.max(W, H),
+        speedX: (0.05 + Math.random() * 0.08) * (Math.random() < 0.5 ? -1 : 1),
+        speedY: (0.05 + Math.random() * 0.08) * (Math.random() < 0.5 ? -1 : 1),
+        phase: Math.random() * Math.PI * 2,
+        wobble: 0.15 + Math.random() * 0.2,
+        depth: 0.4 + Math.random() * 0.8
+      });
+    }
+  }
+
+  // slight overshoot so the arrival has a little "bounce/hop" to it
+  function easeOutBack(x) {
+    const c1 = 1.70158, c3 = c1 + 1;
+    return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+  }
+
+  // send every shape flying to a fresh random spot
+  function flyToNewSpots(durationMs) {
+    const now = performance.now();
+    for (const s of shapes) {
+      s.fromX = s.x;
+      s.fromY = s.y;
+      s.toX = Math.random();
+      s.toY = Math.random();
+      s.transStart = now;
+      s.transDuration = durationMs;
+      s.transitioning = true;
+    }
+    speedBoost = 1;
+  }
+
+  function updateShapeAnchors(now) {
+    for (const s of shapes) {
+      if (!s.transitioning) continue;
+      const p = Math.min(1, (now - s.transStart) / s.transDuration);
+      const e = easeOutBack(p);
+      s.x = s.fromX + (s.toX - s.fromX) * e;
+      s.y = s.fromY + (s.toY - s.fromY) * e;
+      if (p >= 1) {
+        s.x = s.toX;
+        s.y = s.toY;
+        s.transitioning = false;
+      }
+    }
+  }
+
+  // ---------- interaction state ----------
+    let wake = 0;                           // brief glow flare when the screen wakes, doesn't touch positions
+  let speedBoost = 0;                     // brief speed-up right after unlock, decays back to normal
+  let intro = 1;                          // only used once, on the very first load
+  let paused = false;
+  let t = 0;
+  let last = performance.now();
+
+  function frame(now) {
+    if (paused) return;
+    const dt = Math.min((now - last) / 1000, 0.1); // seconds, clamped
+    last = now;
+
+    const speedMult = 1 + speedBoost * 0.9;
+    t += dt * cfg.speed * speedMult;
+
+    // envelopes decay smoothly regardless of frame rate — animation itself
+    // never stops or resets, these just add a temporary flourish on top
+    wake = Math.max(0, wake - dt / 1.0);
+    speedBoost = Math.max(0, speedBoost - dt / 1.3);
+    intro = Math.max(0, intro - dt / 1.1);
+
+    updateShapeAnchors(now);
+    draw(dt);
+    requestAnimationFrame(frame);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    drawBlobs();
+
+    if (cfg.particles) drawParticles();
+  }
+
+  function drawBlobs() {
+    for (const s of shapes) {
+      const floatX = Math.cos(t * s.speedX * 2 + s.phase) * s.wobble;
+      const floatY = Math.sin(t * s.speedY * 2 + s.phase) * s.wobble;
+
+      const px = (s.x + floatX) * W;
+      const py = (s.y + floatY) * H;
+
+      const introScale = 1 - intro * 0.5;
+      const r = s.r * Math.max(0.3, introScale) * (1 + wake * 0.06 * s.depth);
+
+      const grad = ctx.createRadialGradient(px, py, 0, px, py, r);
+      const alphaBoost = (1 - intro * 0.7) * (1 + wake * 0.3);
+      grad.addColorStop(0, rgba(s.color, 0.55 * alphaBoost));
+      grad.addColorStop(1, rgba(s.color, 0));
+
+      ctx.save();
+      if (cfg.glow) {
+        ctx.shadowColor = rgba(s.color, 0.5);
+        ctx.shadowBlur = r * 0.4 * (1 + wake * 0.5);
+      }
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(px, py, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+
+  // ---------- lightweight ambient particles ----------
+  let particles = [];
+  function makeParticles() {
+    particles = [];
+    const n = 18;
+    for (let i = 0; i < n; i++) {
+      particles.push({
+        x: Math.random(),
+        y: Math.random(),
+        r: 1 + Math.random() * 2,
+        speed: 0.01 + Math.random() * 0.02,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+  }
+  function drawParticles() {
+    ctx.fillStyle = rgba(colors.primary, 0.35);
+    for (const p of particles) {
+      const py = ((p.y - t * p.speed) % 1 + 1) % 1;
+      const px = (p.x + Math.sin(t * 0.3 + p.phase) * 0.02) % 1;
+      ctx.beginPath();
+      ctx.arc(px * W, py * H, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ---------- metadata handling ----------
+  function applyMetadata(meta) {
+    if (!meta) return;
+    if (meta.accentColors) colors = meta.accentColors;
+    if (meta.theme) theme = meta.theme;
+    applyBackground();
+  }
+
+  window.addEventListener('wallpaperEngineReady', (e) => {
+    loadSettings();
+    applyMetadata(e.detail);
+    resize();
+    makeShapes();
+    makeParticles();
+    intro = 1;
+    last = performance.now();
+    requestAnimationFrame(frame);
+  });
+
+  window.addEventListener('wallpaperUpdate', (e) => {
+    applyMetadata(e.detail);
+
+    const prevCount = cfg.shapeCount;
+    loadSettings();
+    applyBackground();
+    if (cfg.shapeCount !== prevCount) {
+      makeShapes();
+    }
+  });
+
+  window.addEventListener('wallpaperThemeChange', (e) => {
+    applyMetadata(e.detail);
+  });
+
+  // При включении экрана шарики разлетаются в новые случайные позиции.
+  window.addEventListener('wallpaperScreenOn', (e) => {
+    const durationSec = (e.detail && e.detail.animationDurationScreenOn) || 1.1;
+    flyToNewSpots(durationSec * 1000);
+    wake = 1;
+  });
+
+  // Unlocking: shapes fly to a fresh set of spots with a little overshoot
+  // "hop" on arrival, and motion briefly speeds up for the transition.
+  window.addEventListener('wallpaperUnlock', (e) => {
+    const durationSec = (e.detail && e.detail.animationDurationUnlock) || 1.4;
+    flyToNewSpots(durationSec * 1000);
+    wake = 0.6;
+  });
+
+  window.addEventListener('wallpaperScreenOff', () => {
+    // nothing heavy needed; envelopes just settle on their own
+  });
+
+  window.addEventListener('wallpaperPause', () => { paused = true; });
+  window.addEventListener('wallpaperResume', () => {
+    if (paused) {
+      paused = false;
+      last = performance.now();
+      requestAnimationFrame(frame);
+    }
+  });
+
+  // called by the engine whenever metadata updates; kept subtle since the
+  // main "wake"/"unlock" flourishes are handled by the events above
+  window.triggerAnimation = function () {
+    wake = Math.max(wake, 0.4);
+  };
+
+  // ---------- run without the engine too (desktop browser preview) ----------
+  if (!window.WallpaperEngine) {
+    resize();
+    makeShapes();
+    makeParticles();
+    applyBackground();
+    intro = 1;
+    requestAnimationFrame(frame);
+  }
+})();
+</script>
+</body>
+</html>

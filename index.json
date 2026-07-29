@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-29T10:54:43Z",
+  "updatedAt": "2026-07-29T20:09:49Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -121,6 +121,21 @@
       "createdAt": "2026-07-28T21:59:29Z",
       "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/frosted-ice-cubes.zip"
+    },
+    {
+      "id": "material-flow",
+      "name": "Material Flow",
+      "author": "@YouRooni",
+      "version": "1.0.0",
+      "description": "Плавающие градиентные фигуры Material 3 с всплесками при включении и разблокировке.",
+      "path": "wallpapers/material-flow",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.png",
+      "createdAt": "2026-07-29T20:09:49Z",
+      "updatedAt": "2026-07-29T20:09:49Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/material-flow.zip"
     }
   ]
 }

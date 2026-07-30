@@ -94,9 +94,9 @@ def build_entry(folder, manifest, old_entry, timestamp, repository):
             manifest,
             folder,
             "cover",
-            ("cover.png", "cover.jpg", "cover.webp"),
+            ("cover.png", "cover.jpg", "cover.jpeg", "cover.webp"),
             "icon",
-            ("icon.png", "icon.jpg", "icon.webp"),
+            ("icon.png", "icon.jpg", "icon.jpeg", "icon.webp"),
         ),
         "icon": find_art(
             manifest,
@@ -104,7 +104,7 @@ def build_entry(folder, manifest, old_entry, timestamp, repository):
             "icon",
             ("icon.png", "icon.jpg", "icon.webp"),
             "cover",
-            ("cover.png", "cover.jpg", "cover.webp"),
+            ("cover.png", "cover.jpg", "cover.jpeg", "cover.webp"),
         ),
     }
     for field in ("orientations", "themeSupport", "supportsMonet", "tags"):

@@ -2,7 +2,7 @@
   "name": "Material Flow",
   "description": "Плавающие градиентные фигуры Material 3 с всплесками при включении и разблокировке.",
   "author": "@YouRooni",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minAppVersion": ">=1.0.0",
   "main": "index.html",
   "settingsPath": "settings/index.html",

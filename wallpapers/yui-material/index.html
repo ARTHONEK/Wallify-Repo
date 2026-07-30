@@ -5,306 +5,645 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Yui Material</title>
 <style>
-    :root{
-        --bg: #141218;
-        --shape-color: #211F26;
-    }
-    *{ box-sizing:border-box; }
     html, body{
         margin:0; padding:0;
         width:100%; height:100%;
         overflow:hidden;
-        background: var(--bg);
+        background:#141218;
     }
-
-    #stage{
+    #gl{
         position:fixed; inset:0;
-        z-index:0;
-        background: var(--bg);
-    }
-
-    #shapes{
-        position:fixed; inset:0;
-        z-index:1;
         width:100%; height:100%;
         display:block;
-        pointer-events:none;
-    }
-    #shapes path{ fill: var(--shape-color); }
-
-    #yui-wrap{
-        position:fixed;
-        z-index:2;
-        left:50%;
-        bottom:0;
-        transform: translateX(-50%);
-        width:100vw;
-        max-width:900px;
-        aspect-ratio: 3653 / 2267;
-        overflow:visible;
-        line-height:0;
-        pointer-events:none;
-    }
-    #yui{
-        display:block;
-        width:100%;
-        height:100%;
-        object-fit:cover;
-        object-position:center bottom;
-        transform-origin:center center;
-        will-change: transform;
-        -webkit-user-drag:none;
-        user-select:none;
     }
 </style>
 </head>
 <body>
-<div id="stage"></div>
-<svg id="shapes" xmlns="http://www.w3.org/2000/svg"></svg>
-<div id="yui-wrap">
-    <img id="yui" src="assets/yui.png" draggable="false" alt="">
-</div>
+<canvas id="gl"></canvas>
 
 <script>
 (function(){
-    const NS = 'http://www.w3.org/2000/svg';
-    const svg = document.getElementById('shapes');
-    const root = document.documentElement;
+"use strict";
 
-    function applyColors(meta){
-        if(!meta || !meta.accentColors) return;
-        const c = meta.accentColors;
-        if(c.background)       root.style.setProperty('--bg', c.background);
-        if(c.surfaceContainer) root.style.setProperty('--shape-color', c.surfaceContainer);
-    }
-    function pullMetadata(){
-        if(!window.WallpaperEngine) return null;
-        return window.WallpaperEngine.getMetadata();
-    }
+const MAX_DPR           = 2;
+const PHYS_STEP         = 1/60;
+const MAX_PHYS_STEPS    = 5;
 
-    const SHAPE_PATHS = {
-        arrow:   "M262.422 104.907C253.213 90.2936 243.84 75.4777 231.389 63.8739C218.938 52.2412 202.808 44.023 186.27 45.0937C171.748 46.0486 158.288 54.0932 147.662 64.5974C137.036 75.1015 128.781 88.0365 120.661 100.856C98.7011 135.464 76.7136 170.073 54.7533 204.711C44.3181 221.147 33.6105 238.307 30.7224 257.898C27.2349 281.568 36.6348 305.673 53.3093 321.415C70.7467 337.88 99.0008 336.549 120.225 332.035C143.493 327.086 166.244 317.769 189.975 317.797C210.301 317.797 229.945 324.685 249.726 329.691C269.479 334.668 290.704 337.735 309.776 330.327C333.453 321.154 350.454 295.082 349.991 268.315C349.555 243.892 323.508 201.759 323.508 201.759C323.508 201.759 282.78 137.194 262.422 104.907Z",
-        cookie4: "M230.389 50.473C293.109 23.2328 356.767 86.8908 329.527 149.611L325.023 159.981C316.707 179.13 316.707 200.87 325.023 220.019L329.527 230.389C356.767 293.109 293.109 356.767 230.389 329.527L220.019 325.023C200.87 316.707 179.13 316.707 159.981 325.023L149.611 329.527C86.8908 356.767 23.2328 293.109 50.473 230.389L54.9768 220.019C63.2934 200.87 63.2934 179.13 54.9768 159.981L50.473 149.611C23.2328 86.8908 86.8908 23.2328 149.611 50.473L159.981 54.9768C179.13 63.2934 200.87 63.2934 220.019 54.9768L230.389 50.473Z",
-        circle:  "M350 190C350 278.366 278.366 350 190 350C101.634 350 30 278.366 30 190C30 101.634 101.634 30 190 30C278.366 30 350 101.634 350 190Z",
-        triangle:"M136.461 98.2021C151.597 71.8217 159.165 58.6315 168.342 53.0594C181.648 44.9802 198.352 44.9802 211.658 53.0594C220.835 58.6315 228.403 71.8217 243.539 98.2021L325.309 240.72C340.3 266.847 347.795 279.911 347.993 290.585C348.28 306.06 339.949 320.418 326.364 327.864C316.994 333 301.919 333 271.77 333H108.23C78.0806 333 63.006 333 53.636 327.864C40.0505 320.418 31.7204 306.06 32.0072 290.585C32.2049 279.911 39.7003 266.847 54.6909 240.72L136.461 98.2021Z",
-        pill:    "M116.116 71.7851C169.162 18.7383 255.168 18.7383 308.215 71.7851C361.262 124.832 361.262 210.838 308.215 263.884L263.884 308.215C210.838 361.262 124.832 361.262 71.7851 308.215C18.7383 255.168 18.7383 169.162 71.7851 116.116L116.116 71.7851Z"
-    };
-    const VIEWBOX = 380, LOCAL_CENTER = 190;
-    const COLLISION_RATIO = 0.42;
+const MAX_OVERFLOW      = 0.4;
+const ACCEL_SMOOTH      = 0.15;
+const SPRING_K          = 34;
+const SPRING_DAMP       = 8.5;
+const REST_DAMP_RATE    = 2.0;
+const MAX_PHYS_OFFSET   = 46;
+const COLLISION_RATIO   = 0.42;
 
-    const MAX_OVERFLOW  = 0.4;    // фигуры уходят за края не более чем на 40% своего размера
-    const ACCEL_BASE    = 26;     // px — максимальный сдвиг от наклона при весе 1.0
-    const ACCEL_SMOOTH  = 0.15;   // сглаживание акселерометра
-    const SPRING_K       = 34;    // жёсткость возврата к анкорной позиции после столкновения
-    const SPRING_DAMP    = 8.5;   // затухание пружины (1/сек)
-    const REST_DAMP_RATE = 2.0;   // доп. затухание скорости от столкновений (1/сек)
-    const MAX_PHYS_OFFSET = 46;   // px — предохранитель от чрезмерного расталкивания
+const SHAPE_DEFAULTS    = { minPct: 16, maxPct: 52, accel: 26 };
+const YUI_DEFAULTS      = { zoom: 1.10, smoothing: 0.35 };
+const COLOR_DEFAULTS    = { background: '#141218', surfaceContainer: '#211F26' };
 
-    const rand = (a,b) => a + Math.random()*(b-a);
-    const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
+const YUI_ASPECT        = 2267/3653;
+const YUI_MAX_WIDTH     = 900;
+const YUI_MARGIN_SAFETY = 0.7;
 
-    let bodies = [];
-    let sx = 0, sy = 0;       // сглаженные данные акселерометра (roll/pitch)
-    let rafId = null, lastTime = 0, timeAcc = 0, isPaused = false;
+let SIZE_MIN_PCT        = SHAPE_DEFAULTS.minPct;
+let SIZE_MAX_PCT        = SHAPE_DEFAULTS.maxPct;
+let ACCEL_BASE          = SHAPE_DEFAULTS.accel;
+let ZOOM                = YUI_DEFAULTS.zoom;
+let SMOOTHING           = YUI_DEFAULTS.smoothing;
 
-    function pickCenter(w, h, vw, vh){
-        const offX = w*MAX_OVERFLOW, offY = h*MAX_OVERFLOW;
-        let minX = w/2 - offX, maxX = vw - w/2 + offX;
-        let minY = h/2 - offY, maxY = vh - h/2 + offY;
-        if(minX > maxX){ minX = maxX = vw/2; }
-        if(minY > maxY){ minY = maxY = vh/2; }
-        return [rand(minX,maxX), rand(minY,maxY)];
-    }
+const rand              = (a,b) => a + Math.random()*(b-a);
+const clamp             = (v,min,max) => Math.max(min, Math.min(max, v));
 
-    function buildShapes(){
-        svg.innerHTML = '';
-        const vw = window.innerWidth, vh = window.innerHeight;
-        svg.setAttribute('viewBox', `0 0 ${vw} ${vh}`);
+function hexToRGB(hex, fallback){
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+    const h = m ? m[1] : fallback;
+    return [
+        parseInt(h.slice(0,2),16)/255,
+        parseInt(h.slice(2,4),16)/255,
+        parseInt(h.slice(4,6),16)/255
+    ];
+}
 
-        const baseUnit = Math.min(vw, vh);
-        // 5 разных размеров, тасуются между фигурами при каждой перестройке
-        const sizeFactors = [0.16, 0.22, 0.30, 0.40, 0.52];
-        for(let i=sizeFactors.length-1;i>0;i--){
-            const j = Math.floor(Math.random()*(i+1));
-            [sizeFactors[i], sizeFactors[j]] = [sizeFactors[j], sizeFactors[i]];
+const SHAPE_PATHS = {
+    arrow:    "M262.422 104.907C253.213 90.2936 243.84 75.4777 231.389 63.8739C218.938 52.2412 202.808 44.023 186.27 45.0937C171.748 46.0486 158.288 54.0932 147.662 64.5974C137.036 75.1015 128.781 88.0365 120.661 100.856C98.7011 135.464 76.7136 170.073 54.7533 204.711C44.3181 221.147 33.6105 238.307 30.7224 257.898C27.2349 281.568 36.6348 305.673 53.3093 321.415C70.7467 337.88 99.0008 336.549 120.225 332.035C143.493 327.086 166.244 317.769 189.975 317.797C210.301 317.797 229.945 324.685 249.726 329.691C269.479 334.668 290.704 337.735 309.776 330.327C333.453 321.154 350.454 295.082 349.991 268.315C349.555 243.892 323.508 201.759 323.508 201.759C323.508 201.759 282.78 137.194 262.422 104.907Z",
+    cookie4:  "M230.389 50.473C293.109 23.2328 356.767 86.8908 329.527 149.611L325.023 159.981C316.707 179.13 316.707 200.87 325.023 220.019L329.527 230.389C356.767 293.109 293.109 356.767 230.389 329.527L220.019 325.023C200.87 316.707 179.13 316.707 159.981 325.023L149.611 329.527C86.8908 356.767 23.2328 293.109 50.473 230.389L54.9768 220.019C63.2934 200.87 63.2934 179.13 54.9768 159.981L50.473 149.611C23.2328 86.8908 86.8908 23.2328 149.611 50.473L159.981 54.9768C179.13 63.2934 200.87 63.2934 220.019 54.9768L230.389 50.473Z",
+    circle:   "M350 190C350 278.366 278.366 350 190 350C101.634 350 30 278.366 30 190C30 101.634 101.634 30 190 30C278.366 30 350 101.634 350 190Z",
+    triangle: "M136.461 98.2021C151.597 71.8217 159.165 58.6315 168.342 53.0594C181.648 44.9802 198.352 44.9802 211.658 53.0594C220.835 58.6315 228.403 71.8217 243.539 98.2021L325.309 240.72C340.3 266.847 347.795 279.911 347.993 290.585C348.28 306.06 339.949 320.418 326.364 327.864C316.994 333 301.919 333 271.77 333H108.23C78.0806 333 63.006 333 53.636 327.864C40.0505 320.418 31.7204 306.06 32.0072 290.585C32.2049 279.911 39.7003 266.847 54.6909 240.72L136.461 98.2021Z",
+    pill:     "M116.116 71.7851C169.162 18.7383 255.168 18.7383 308.215 71.7851C361.262 124.832 361.262 210.838 308.215 263.884L263.884 308.215C210.838 361.262 124.832 361.262 71.7851 308.215C18.7383 255.168 18.7383 169.162 71.7851 116.116L116.116 71.7851Z"
+};
+const SHAPE_NAMES  = ['arrow','cookie4','circle','triangle','pill'];
+const LOCAL_CENTER = 190;
+
+function flattenPath(d, segmentsPerCurve){
+    const tokens = d.match(/[MCLZ]|-?\d*\.?\d+(?:e-?\d+)?/gi);
+    let i = 0, cur = [0,0];
+    const pts = [];
+    const num = () => parseFloat(tokens[i++]);
+    while(i < tokens.length){
+        const cmd = tokens[i++];
+        if(cmd === 'M'){ cur = [num(), num()]; pts.push(cur.slice()); }
+        else if(cmd === 'L'){ cur = [num(), num()]; pts.push(cur.slice()); }
+        else if(cmd === 'C'){
+            const p0=cur, p1=[num(),num()], p2=[num(),num()], p3=[num(),num()];
+            for(let s=1; s<=segmentsPerCurve; s++){
+                const t=s/segmentsPerCurve, mt=1-t;
+                pts.push([
+                    mt*mt*mt*p0[0] + 3*mt*mt*t*p1[0] + 3*mt*t*t*p2[0] + t*t*t*p3[0],
+                    mt*mt*mt*p0[1] + 3*mt*mt*t*p1[1] + 3*mt*t*t*p2[1] + t*t*t*p3[1]
+                ]);
+            }
+            cur = p3;
         }
-        const refSize = baseUnit * 0.30; // средний размер — точка отсчёта для веса акселерометра
-
-        const names = ['arrow','cookie4','circle','triangle','pill'];
-        bodies = names.map((name, idx) => {
-            const size = baseUnit * sizeFactors[idx];
-            const [cx0, cy0] = pickCenter(size, size, vw, vh);
-            const rot = name === 'circle' ? 0 : rand(-14, 14);
-
-            const el = document.createElementNS(NS,'path');
-            el.setAttribute('d', SHAPE_PATHS[name]);
-            svg.appendChild(el);
-
-            return {
-                el, name, size, rot, cx0, cy0,
-                radius: size*COLLISION_RATIO,
-                // разная сила акселерометра: чем мельче фигура, тем сильнее её сдвигает
-                accelWeight: clamp(refSize/size, 0.5, 2.2),
-                // небольшой дрейф в простое — свой темп и фаза на каждую фигуру
-                idleAmpX: rand(6,14), idleAmpY: rand(6,14),
-                freqX: rand(0.15,0.30), freqY: rand(0.12,0.26),
-                phaseX: rand(0,Math.PI*2), phaseY: rand(0,Math.PI*2),
-                // смещение/скорость от столкновений
-                px:0, py:0, pvx:0, pvy:0,
-                cx:cx0, cy:cy0
-            };
-        });
     }
+    if(pts.length>1){
+        const a=pts[0], b=pts[pts.length-1];
+        if(Math.hypot(a[0]-b[0], a[1]-b[1]) < 0.01) pts.pop();
+    }
+    return pts;
+}
 
-    function step(t){
-        if(isPaused){ rafId=null; return; }
-        if(!lastTime) lastTime = t;
-        let dt = Math.min((t - lastTime)/1000, 0.08); // безопасный потолок даже на низких fps (раздел 11)
-        lastTime = t;
-        timeAcc += dt;
+function earClipTriangulate(inputPts){
+    let pts = inputPts.slice();
+    const signedArea = () => {
+        let a=0;
+        for(let k=0;k<pts.length;k++){
+            const [x1,y1]=pts[k], [x2,y2]=pts[(k+1)%pts.length];
+            a += x1*y2 - x2*y1;
+        }
+        return a/2;
+    };
+    if(signedArea() < 0) pts.reverse();
+    const cross = (o,a,b) => (a[0]-o[0])*(b[1]-o[1]) - (a[1]-o[1])*(b[0]-o[0]);
+    const pointInTri = (p,a,b,c) => {
+        const d1=cross(a,b,p), d2=cross(b,c,p), d3=cross(c,a,p);
+        const neg=(d1<0)||(d2<0)||(d3<0), pos=(d1>0)||(d2>0)||(d3>0);
+        return !(neg && pos);
+    };
+    const idx = pts.map((_,k)=>k);
+    const tris = [];
+    let guard = 0;
+    while(idx.length > 3 && guard < 10000){
+        guard++;
+        let found = false;
+        for(let k=0;k<idx.length;k++){
+            const i0=idx[(k-1+idx.length)%idx.length], i1=idx[k], i2=idx[(k+1)%idx.length];
+            const a=pts[i0], b=pts[i1], c=pts[i2];
+            if(cross(a,b,c) <= 1e-9) continue;
+            let ok = true;
+            for(let j=0;j<idx.length;j++){
+                const pj=idx[j];
+                if(pj===i0||pj===i1||pj===i2) continue;
+                if(pointInTri(pts[pj],a,b,c)){ ok=false; break; }
+            }
+            if(!ok) continue;
+            tris.push(i0,i1,i2);
+            idx.splice(k,1);
+            found = true;
+            break;
+        }
+        if(!found) break;
+    }
+    if(idx.length===3) tris.push(idx[0],idx[1],idx[2]);
 
-        const ax = clamp(sx/9.8,-1,1);
-        const ay = clamp(sy/9.8,-1,1);
+    const verts = new Float32Array(pts.length*2);
+    pts.forEach((p,k)=>{ verts[k*2]=p[0]; verts[k*2+1]=p[1]; });
+    return { vertices: verts, indices: new Uint16Array(tris) };
+}
 
-        bodies.forEach(b=>{
-            const wobbleX = Math.sin(timeAcc*b.freqX + b.phaseX) * b.idleAmpX;
-            const wobbleY = Math.cos(timeAcc*b.freqY + b.phaseY) * b.idleAmpY;
-            b.driveX = b.cx0 + wobbleX + ax * ACCEL_BASE * b.accelWeight;
-            b.driveY = b.cy0 + wobbleY + ay * ACCEL_BASE * b.accelWeight;
-        });
+const canvas = document.getElementById('gl');
+let gl  = null;
+let dpr = 1;
 
-        bodies.forEach(b=>{
-            b.pvx += (-SPRING_K*b.px - SPRING_DAMP*b.pvx) * dt;
-            b.pvy += (-SPRING_K*b.py - SPRING_DAMP*b.pvy) * dt;
-            b.px += b.pvx*dt;
-            b.py += b.pvy*dt;
-            const decay = Math.exp(-REST_DAMP_RATE*dt);
-            b.pvx *= decay; b.pvy *= decay;
+let progShape, progYui, progPost;
+let shapeMeshes = {};
+let yuiBuffers  = null;
+let sceneFBO    = null, sceneTex = null, postVBO = null;
+let yuiTexture  = null, yuiTextureReady = false;
 
-            const mag = Math.hypot(b.px,b.py);
-            if(mag > MAX_PHYS_OFFSET){ const s = MAX_PHYS_OFFSET/mag; b.px*=s; b.py*=s; }
+const SHAPE_VS = `
+attribute vec2 aPos;
+uniform vec2 uResolution;
+uniform vec2 uTranslate;
+uniform float uRotation;
+uniform float uScale;
+void main(){
+    vec2 p = aPos - vec2(${LOCAL_CENTER}.0);
+    float c = cos(uRotation), s = sin(uRotation);
+    p = mat2(c, s, -s, c) * p;
+    p = p * uScale + uTranslate;
+    vec2 clip = (p / uResolution) * 2.0 - 1.0;
+    clip.y = -clip.y;
+    gl_Position = vec4(clip, 0.0, 1.0);
+}`;
+const SHAPE_FS = `
+precision mediump float;
+uniform vec3 uColor;
+void main(){ gl_FragColor = vec4(uColor, 1.0); }`;
 
-            b.cx = b.driveX + b.px;
-            b.cy = b.driveY + b.py;
-        });
+const YUI_VS = `
+attribute vec2 aPos;
+attribute vec2 aUV;
+uniform vec2 uResolution;
+uniform vec2 uQuadPos;
+uniform vec2 uQuadSize;
+varying vec2 vUV;
+void main(){
+    vec2 p = uQuadPos + aPos * uQuadSize;
+    vec2 clip = (p / uResolution) * 2.0 - 1.0;
+    clip.y = -clip.y;
+    gl_Position = vec4(clip, 0.0, 1.0);
+    vUV = aUV;
+}`;
+const YUI_FS = `
+precision mediump float;
+uniform sampler2D uTex;
+varying vec2 vUV;
+void main(){
+    gl_FragColor = texture2D(uTex, vUV);
+}`;
 
-        for(let i=0;i<bodies.length;i++){
-            for(let j=i+1;j<bodies.length;j++){
-                const a = bodies[i], b = bodies[j];
-                const dx = b.cx-a.cx, dy = b.cy-a.cy;
-                const distSq = dx*dx+dy*dy;
-                const minDist = a.radius+b.radius;
-                if(distSq < minDist*minDist){
-                    const dist = Math.max(Math.sqrt(distSq), 1);
-                    const nx = dx/dist, ny = dy/dist;
-                    const overlap = minDist-dist;
+const POST_VS = `
+attribute vec2 aPos;
+varying vec2 vUV;
+void main(){
+    vUV = aPos * 0.5 + 0.5;
+    gl_Position = vec4(aPos, 0.0, 1.0);
+}`;
+const POST_FS = `
+precision mediump float;
+uniform sampler2D uScene;
+uniform vec2 uResolution;
+uniform float uTime;
+varying vec2 vUV;
+void main(){
+    gl_FragColor = texture2D(uScene, vUV);
+}`;
 
-                    a.px -= nx*overlap/2; a.py -= ny*overlap/2;
-                    b.px += nx*overlap/2; b.py += ny*overlap/2;
+function compileShader(type, src){
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if(!gl.getShaderParameter(sh, gl.COMPILE_STATUS)){
+        console.error('Ошибка компиляции шейдера:', gl.getShaderInfoLog(sh));
+        gl.deleteShader(sh);
+        return null;
+    }
+    return sh;
+}
+function createProgram(vsSrc, fsSrc){
+    const vs = compileShader(gl.VERTEX_SHADER, vsSrc);
+    const fs = compileShader(gl.FRAGMENT_SHADER, fsSrc);
+    const prog = gl.createProgram();
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    if(!gl.getProgramParameter(prog, gl.LINK_STATUS)){
+        console.error('Ошибка линковки программы:', gl.getProgramInfoLog(prog));
+        return null;
+    }
+    const uniforms = {}, attribs = {};
+    const nu = gl.getProgramParameter(prog, gl.ACTIVE_UNIFORMS);
+    for(let i=0;i<nu;i++){
+        const name = gl.getActiveUniform(prog,i).name;
+        uniforms[name] = gl.getUniformLocation(prog, name);
+    }
+    const na = gl.getProgramParameter(prog, gl.ACTIVE_ATTRIBUTES);
+    for(let i=0;i<na;i++) attribs[gl.getActiveAttrib(prog,i).name] = gl.getAttribLocation(prog, gl.getActiveAttrib(prog,i).name);
+    return { prog, uniforms, attribs };
+}
 
-                    const rvx = b.pvx-a.pvx, rvy = b.pvy-a.pvy;
-                    const vn = rvx*nx + rvy*ny;
-                    if(vn < 0){
-                        const restitution = 0.85;
-                        const impulse = -(1+restitution)*vn;
-                        const ix = impulse*nx/2, iy = impulse*ny/2;
-                        a.pvx -= ix; a.pvy -= iy;
-                        b.pvx += ix; b.pvy += iy;
-                    }
+function buildShapeMeshes(){
+    shapeMeshes = {};
+    SHAPE_NAMES.forEach(name => {
+        const flat = flattenPath(SHAPE_PATHS[name], 16);
+        const { vertices, indices } = earClipTriangulate(flat);
+        const vbo = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+        const ibo = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+        shapeMeshes[name] = { vbo, ibo, count: indices.length };
+    });
+}
+
+function buildYuiBuffers(){
+    const verts = new Float32Array([0,0, 1,0, 0,1, 1,1]);
+    const vbo = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+    gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+    yuiBuffers = { vbo };
+}
+
+function buildPostQuad(){
+    const verts = new Float32Array([-1,-1, 1,-1, -1,1, 1,1]);
+    postVBO = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, postVBO);
+    gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+}
+
+function loadYuiTexture(){
+    yuiTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, yuiTexture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0,0,0,0]));
+
+    const img = new Image();
+    img.onload = () => {
+        gl.bindTexture(gl.TEXTURE_2D, yuiTexture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        yuiTextureReady = true;
+    };
+    img.src = 'assets/yui.png';
+}
+
+function buildSceneFBO(w, h){
+    if(sceneTex) gl.deleteTexture(sceneTex);
+    if(sceneFBO) gl.deleteFramebuffer(sceneFBO);
+
+    sceneTex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, sceneTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    sceneFBO = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, sceneFBO);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, sceneTex, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+}
+
+function initGL(){
+    gl = canvas.getContext('webgl2', { antialias:true, alpha:false, preserveDrawingBuffer:false })
+      || canvas.getContext('webgl',  { antialias:true, alpha:false, preserveDrawingBuffer:false });
+    if(!gl){
+        document.body.style.background = COLOR_DEFAULTS.background;
+        return false;
+    }
+    progShape = createProgram(SHAPE_VS, SHAPE_FS);
+    progYui   = createProgram(YUI_VS, YUI_FS);
+    progPost  = createProgram(POST_VS, POST_FS);
+    buildShapeMeshes();
+    buildYuiBuffers();
+    buildPostQuad();
+    loadYuiTexture();
+    gl.disable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    return true;
+}
+
+canvas.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault();
+    if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+}, false);
+canvas.addEventListener('webglcontextrestored', () => {
+    if(initGL()){ resize(); startLoop(); }
+}, false);
+
+let bgColor = hexToRGB(COLOR_DEFAULTS.background, '141218');
+let shapeColor = hexToRGB(COLOR_DEFAULTS.surfaceContainer, '211F26');
+
+function applyColors(meta){
+    if(!meta || !meta.accentColors) return;
+    const c = meta.accentColors;
+    if(c.background)       bgColor = hexToRGB(c.background, COLOR_DEFAULTS.background.slice(1));
+    if(c.surfaceContainer) shapeColor = hexToRGB(c.surfaceContainer, COLOR_DEFAULTS.surfaceContainer.slice(1));
+}
+function pullMetadata(){
+    return window.WallpaperEngine ? window.WallpaperEngine.getMetadata() : null;
+}
+
+function readShapeSettings(){
+    if(!window.WallpaperEngine) return { ...SHAPE_DEFAULTS };
+    const e = window.WallpaperEngine;
+    let minPct = parseFloat(e.getSetting('shapeMinSize', String(SHAPE_DEFAULTS.minPct)));
+    let maxPct = parseFloat(e.getSetting('shapeMaxSize', String(SHAPE_DEFAULTS.maxPct)));
+    let accel  = parseFloat(e.getSetting('shapeAccelForce', String(SHAPE_DEFAULTS.accel)));
+    if(!isFinite(minPct)) minPct = SHAPE_DEFAULTS.minPct;
+    if(!isFinite(maxPct)) maxPct = SHAPE_DEFAULTS.maxPct;
+    if(!isFinite(accel))  accel  = SHAPE_DEFAULTS.accel;
+    if(minPct > maxPct){ const t=minPct; minPct=maxPct; maxPct=t; }
+    return { minPct, maxPct, accel };
+}
+function readYuiSettings(){
+    if(!window.WallpaperEngine) return { ...YUI_DEFAULTS };
+    const e = window.WallpaperEngine;
+    let zoom = parseFloat(e.getSetting('yuiZoom', String(YUI_DEFAULTS.zoom)));
+    let smoothing = parseFloat(e.getSetting('yuiSmoothing', String(YUI_DEFAULTS.smoothing)));
+    if(!isFinite(zoom)) zoom = YUI_DEFAULTS.zoom;
+    if(!isFinite(smoothing)) smoothing = YUI_DEFAULTS.smoothing;
+    return { zoom: clamp(zoom,0.8,1.2), smoothing: clamp(smoothing,0,1) };
+}
+
+let bodies = [];
+let sxShapes = 0, syShapes = 0;
+let sxYui = 0, syYui = 0;
+let timeAcc = 0;
+
+function pickCenter(w, h, vw, vh){
+    const offX = w*MAX_OVERFLOW, offY = h*MAX_OVERFLOW;
+    let minX = w/2 - offX, maxX = vw - w/2 + offX;
+    let minY = h/2 - offY, maxY = vh - h/2 + offY;
+    if(minX > maxX){ minX = maxX = vw/2; }
+    if(minY > maxY){ minY = maxY = vh/2; }
+    return [rand(minX,maxX), rand(minY,maxY)];
+}
+
+function buildShapes(){
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const baseUnit = Math.min(vw, vh);
+    const minF = SIZE_MIN_PCT/100, maxF = SIZE_MAX_PCT/100;
+    const sizeFactors = [0, 0.25, 0.5, 0.75, 1].map(t => minF + (maxF-minF)*t);
+    for(let i=sizeFactors.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [sizeFactors[i], sizeFactors[j]] = [sizeFactors[j], sizeFactors[i]];
+    }
+    const refSize = baseUnit * 0.30;
+
+    bodies = SHAPE_NAMES.map((name, idx) => {
+        const size = baseUnit * sizeFactors[idx];
+        const [cx0, cy0] = pickCenter(size, size, vw, vh);
+        const rot = name === 'circle' ? 0 : rand(-14, 14) * Math.PI/180;
+        return {
+            name, size, rot, cx0, cy0,
+            radius: size*COLLISION_RATIO,
+            accelWeight: clamp(refSize/size, 0.5, 2.2),
+            idleAmpX: rand(6,14), idleAmpY: rand(6,14),
+            freqX: rand(0.15,0.30), freqY: rand(0.12,0.26),
+            phaseX: rand(0,Math.PI*2), phaseY: rand(0,Math.PI*2),
+            px:0, py:0, pvx:0, pvy:0,
+            cx:cx0, cy:cy0
+        };
+    });
+}
+
+function updatePhysics(step){
+    timeAcc += step;
+    const ax = clamp(sxShapes/9.8,-1,1);
+    const ay = clamp(syShapes/9.8,-1,1);
+
+    bodies.forEach(b=>{
+        const wobbleX = Math.sin(timeAcc*b.freqX + b.phaseX) * b.idleAmpX;
+        const wobbleY = Math.cos(timeAcc*b.freqY + b.phaseY) * b.idleAmpY;
+        b.driveX = b.cx0 + wobbleX + ax * ACCEL_BASE * b.accelWeight;
+        b.driveY = b.cy0 + wobbleY + ay * ACCEL_BASE * b.accelWeight;
+    });
+
+    bodies.forEach(b=>{
+        b.pvx += (-SPRING_K*b.px - SPRING_DAMP*b.pvx) * step;
+        b.pvy += (-SPRING_K*b.py - SPRING_DAMP*b.pvy) * step;
+        b.px += b.pvx*step;
+        b.py += b.pvy*step;
+        const decay = Math.exp(-REST_DAMP_RATE*step);
+        b.pvx *= decay; b.pvy *= decay;
+
+        const mag = Math.hypot(b.px,b.py);
+        if(mag > MAX_PHYS_OFFSET){ const s = MAX_PHYS_OFFSET/mag; b.px*=s; b.py*=s; }
+
+        b.cx = b.driveX + b.px;
+        b.cy = b.driveY + b.py;
+    });
+
+    for(let i=0;i<bodies.length;i++){
+        for(let j=i+1;j<bodies.length;j++){
+            const a = bodies[i], b = bodies[j];
+            const dx = b.cx-a.cx, dy = b.cy-a.cy;
+            const distSq = dx*dx+dy*dy;
+            const minDist = a.radius+b.radius;
+            if(distSq < minDist*minDist){
+                const dist = Math.max(Math.sqrt(distSq), 1);
+                const nx = dx/dist, ny = dy/dist;
+                const overlap = minDist-dist;
+                a.px -= nx*overlap/2; a.py -= ny*overlap/2;
+                b.px += nx*overlap/2; b.py += ny*overlap/2;
+                const rvx = b.pvx-a.pvx, rvy = b.pvy-a.pvy;
+                const vn = rvx*nx + rvy*ny;
+                if(vn < 0){
+                    const restitution = 0.85;
+                    const impulse = -(1+restitution)*vn;
+                    const ix = impulse*nx/2, iy = impulse*ny/2;
+                    a.pvx -= ix; a.pvy -= iy;
+                    b.pvx += ix; b.pvy += iy;
                 }
             }
         }
+    }
+}
 
-        bodies.forEach(b=>{
-            const s = b.size/VIEWBOX;
-            b.el.setAttribute('transform',
-                `translate(${b.cx.toFixed(2)} ${b.cy.toFixed(2)}) rotate(${b.rot.toFixed(1)}) scale(${s.toFixed(4)}) translate(${-LOCAL_CENTER} ${-LOCAL_CENTER})`);
-        });
+let yuiBaseQuad = { x:0, y:0, w:0, h:0 };
 
-        rafId = requestAnimationFrame(step);
+function layoutYuiQuad(){
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const w = Math.min(vw, YUI_MAX_WIDTH);
+    const h = w * YUI_ASPECT;
+    yuiBaseQuad = { x:(vw-w)/2, y: vh - h, w, h };
+}
+
+let rafId = null, lastTime = 0, physAccumulatorMs = 0, isPaused = false;
+
+function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+    const w = Math.max(1, Math.round(window.innerWidth * dpr));
+    const h = Math.max(1, Math.round(window.innerHeight * dpr));
+    canvas.width = w; canvas.height = h;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    if(gl) buildSceneFBO(w, h);
+    buildShapes();
+    layoutYuiQuad();
+}
+
+function render(){
+    if(!gl) return;
+    const resW = window.innerWidth, resH = window.innerHeight;
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, sceneFBO);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clearColor(bgColor[0], bgColor[1], bgColor[2], 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    gl.useProgram(progShape.prog);
+    gl.uniform2f(progShape.uniforms['uResolution'], resW, resH);
+    gl.uniform3f(progShape.uniforms['uColor'], shapeColor[0], shapeColor[1], shapeColor[2]);
+    bodies.forEach(b=>{
+        const mesh = shapeMeshes[b.name];
+        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vbo);
+        gl.enableVertexAttribArray(progShape.attribs['aPos']);
+        gl.vertexAttribPointer(progShape.attribs['aPos'], 2, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.ibo);
+        gl.uniform2f(progShape.uniforms['uTranslate'], b.cx, b.cy);
+        gl.uniform1f(progShape.uniforms['uRotation'], b.rot);
+        gl.uniform1f(progShape.uniforms['uScale'], b.size/380);
+        gl.drawElements(gl.TRIANGLES, mesh.count, gl.UNSIGNED_SHORT, 0);
+    });
+
+    if(yuiTextureReady){
+        const bw = yuiBaseQuad.w, bh = yuiBaseQuad.h;
+        const cx = yuiBaseQuad.x + bw/2, cy = yuiBaseQuad.y + bh/2;
+        const qw = bw * ZOOM, qh = bh * ZOOM;
+
+        // extra size zoom adds around the anchor box is the only room parallax may use,
+        // so a tilt can never expose empty space past the zoomed image's edge
+        const marginX = (qw - bw)/2 * YUI_MARGIN_SAFETY;
+        const marginY = (qh - bh)/2 * YUI_MARGIN_SAFETY;
+        const ax = clamp(sxYui/9.8,-1,1), ay = clamp(syYui/9.8,-1,1);
+
+        const qx = cx - qw/2 + ax*marginX;
+        const qy = cy - qh/2 + ay*marginY;
+
+        gl.useProgram(progYui.prog);
+        gl.uniform2f(progYui.uniforms['uResolution'], resW, resH);
+        gl.uniform2f(progYui.uniforms['uQuadPos'], qx, qy);
+        gl.uniform2f(progYui.uniforms['uQuadSize'], qw, qh);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, yuiTexture);
+        gl.uniform1i(progYui.uniforms['uTex'], 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, yuiBuffers.vbo);
+        gl.enableVertexAttribArray(progYui.attribs['aPos']);
+        gl.vertexAttribPointer(progYui.attribs['aPos'], 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(progYui.attribs['aUV']);
+        gl.vertexAttribPointer(progYui.attribs['aUV'], 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
-    function startLoop(){
-        if(isPaused) return;
-        if(!rafId){ lastTime = 0; rafId = requestAnimationFrame(step); }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.useProgram(progPost.prog);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, sceneTex);
+    gl.uniform1i(progPost.uniforms['uScene'], 0);
+    if(progPost.uniforms['uResolution']) gl.uniform2f(progPost.uniforms['uResolution'], canvas.width, canvas.height);
+    if(progPost.uniforms['uTime'])       gl.uniform1f(progPost.uniforms['uTime'], timeAcc);
+    gl.bindBuffer(gl.ARRAY_BUFFER, postVBO);
+    gl.enableVertexAttribArray(progPost.attribs['aPos']);
+    gl.vertexAttribPointer(progPost.attribs['aPos'], 2, gl.FLOAT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+
+function frame(now){
+    if(isPaused){ rafId=null; return; }
+    if(!lastTime) lastTime = now;
+    const elapsed = Math.min(now - lastTime, 250);
+    lastTime = now;
+    physAccumulatorMs += elapsed;
+
+    let steps = 0;
+    while(physAccumulatorMs >= PHYS_STEP*1000 && steps < MAX_PHYS_STEPS){
+        updatePhysics(PHYS_STEP);
+        physAccumulatorMs -= PHYS_STEP*1000;
+        steps++;
     }
+    if(steps === MAX_PHYS_STEPS) physAccumulatorMs = 0;
 
-    window.addEventListener('wallpaperGyroscope', (e) => {
-        sx += (e.detail.roll  - sx) * ACCEL_SMOOTH;
-        sy += (e.detail.pitch - sy) * ACCEL_SMOOTH;
-    });
-
-    window.addEventListener('wallpaperPause', () => {
-        isPaused = true;
-        if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
-    });
-    window.addEventListener('wallpaperResume', () => {
-        isPaused = false;
-        startLoop();
-    });
-
-    let resizeTimer = null;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => { buildShapes(); startLoop(); }, 150);
-    });
-
-    window.addEventListener('wallpaperEngineReady', () => {
-        applyColors(pullMetadata());
-        buildShapes();
-        startLoop();
-    });
-    window.addEventListener('wallpaperUpdate', (e) => applyColors(e.detail));
-
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            if(!bodies.length){
-                applyColors(pullMetadata());
-                buildShapes();
-                startLoop();
-            }
-        }, 150);
-    });
-})();
-</script>
-
-<script>
-(function(){
-    const wrap = document.getElementById('yui-wrap');
-    const yui  = document.getElementById('yui');
-
-    const ZOOM          = 1.10;  // зум ассета для параллакса
-    const SMOOTHING      = 0.35; // 0..1: сглаживание гироскопа, меньше — плавнее, больше — отзывчивее
-    const MARGIN_SAFETY  = 0.7;  // доля от доступного запаса (ZOOM-1)/2, оставляем буфер от края
-
-    let sx = 0, sy = 0;          // сглаженные значения roll/pitch
-
-    const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
-
-    function syncHeightFallback(){
-        if(!wrap.clientWidth) return;
-        wrap.style.height = (wrap.clientWidth * (2267/3653)) + 'px';
-    }
-
-    function render(){
-        const w = wrap.clientWidth, h = wrap.clientHeight;
-        const margin = ((ZOOM - 1) / 2) * MARGIN_SAFETY;
-        const dx = clamp(sx / 9.8, -1, 1) * w * margin;
-        const dy = clamp(sy / 9.8, -1, 1) * h * margin;
-        yui.style.transform = `scale(${ZOOM}) translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0)`;
-    }
-
-    // сглаживание данных акселерометра (гироскопа)
-    window.addEventListener('wallpaperGyroscope', (e) => {
-        sx += (e.detail.roll  - sx) * SMOOTHING;
-        sy += (e.detail.pitch - sy) * SMOOTHING;
-        render();
-    });
-
-    window.addEventListener('resize', () => { syncHeightFallback(); render(); });
-
-    syncHeightFallback();
     render();
+    rafId = requestAnimationFrame(frame);
+}
+
+function startLoop(){
+    if(isPaused) return;
+    if(!rafId){ lastTime = 0; rafId = requestAnimationFrame(frame); }
+}
+
+window.addEventListener('wallpaperGyroscope', (e) => {
+    sxShapes += (e.detail.roll  - sxShapes) * ACCEL_SMOOTH;
+    syShapes += (e.detail.pitch - syShapes) * ACCEL_SMOOTH;
+    sxYui += (e.detail.roll  - sxYui) * SMOOTHING;
+    syYui += (e.detail.pitch - syYui) * SMOOTHING;
+});
+
+window.addEventListener('wallpaperPause', () => {
+    isPaused = true;
+    if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+});
+window.addEventListener('wallpaperResume', () => {
+    isPaused = false;
+    lastTime = 0; physAccumulatorMs = 0;
+    startLoop();
+});
+
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(resize, 150);
+});
+
+function applySettings(){
+    const shapeSettings = readShapeSettings();
+    const sizeChanged = (shapeSettings.minPct !== SIZE_MIN_PCT || shapeSettings.maxPct !== SIZE_MAX_PCT);
+    SIZE_MIN_PCT = shapeSettings.minPct; SIZE_MAX_PCT = shapeSettings.maxPct; ACCEL_BASE = shapeSettings.accel;
+
+    const yuiSettings = readYuiSettings();
+    ZOOM = yuiSettings.zoom; SMOOTHING = yuiSettings.smoothing;
+
+    return sizeChanged;
+}
+
+let booted = false;
+function boot(){
+    if(booted) return;
+    booted = true;
+    if(!initGL()) return;
+    applyColors(pullMetadata());
+    applySettings();
+    resize();
+    startLoop();
+}
+
+window.addEventListener('wallpaperEngineReady', () => { applyColors(pullMetadata()); boot(); });
+window.addEventListener('wallpaperUpdate', (e) => {
+    applyColors(e.detail);
+    if(applySettings()) buildShapes();
+});
+
+window.addEventListener('load', () => setTimeout(boot, 150));
 })();
 </script>
 </body>

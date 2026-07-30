@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-30T11:22:33Z",
+  "updatedAt": "2026-07-30T21:41:35Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -197,6 +197,28 @@
       "createdAt": "2026-07-30T08:51:19Z",
       "updatedAt": "2026-07-30T10:02:21Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/DVD-Bouncers.zip"
+    },
+    {
+      "id": "Battery-fill",
+      "name": "Battery Fill",
+      "author": "Artho",
+      "version": "1.2.0",
+      "description": "Заполнение экрана в зависимости от заряда батареи",
+      "path": "wallpapers/Battery-fill",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.jpg",
+      "icon": "icon.png",
+      "supportsMonet": true,
+      "tags": [
+        "material",
+        "battery",
+        "percentage"
+      ],
+      "createdAt": "2026-07-30T21:41:35Z",
+      "updatedAt": "2026-07-30T21:41:35Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/Battery-fill.zip"
     }
   ]
 }

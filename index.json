@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-30T08:51:35Z",
+  "updatedAt": "2026-07-30T10:02:21Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -170,10 +170,20 @@
       "main": "index.html",
       "useGyroscope": false,
       "isLite": false,
-      "cover": "cover.jpeg",
+      "cover": "cover.jpg",
       "icon": "icon.png",
+      "themeSupport": [
+        "light",
+        "dark"
+      ],
+      "supportsMonet": true,
+      "tags": [
+        "material",
+        "dynamic",
+        "figures"
+      ],
       "createdAt": "2026-07-30T08:51:19Z",
-      "updatedAt": "2026-07-30T08:51:35Z",
+      "updatedAt": "2026-07-30T10:02:21Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/DVD-Bouncers.zip"
     }
   ]

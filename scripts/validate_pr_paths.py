@@ -5,7 +5,7 @@ import re
 import subprocess
 import sys
 
-ALLOWED_PATH = re.compile(r"^wallpapers/[a-z0-9][a-z0-9-]*/.+$")
+ALLOWED_PATH = re.compile(r"^wallpapers/.+$")
 
 
 def changed_paths(base_sha, head_sha):

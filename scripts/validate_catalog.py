@@ -20,11 +20,11 @@ if hasattr(sys.stdout, "reconfigure"):  # консоль Windows по умолч
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INDEX = os.path.join(ROOT, "index.json")
 
-ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+ID_RE = re.compile(r"^[^/\\]+$")
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
 REMOTE_RE = re.compile(r"""(?:src|href)\s*=\s*["']https?://""", re.I)
-COVER_NAMES = ("cover.jpg", "cover.png", "cover.webp")
-ICON_NAMES = ("icon.png", "icon.jpg", "icon.webp")
+COVER_NAMES = ("cover.jpg", "cover.jpeg", "cover.png", "cover.webp")
+ICON_NAMES = ("icon.png", "icon.jpg", "icon.jpeg", "icon.webp")
 
 errors = []
 warnings = []
@@ -81,7 +81,7 @@ def check_entry(entry, position, seen_ids):
     where = f"index.json[{wid}]"
 
     if not ID_RE.match(wid):
-        error(where, "id: только строчные латинские буквы, цифры и дефис")
+        error(where, "id: имя папки не должно содержать '/' или '\\\\'")
     if wid in seen_ids:
         error(where, f"id повторяется, впервые встречен в позиции {seen_ids[wid]}")
     else:

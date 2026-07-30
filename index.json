@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-29T20:14:14Z",
+  "updatedAt": "2026-07-30T08:51:35Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -159,6 +159,22 @@
       "createdAt": "2026-07-29T20:09:49Z",
       "updatedAt": "2026-07-29T20:14:14Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/material-flow.zip"
+    },
+    {
+      "id": "DVD-Bouncers",
+      "name": "DVD-Bouncers",
+      "author": "Artho",
+      "version": "1.0.0",
+      "description": "Плавающие фигуры в палитре системы с анимацией тапов и блокировки экрана",
+      "path": "wallpapers/DVD-Bouncers",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.jpeg",
+      "icon": "icon.png",
+      "createdAt": "2026-07-30T08:51:19Z",
+      "updatedAt": "2026-07-30T08:51:35Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/DVD-Bouncers.zip"
     }
   ]
 }

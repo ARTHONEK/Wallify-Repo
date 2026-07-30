@@ -1,0 +1,14 @@
+{
+  "name": "Battery Fill",
+  "description": "Заполнение экрана в зависимости от заряда батареи",
+  "author": "Artho",
+  "version": "1.2.0",
+  "minAppVersion": ">=1.0.0",
+  "main": "index.html",
+  "settingsPath": "settings/index.html",
+  "cover": "cover.jpg",
+  "icon": "icon.png",
+  "isLite": false,
+  "supportsMonet": true,
+  "tags":["material", "battery", "percentage"]
+}

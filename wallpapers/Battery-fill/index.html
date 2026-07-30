@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root {
+    --background: #111315;
+    --fill: #5f8f72;
+    --fill-dark: #355444;
+    --text: #f2f4f3;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+
+    margin: 0;
+    padding: 0;
+
+    overflow: hidden;
+
+    position: fixed;
+
+    inset: 0;
+
+    overscroll-behavior: none;
+
+    touch-action: none;
+
+    user-select: none;
+
+    -webkit-user-select: none;
+
+    -webkit-touch-callout: none;
+
+    background:
+        var(--background);
+
+    font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+}
+
+/* Незаряженная часть экрана */
+#background {
+    position: fixed;
+    inset: 0;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.025),
+            transparent 45%
+        ),
+        var(--background);
+
+    transition:
+        background 700ms ease;
+}
+
+/* Заполнение батареи */
+#batteryFill {
+    position: fixed;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 50%;
+
+    background:
+        linear-gradient(
+            180deg,
+            var(--fill) 0%,
+            var(--fill-dark) 100%
+        );
+
+    transition:
+        height 900ms cubic-bezier(
+            0.22,
+            0.8,
+            0.25,
+            1
+        ),
+        background 700ms ease;
+
+    will-change: height;
+}
+
+/* Мягкая граница заполнения */
+#batteryFill::before {
+    content: "";
+
+    position: absolute;
+
+    top: -2px;
+    left: 0;
+
+    width: 100%;
+    height: 4px;
+
+    background:
+        rgba(255, 255, 255, 0.13);
+
+    filter:
+        blur(2px);
+}
+
+/* Процент заряда */
+#percentage {
+    position: fixed;
+
+    top: 50%;
+    left: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    z-index: 5;
+
+    color:
+        var(--text);
+
+    font-size:
+        clamp(
+            68px,
+            21vw,
+            170px
+        );
+
+    font-weight: 700;
+
+    line-height: 1;
+
+    letter-spacing:
+        -0.06em;
+
+    text-shadow:
+        0 3px 14px
+        rgba(0, 0, 0, 0.25);
+
+    transition:
+        transform 400ms ease,
+        font-size 400ms ease,
+        opacity 400ms ease;
+}
+
+/* Молния */
+#lightning {
+    position: fixed;
+
+    top: 46%;
+    left: 50%;
+
+    transform:
+        translate(-50%, -50%)
+        scale(0.9);
+
+    z-index: 10;
+
+    color:
+        var(--text);
+
+    font-size:
+        clamp(
+            105px,
+            29vw,
+            240px
+        );
+
+    line-height: 1;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    text-shadow:
+        0 0 8px
+        rgba(255, 255, 255, 0.25);
+
+    transition:
+        opacity 350ms ease;
+}
+
+/* Режим зарядки */
+body.charging #lightning {
+    opacity: 0.9;
+
+    animation:
+        lightningPulse
+        1.8s
+        ease-in-out
+        infinite;
+}
+
+/* Останавливаем анимацию,
+   когда обои поставлены на паузу */
+body.wallpaper-paused #lightning {
+    animation-play-state:
+        paused;
+}
+
+/* Процент уходит под молнию */
+body.charging #percentage {
+    transform:
+        translate(-50%, 120%);
+
+    font-size:
+        clamp(
+            42px,
+            11vw,
+            90px
+        );
+
+    opacity: 0.88;
+}
+
+/* Спокойная пульсация */
+@keyframes lightningPulse {
+    0% {
+        transform:
+            translate(-50%, -50%)
+            scale(0.93);
+
+        opacity: 0.65;
+    }
+
+    50% {
+        transform:
+            translate(-50%, -50%)
+            scale(1.04);
+
+        opacity: 0.95;
+    }
+
+    100% {
+        transform:
+            translate(-50%, -50%)
+            scale(0.93);
+
+        opacity: 0.65;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="background"></div>
+
+<div id="batteryFill"></div>
+
+<div id="percentage">
+    50%
+</div>
+
+<div id="lightning">
+    ⚡
+</div>
+
+<script>
+
+/* Запрещаем прокрутку обоев */
+document.addEventListener(
+    "touchmove",
+    function(event) {
+        event.preventDefault();
+    },
+    {
+        passive: false
+    }
+);
+
+
+/* Запрещаем прокрутку колесом */
+document.addEventListener(
+    "wheel",
+    function(event) {
+        event.preventDefault();
+    },
+    {
+        passive: false
+    }
+);
+
+/* Элементы */
+const background =
+    document.getElementById(
+        "background"
+    );
+
+const batteryFill =
+    document.getElementById(
+        "batteryFill"
+    );
+
+const percentage =
+    document.getElementById(
+        "percentage"
+    );
+
+
+/* Последние метаданные */
+let metadata = {
+
+    battery: {
+        level: 50,
+        isCharging: false
+    },
+
+    accentColors: {
+        primary: "#6b967b",
+        secondary: "#7b8c80",
+        background: "#111315",
+        surface: "#191d1a",
+        onSurface: "#f2f4f3"
+    }
+
+};
+
+
+/* Получение настройки */
+function getSetting(
+    key,
+    defaultValue
+) {
+
+    if (
+        window.WallpaperEngine
+    ) {
+
+        return (
+            window.WallpaperEngine
+            .getSetting(
+                key,
+                defaultValue
+            )
+        );
+    }
+
+    return defaultValue;
+}
+
+
+/* Смешивание двух цветов */
+function mixColors(
+    first,
+    second,
+    amount
+) {
+
+    const a =
+        first
+        .replace("#", "")
+        .match(/.{2}/g)
+        .map(
+            value =>
+            parseInt(
+                value,
+                16
+            )
+        );
+
+    const b =
+        second
+        .replace("#", "")
+        .match(/.{2}/g)
+        .map(
+            value =>
+            parseInt(
+                value,
+                16
+            )
+        );
+
+    const result =
+        a.map(
+            (
+                value,
+                index
+            ) => {
+
+                return Math.round(
+                    value +
+                    (
+                        b[index] -
+                        value
+                    ) *
+                    amount
+                );
+
+            }
+        );
+
+    return (
+        "#" +
+        result
+        .map(
+            value =>
+            value
+            .toString(16)
+            .padStart(
+                2,
+                "0"
+            )
+        )
+        .join("")
+    );
+}
+
+
+/* Получение цветов */
+function getColors() {
+
+    const useMaterialYou =
+        getSetting(
+            "materialYou",
+            "true"
+        ) === "true";
+
+
+    if (
+        useMaterialYou
+    ) {
+
+        const colors =
+            metadata.accentColors ||
+            {};
+
+        const primary =
+            colors.primary ||
+            "#6b967b";
+
+        const backgroundColor =
+            colors.background ||
+            "#111315";
+
+        return {
+
+            /* Цвет немного смешан с фоном */
+            fill:
+                mixColors(
+                    primary,
+                    backgroundColor,
+                    0.28
+                ),
+
+            /* Нижняя часть темнее */
+            fillDark:
+                mixColors(
+                    primary,
+                    backgroundColor,
+                    0.52
+                ),
+
+            background:
+                backgroundColor,
+
+            text:
+                colors.onSurface ||
+                "#f2f4f3"
+        };
+    }
+
+
+    /* Пользовательский цвет */
+    const customColor =
+        getSetting(
+            "fillColor",
+            "#5f8f72"
+        );
+
+    return {
+
+        fill:
+            mixColors(
+                customColor,
+                "#111315",
+                0.18
+            ),
+
+        fillDark:
+            mixColors(
+                customColor,
+                "#111315",
+                0.48
+            ),
+
+        background:
+            "#111315",
+
+        text:
+            "#f2f4f3"
+    };
+}
+
+
+/* Применение цветов */
+function applyColors() {
+
+    const colors =
+        getColors();
+
+    document.documentElement
+        .style
+        .setProperty(
+            "--fill",
+            colors.fill
+        );
+
+    document.documentElement
+        .style
+        .setProperty(
+            "--fill-dark",
+            colors.fillDark
+        );
+
+    document.documentElement
+        .style
+        .setProperty(
+            "--background",
+            colors.background
+        );
+
+    document.documentElement
+        .style
+        .setProperty(
+            "--text",
+            colors.text
+        );
+}
+
+
+/* Обновление батареи */
+function updateWallpaper(
+    newMetadata
+) {
+
+    if (
+        newMetadata
+    ) {
+
+        metadata =
+            newMetadata;
+    }
+
+
+    const battery =
+        metadata.battery ||
+        {};
+
+
+    let level =
+        Number(
+            battery.level
+        );
+
+
+    /* Если Android не передал заряд */
+    if (
+        !Number.isFinite(
+            level
+        ) ||
+        level < 0
+    ) {
+
+        level = 50;
+    }
+
+
+    level =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                Math.round(
+                    level
+                )
+            )
+        );
+
+
+    batteryFill
+        .style
+        .height =
+            level + "%";
+
+
+    percentage
+        .textContent =
+            level + "%";
+
+
+    document.body
+        .classList
+        .toggle(
+            "charging",
+            battery.isCharging === true
+        );
+
+
+    applyColors();
+}
+
+
+/* Движок готов */
+window.addEventListener(
+    "wallpaperEngineReady",
+    event => {
+
+        updateWallpaper(
+            event.detail
+        );
+
+    }
+);
+
+
+/* Изменение батареи,
+   темы или настроек */
+window.addEventListener(
+    "wallpaperUpdate",
+    event => {
+
+        updateWallpaper(
+            event.detail
+        );
+
+    }
+);
+
+/* Wallify поставил обои на паузу */
+window.addEventListener(
+    "wallpaperPause",
+    () => {
+
+        document.body.classList.add(
+            "wallpaper-paused"
+        );
+
+    }
+);
+
+
+/* Wallify снова показывает обои */
+window.addEventListener(
+    "wallpaperResume",
+    () => {
+
+        document.body.classList.remove(
+            "wallpaper-paused"
+        );
+
+    }
+);
+
+/* Тест в обычном браузере */
+updateWallpaper(
+    metadata
+);
+
+</script>
+
+</body>
+</html>

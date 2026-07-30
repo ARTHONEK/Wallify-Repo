@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root {
+    color-scheme:
+        dark;
+}
+
+* {
+    box-sizing:
+        border-box;
+}
+
+html,
+body {
+    margin: 0;
+    min-height: 100%;
+
+    background:
+        var(--background);
+
+    color:
+        #e8e3e8;
+
+    font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+}
+
+body {
+    padding:
+        20px 16px 40px;
+}
+
+h1 {
+    margin:
+        0 0 8px;
+
+    font-size:
+        28px;
+
+    font-weight:
+        700;
+}
+
+.description {
+    margin:
+        0 0 24px;
+
+    color:
+        #c9c3c9;
+
+    line-height:
+        1.45;
+}
+
+
+/* Карточка */
+.card {
+    padding:
+        18px;
+
+    margin-bottom:
+        16px;
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.08
+        );
+
+    border-radius:
+        22px;
+
+    background:
+        #1c1b1f;
+}
+
+
+/* Строка переключателя */
+.setting-row {
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    gap:
+        16px;
+}
+
+.setting-title {
+    font-size:
+        17px;
+
+    font-weight:
+        650;
+}
+
+.setting-text {
+    margin-top:
+        5px;
+
+    color:
+        #c9c3c9;
+
+    font-size:
+        14px;
+
+    line-height:
+        1.4;
+}
+
+
+/* Переключатель */
+.switch {
+    position:
+        relative;
+
+    flex:
+        0 0 auto;
+
+    width:
+        54px;
+
+    height:
+        32px;
+}
+
+.switch input {
+    width: 0;
+    height: 0;
+
+    opacity: 0;
+}
+
+.slider {
+    position:
+        absolute;
+
+    inset: 0;
+
+    border-radius:
+        999px;
+
+    background:
+        #49454f;
+
+    transition:
+        background
+        200ms ease;
+}
+
+.slider::before {
+    content:
+        "";
+
+    position:
+        absolute;
+
+    top:
+        6px;
+
+    left:
+        6px;
+
+    width:
+        20px;
+
+    height:
+        20px;
+
+    border-radius:
+        50%;
+
+    background:
+        #e8e3e8;
+
+    transition:
+        transform
+        200ms ease;
+}
+
+.switch input:checked
++ .slider {
+
+    background:
+        #9dc9aa;
+}
+
+.switch input:checked
++ .slider::before {
+
+    transform:
+        translateX(
+            22px
+        );
+
+    background:
+        #173b24;
+}
+
+
+/* Цвет */
+.color-card {
+
+    transition:
+        opacity
+        250ms ease;
+}
+
+.color-card.disabled {
+
+    opacity:
+        0.42;
+
+    pointer-events:
+        none;
+}
+
+.color-label {
+
+    display:
+        block;
+
+    margin-bottom:
+        12px;
+
+    font-size:
+        17px;
+
+    font-weight:
+        650;
+}
+
+.color-row {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        14px;
+}
+
+input[type="color"] {
+
+    width:
+        58px;
+
+    height:
+        44px;
+
+    padding:
+        3px;
+
+    border:
+        none;
+
+    border-radius:
+        12px;
+
+    background:
+        transparent;
+}
+
+.color-value {
+
+    color:
+        #c9c3c9;
+
+    font-family:
+        monospace;
+
+    font-size:
+        16px;
+}
+
+
+/* Подсказка */
+.note {
+
+    margin-top:
+        12px;
+
+    color:
+        #aaa4ab;
+
+    font-size:
+        13px;
+
+    line-height:
+        1.45;
+}
+</style>
+</head>
+
+<body>
+
+<h1>
+    Battery Fill
+</h1>
+
+<p class="description">
+    Настройка цвета и палитры обоев.
+</p>
+
+
+<div class="card">
+
+    <div class="setting-row">
+
+        <div>
+
+            <div class="setting-title">
+                Material You
+            </div>
+
+            <div class="setting-text">
+                Использовать системные
+                цвета Android.
+            </div>
+
+        </div>
+
+
+        <label class="switch">
+
+            <input
+                id="materialYou"
+                type="checkbox"
+            >
+
+            <span class="slider">
+            </span>
+
+        </label>
+
+    </div>
+
+</div>
+
+
+<div
+    id="colorCard"
+    class="card color-card"
+>
+
+    <label
+        class="color-label"
+        for="fillColor"
+    >
+        Цвет заполнения
+    </label>
+
+
+    <div class="color-row">
+
+        <input
+            id="fillColor"
+            type="color"
+            value="#5f8f72"
+        >
+
+        <span
+            id="colorValue"
+            class="color-value"
+        >
+            #5F8F72
+        </span>
+
+    </div>
+
+
+    <div class="note">
+
+        Этот цвет используется,
+        когда Material You выключен.
+
+    </div>
+
+</div>
+
+
+<script>
+
+const materialYou =
+    document.getElementById(
+        "materialYou"
+    );
+
+const fillColor =
+    document.getElementById(
+        "fillColor"
+    );
+
+const colorValue =
+    document.getElementById(
+        "colorValue"
+    );
+
+const colorCard =
+    document.getElementById(
+        "colorCard"
+    );
+
+
+function getEngine() {
+
+    return (
+        window.WallpaperEngine ||
+        null
+    );
+}
+
+
+function saveSetting(
+    key,
+    value
+) {
+
+    const engine =
+        getEngine();
+
+    if (
+        engine
+    ) {
+
+        engine.saveSetting(
+            key,
+            value
+        );
+    }
+
+    else {
+
+        localStorage.setItem(
+            key,
+            value
+        );
+    }
+}
+
+
+function loadSettings() {
+
+    const engine =
+        getEngine();
+
+
+    let materialValue =
+        "true";
+
+    let color =
+        "#5f8f72";
+
+
+    if (
+        engine
+    ) {
+
+        materialValue =
+            engine.getSetting(
+                "materialYou",
+                "true"
+            );
+
+        color =
+            engine.getSetting(
+                "fillColor",
+                "#5f8f72"
+            );
+
+    }
+
+    else {
+
+        materialValue =
+            localStorage.getItem(
+                "materialYou"
+            ) ||
+            "true";
+
+        color =
+            localStorage.getItem(
+                "fillColor"
+            ) ||
+            "#5f8f72";
+    }
+
+
+    materialYou.checked =
+        materialValue ===
+        "true";
+
+
+    fillColor.value =
+        color;
+
+
+    updateColorText();
+
+    updateDisabledState();
+}
+
+
+function updateColorText() {
+
+    colorValue.textContent =
+        fillColor
+        .value
+        .toUpperCase();
+}
+
+
+function updateDisabledState() {
+
+    colorCard
+        .classList
+        .toggle(
+            "disabled",
+            materialYou.checked
+        );
+
+}
+
+
+materialYou.addEventListener(
+    "change",
+    () => {
+
+        saveSetting(
+            "materialYou",
+            materialYou.checked
+        );
+
+        updateDisabledState();
+
+    }
+);
+
+
+fillColor.addEventListener(
+    "input",
+    () => {
+
+        updateColorText();
+
+        saveSetting(
+            "fillColor",
+            fillColor.value
+        );
+
+    }
+);
+
+
+/* Ждём мост Wallify */
+window.addEventListener(
+    "wallpaperEngineReady",
+    () => {
+
+        loadSettings();
+
+    }
+);
+
+
+/* Для проверки в браузере */
+if (
+    !window.WallpaperEngine
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        loadSettings
+    );
+
+}
+
+</script>
+
+</body>
+</html>

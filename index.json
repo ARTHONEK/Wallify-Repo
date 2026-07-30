@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-30T11:12:22Z",
+  "updatedAt": "2026-07-30T11:22:33Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -87,15 +87,27 @@
       "name": "Yui Material",
       "author": "rich_beluga",
       "version": "1.5.0",
-      "description": "Фигуры Material Shapes с лёгким дрейфом в простое, акселерометром разной силы на каждую фигуру. Хирасава Юи снизу экрана с гироскоп-параллаксом. Зум, сглаживание, размер фигур и сила акселерометра настраиваются на экране настроек. Требует GPU-рендеринг WebView - в «Простом режиме отрисовки» (Настройки → Эксперименты) обои не отобразятся",
+      "description": "Хирасава Юи с Material Shapes на фоне",
       "path": "wallpapers/yui-material",
       "main": "index.html",
       "useGyroscope": true,
       "isLite": false,
       "cover": "cover.png",
       "icon": "icon.png",
+      "orientations": [
+        "portrait"
+      ],
+      "themeSupport": [
+        "light",
+        "dark"
+      ],
+      "supportsMonet": true,
+      "tags": [
+        "material",
+        "dynamic"
+      ],
       "createdAt": "2026-07-27T15:21:09Z",
-      "updatedAt": "2026-07-30T10:31:35Z",
+      "updatedAt": "2026-07-30T11:22:33Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/yui-material.zip"
     },
     {

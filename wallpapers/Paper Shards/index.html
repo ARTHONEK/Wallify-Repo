@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Paper Shards</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: #3FA047;
+  }
+  #stage {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<script>
+(function () {
+  "use strict";
+
+  var canvas = document.getElementById('stage');
+  var dpr = Math.min(window.devicePixelRatio || 1, 3);
+
+  var gl = canvas.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false })
+        || canvas.getContext('experimental-webgl', { antialias: false, alpha: false, premultipliedAlpha: false });
+
+  if (!gl) {
+    // extremely old / "simple render mode" devices: bail out to a flat fill
+    // rather than leaving a blank/undefined canvas
+    canvas.style.background = '#3FA047';
+    return;
+  }
+
+  var W = 0, H = 0, minDim = 0;
+
+  // ---------------- deterministic pseudo-random ----------------
+
+  function seeded(i, salt) {
+    var v = Math.sin(i * 12.9898 + salt * 78.233) * 43758.5453;
+    return v - Math.floor(v);
+  }
+
+  // ---------------- color helpers ----------------
+
+  function hexToRgb01(hex) {
+    var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
+    if (!m) return [0.5, 0.5, 0.5];
+    return [parseInt(m[1], 16) / 255, parseInt(m[2], 16) / 255, parseInt(m[3], 16) / 255];
+  }
+
+  function shadeHex(hex, amt) {
+    var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
+    if (!m) return hex;
+    var f = function (v) { return Math.max(0, Math.min(255, Math.round(parseInt(v, 16) + amt * 255))); };
+    return 'rgb(' + f(m[1]) + ',' + f(m[2]) + ',' + f(m[3]) + ')';
+  }
+
+  function parseRgba(str) {
+    var m = /rgba?\(([^)]+)\)/.exec(str || '');
+    if (!m) return [0, 0, 0, 0.5];
+    var parts = m[1].split(',').map(function (s) { return parseFloat(s); });
+    return [parts[0] / 255, parts[1] / 255, parts[2] / 255, parts.length > 3 ? parts[3] : 1];
+  }
+
+  // ---------------- palettes ----------------
+
+  var PALETTES = {
+    original: { label: 'Поп-арт', bg: '#3FA047', bgAccent: '#2E7D38', outline: '#1B2430', shadow: 'rgba(40,26,14,0.5)', cards: ['#74C64A', '#F5B914', '#16202B', '#FFFFFF'] },
+    sunset:   { label: 'Закат',   bg: '#3A1B3E', bgAccent: '#2A1030', outline: '#1B0E1A', shadow: 'rgba(30,10,20,0.5)', cards: ['#FF6B4A', '#FFC24B', '#3A1B3E', '#FFEFE0'] },
+    ocean:    { label: 'Океан',   bg: '#0E2A3D', bgAccent: '#0A1F2E', outline: '#08161F', shadow: 'rgba(5,15,20,0.5)',  cards: ['#2FA6A6', '#8FD9E8', '#0E2A3D', '#F2E8D5'] },
+    mono:     { label: 'Моно',    bg: '#2B2B2B', bgAccent: '#1E1E1E', outline: '#0D0D0D', shadow: 'rgba(0,0,0,0.5)',   cards: ['#E8E8E8', '#9C9C9C', '#1A1A1A', '#FFFFFF'] },
+    berry:    { label: 'Ягода',   bg: '#3D1A38', bgAccent: '#2B1027', outline: '#200D1D', shadow: 'rgba(30,5,25,0.5)', cards: ['#E0479B', '#7A3CC9', '#F2B4D6', '#2B1027'] }
+  };
+
+  function materialPalette(metadata) {
+    var ac = metadata && metadata.accentColors;
+    if (!ac) return PALETTES.original;
+    return {
+      label: 'Material You',
+      bg: ac.background || '#141218',
+      bgAccent: ac.surfaceContainer || ac.surface || '#211F26',
+      outline: ac.surface || '#141218',
+      shadow: 'rgba(0,0,0,0.45)',
+      cards: [ac.primary, ac.secondary, ac.tertiary, ac.surfaceContainer].filter(Boolean)
+    };
+  }
+
+  // ---------------- layout ----------------
+
+  var LAYOUT = [
+    { fx: 0.12, fy: 0.06, fs: 0.42, rot: -12 },
+    { fx: 0.55, fy: 0.02, fs: 0.46, rot: 18 },
+    { fx: 0.92, fy: 0.14, fs: 0.40, rot: -6 },
+    { fx: -0.04, fy: 0.30, fs: 0.44, rot: 24 },
+    { fx: 0.34, fy: 0.26, fs: 0.48, rot: -20 },
+    { fx: 0.75, fy: 0.32, fs: 0.45, rot: 10 },
+    { fx: 0.06, fy: 0.55, fs: 0.46, rot: 8 },
+    { fx: 0.48, fy: 0.52, fs: 0.50, rot: -15 },
+    { fx: 0.88, fy: 0.58, fs: 0.42, rot: 22 },
+    { fx: 0.22, fy: 0.78, fs: 0.44, rot: -9 },
+    { fx: 0.62, fy: 0.80, fs: 0.47, rot: 14 },
+    { fx: 0.98, fy: 0.86, fs: 0.40, rot: -18 },
+    { fx: -0.02, fy: 0.90, fs: 0.38, rot: 20 }
+  ];
+
+  var BG_SHAPES = [
+    { fx: 0.10, fy: 0.15, fs: 0.55, rot: 20, sides: 3, tint: 'accent', alpha: 0.9 },
+    { fx: 0.80, fy: 0.10, fs: 0.60, rot: -30, sides: 4, tint: 'accent', alpha: 0.9 },
+    { fx: 0.40, fy: 0.45, fs: 0.65, rot: 45, sides: 3, tint: 'accent', alpha: 0.85 },
+    { fx: 0.85, fy: 0.60, fs: 0.55, rot: 10, sides: 4, tint: 'accent', alpha: 0.9 },
+    { fx: 0.15, fy: 0.72, fs: 0.60, rot: -15, sides: 3, tint: 'accent', alpha: 0.85 },
+    { fx: 0.55, fy: 0.90, fs: 0.50, rot: 35, sides: 4, tint: 'accent', alpha: 0.9 },
+    { fx: 0.65, fy: 0.22, fs: 0.30, rot: 60, sides: 3, tint: 'card0', alpha: 0.20 },
+    { fx: 0.25, fy: 0.40, fs: 0.26, rot: -25, sides: 4, tint: 'card1', alpha: 0.18 },
+    { fx: 0.05, fy: 0.60, fs: 0.28, rot: 15, sides: 3, tint: 'card2', alpha: 0.16 },
+    { fx: 0.92, fy: 0.42, fs: 0.24, rot: -40, sides: 4, tint: 'card1', alpha: 0.18 },
+    { fx: 0.45, fy: 0.85, fs: 0.22, rot: 30, sides: 3, tint: 'card0', alpha: 0.18 }
+  ];
+
+  function buildShardPoints(size, seedIndex) {
+    var hs = size / 2;
+    var base = [
+      { x: -hs, y: -hs }, { x: hs, y: -hs }, { x: hs, y: hs }, { x: -hs, y: hs }
+    ];
+    var pts = [];
+    for (var e = 0; e < 4; e++) {
+      var a = base[e], b = base[(e + 1) % 4];
+      pts.push({ x: a.x, y: a.y });
+      var t = 0.35 + seeded(seedIndex, e * 3 + 1) * 0.3;
+      var mx = a.x + (b.x - a.x) * t;
+      var my = a.y + (b.y - a.y) * t;
+      var jitter = size * (0.05 + seeded(seedIndex, e * 3 + 2) * 0.06);
+      var nx = (b.y - a.y), ny = -(b.x - a.x);
+      var nl = Math.sqrt(nx * nx + ny * ny) || 1;
+      var dir = seeded(seedIndex, e * 3 + 3) > 0.5 ? 1 : -1;
+      pts.push({ x: mx + (nx / nl) * jitter * dir, y: my + (ny / nl) * jitter * dir });
+    }
+    var cutCorner = Math.floor(seeded(seedIndex, 40) * 4);
+    var cutAmount = size * (0.14 + seeded(seedIndex, 41) * 0.10);
+    var idx = cutCorner * 2;
+    var corner = pts[idx];
+    var prevPt = pts[(idx - 1 + pts.length) % pts.length];
+    var nextPt = pts[(idx + 1) % pts.length];
+    var dirToPrev = { x: prevPt.x - corner.x, y: prevPt.y - corner.y };
+    var dirToNext = { x: nextPt.x - corner.x, y: nextPt.y - corner.y };
+    var lenPrev = Math.sqrt(dirToPrev.x * dirToPrev.x + dirToPrev.y * dirToPrev.y) || 1;
+    var lenNext = Math.sqrt(dirToNext.x * dirToNext.x + dirToNext.y * dirToNext.y) || 1;
+    var p1 = { x: corner.x + (dirToPrev.x / lenPrev) * cutAmount, y: corner.y + (dirToPrev.y / lenPrev) * cutAmount };
+    var p2 = { x: corner.x + (dirToNext.x / lenNext) * cutAmount, y: corner.y + (dirToNext.y / lenNext) * cutAmount };
+    pts.splice(idx, 1, p1, p2);
+    return pts;
+  }
+
+  function buildRegularPoly(size, sides, seedIndex) {
+    var pts = [];
+    var r = size / 2;
+    for (var i = 0; i < sides; i++) {
+      var a = (i / sides) * Math.PI * 2 - Math.PI / 2;
+      var rr = r * (0.9 + seeded(seedIndex, i + 50) * 0.2);
+      pts.push({ x: Math.cos(a) * rr, y: Math.sin(a) * rr });
+    }
+    return pts;
+  }
+
+  // ---------------- mat3 helpers (column-major, matches WebGL convention) ----------------
+
+  function m3Identity() { return [1, 0, 0, 0, 1, 0, 0, 0, 1]; }
+  function m3Multiply(a, b) {
+    var a00 = a[0], a01 = a[1], a02 = a[2], a10 = a[3], a11 = a[4], a12 = a[5], a20 = a[6], a21 = a[7], a22 = a[8];
+    var b00 = b[0], b01 = b[1], b02 = b[2], b10 = b[3], b11 = b[4], b12 = b[5], b20 = b[6], b21 = b[7], b22 = b[8];
+    return [
+      a00 * b00 + a10 * b01 + a20 * b02, a01 * b00 + a11 * b01 + a21 * b02, a02 * b00 + a12 * b01 + a22 * b02,
+      a00 * b10 + a10 * b11 + a20 * b12, a01 * b10 + a11 * b11 + a21 * b12, a02 * b10 + a12 * b11 + a22 * b12,
+      a00 * b20 + a10 * b21 + a20 * b22, a01 * b20 + a11 * b21 + a21 * b22, a02 * b20 + a12 * b21 + a22 * b22
+    ];
+  }
+  function m3Translation(tx, ty) { return [1, 0, 0, 0, 1, 0, tx, ty, 1]; }
+  function m3Rotation(rad) { var c = Math.cos(rad), s = Math.sin(rad); return [c, s, 0, -s, c, 0, 0, 0, 1]; }
+  function m3Scaling(sx, sy) { return [sx, 0, 0, 0, sy, 0, 0, 0, 1]; }
+  function m3Projection(width, height) {
+    // logical pixel space (0,0 top-left) -> clip space, y flipped.
+    // A small overscan (content rendered ~3% larger than the viewport, centered)
+    // is baked in as a safety margin: it guarantees full edge coverage even if
+    // something upstream (our own blit, or the app's own "render quality" downscale
+    // step) rounds a pixel short at the right/bottom edge.
+    var overscan = 1.03;
+    var sx = (2 / width) * overscan;
+    var sy = (-2 / height) * overscan;
+    return [sx, 0, 0, 0, sy, 0, -overscan, overscan, 1];
+  }
+
+  // ---------------- shader helpers ----------------
+
+  function compileShader(type, src) {
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      console.error('Shader compile error:', gl.getShaderInfoLog(s));
+    }
+    return s;
+  }
+  function linkProgram(vsSrc, fsSrc) {
+    var p = gl.createProgram();
+    gl.attachShader(p, compileShader(gl.VERTEX_SHADER, vsSrc));
+    gl.attachShader(p, compileShader(gl.FRAGMENT_SHADER, fsSrc));
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+      console.error('Program link error:', gl.getProgramInfoLog(p));
+    }
+    return p;
+  }
+
+  // shape program: fills a jagged card polygon, optionally pushed outward
+  // (for the outline "halo" pass) and optionally tinted with a halftone dot pattern
+  var shapeProgram = linkProgram(
+    'attribute vec2 aPosition;' +
+    'uniform mat3 uMatrix;' +
+    'uniform float uOutlineExpand;' +
+    'varying vec2 vLocal;' +
+    'void main() {' +
+    '  vec2 p = aPosition;' +
+    '  float len = length(p);' +
+    '  if (len > 0.0001) { p = p + normalize(p) * uOutlineExpand; }' +
+    '  vLocal = aPosition;' +
+    '  vec3 pos = uMatrix * vec3(p, 1.0);' +
+    '  gl_Position = vec4(pos.xy, 0.0, 1.0);' +
+    '}',
+
+    'precision mediump float;' +
+    'varying vec2 vLocal;' +
+    'uniform vec3 uColor;' +
+    'uniform float uAlpha;' +
+    'uniform float uHalftone;' +
+    'uniform vec3 uDotColor;' +
+    'uniform float uDotSpacing;' +
+    'uniform float uDotRadius;' +
+    'void main() {' +
+    '  vec3 col = uColor;' +
+    '  if (uHalftone > 0.5) {' +
+    '    vec2 g = mod(vLocal, uDotSpacing) - uDotSpacing * 0.5;' +
+    '    float d = length(g);' +
+    '    float m = 1.0 - smoothstep(uDotRadius - 1.0, uDotRadius + 1.0, d);' +
+    '    col = mix(col, uDotColor, m * 0.55);' +
+    '  }' +
+    '  gl_FragColor = vec4(col, uAlpha);' +
+    '}'
+  );
+  var shapeLoc = {
+    aPosition: gl.getAttribLocation(shapeProgram, 'aPosition'),
+    uMatrix: gl.getUniformLocation(shapeProgram, 'uMatrix'),
+    uOutlineExpand: gl.getUniformLocation(shapeProgram, 'uOutlineExpand'),
+    uColor: gl.getUniformLocation(shapeProgram, 'uColor'),
+    uAlpha: gl.getUniformLocation(shapeProgram, 'uAlpha'),
+    uHalftone: gl.getUniformLocation(shapeProgram, 'uHalftone'),
+    uDotColor: gl.getUniformLocation(shapeProgram, 'uDotColor'),
+    uDotSpacing: gl.getUniformLocation(shapeProgram, 'uDotSpacing'),
+    uDotRadius: gl.getUniformLocation(shapeProgram, 'uDotRadius')
+  };
+
+  // textured-quad program: used for the baked background
+  var texProgram = linkProgram(
+    'attribute vec2 aPosition;' +
+    'attribute vec2 aTexCoord;' +
+    'uniform mat3 uMatrix;' +
+    'varying vec2 vTexCoord;' +
+    'void main() {' +
+    '  vTexCoord = aTexCoord;' +
+    '  vec3 pos = uMatrix * vec3(aPosition, 1.0);' +
+    '  gl_Position = vec4(pos.xy, 0.0, 1.0);' +
+    '}',
+
+    'precision mediump float;' +
+    'varying vec2 vTexCoord;' +
+    'uniform sampler2D uTexture;' +
+    'void main() {' +
+    '  gl_FragColor = texture2D(uTexture, vTexCoord);' +
+    '}'
+  );
+  var texLoc = {
+    aPosition: gl.getAttribLocation(texProgram, 'aPosition'),
+    aTexCoord: gl.getAttribLocation(texProgram, 'aTexCoord'),
+    uMatrix: gl.getUniformLocation(texProgram, 'uMatrix'),
+    uTexture: gl.getUniformLocation(texProgram, 'uTexture')
+  };
+
+  // blit program: stretches the low-res pixelation buffer to the full screen
+  // with nearest-neighbour sampling baked in via texture params (hard pixel edges)
+  var blitProgram = linkProgram(
+    'attribute vec2 aPosition;' +
+    'varying vec2 vTexCoord;' +
+    'void main() {' +
+    '  vTexCoord = vec2(aPosition.x * 0.5 + 0.5, 1.0 - (aPosition.y * 0.5 + 0.5));' +
+    '  gl_Position = vec4(aPosition, 0.0, 1.0);' +
+    '}',
+
+    'precision mediump float;' +
+    'varying vec2 vTexCoord;' +
+    'uniform sampler2D uTexture;' +
+    'void main() {' +
+    '  gl_FragColor = texture2D(uTexture, vTexCoord);' +
+    '}'
+  );
+  var blitLoc = {
+    aPosition: gl.getAttribLocation(blitProgram, 'aPosition'),
+    uTexture: gl.getUniformLocation(blitProgram, 'uTexture')
+  };
+
+  // dither program: fine full-resolution grain applied after pixelation
+  var ditherProgram = linkProgram(
+    'attribute vec2 aPosition;' +
+    'uniform vec2 uTileScale;' +
+    'varying vec2 vTexCoord;' +
+    'void main() {' +
+    '  vTexCoord = (aPosition * 0.5 + 0.5) * uTileScale;' +
+    '  gl_Position = vec4(aPosition, 0.0, 1.0);' +
+    '}',
+
+    'precision mediump float;' +
+    'varying vec2 vTexCoord;' +
+    'uniform sampler2D uTexture;' +
+    'void main() {' +
+    '  gl_FragColor = texture2D(uTexture, vTexCoord);' +
+    '}'
+  );
+  var ditherLoc = {
+    aPosition: gl.getAttribLocation(ditherProgram, 'aPosition'),
+    uTexture: gl.getUniformLocation(ditherProgram, 'uTexture'),
+    uTileScale: gl.getUniformLocation(ditherProgram, 'uTileScale')
+  };
+
+  // ---------------- fullscreen quad geometry (clip space, reused by blit + dither) ----------------
+
+  var quadBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+
+  // background quad (logical pixel space + texcoords), rebuilt on resize
+  var bgBuffer = gl.createBuffer();
+  var bgTexCoordBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, bgTexCoordBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 1, 1, 1, 0, 0, 1, 0]), gl.STATIC_DRAW);
+
+  // ---------------- dither texture (4x4 Bayer tile) ----------------
+
+  var ditherTexture = gl.createTexture();
+  (function () {
+    var bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+    var data = new Uint8Array(4 * 4 * 4);
+    for (var i = 0; i < 16; i++) {
+      var shade = bayer[i] / 16 > 0.5 ? 235 : 20;
+      data[i * 4] = shade; data[i * 4 + 1] = shade; data[i * 4 + 2] = shade; data[i * 4 + 3] = Math.round(255 * 0.10);
+    }
+    gl.bindTexture(gl.TEXTURE_2D, ditherTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4, 4, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+  })();
+
+  // ---------------- cards ----------------
+
+  var cards = [];
+
+  function buildCards() {
+    cards = LAYOUT.map(function (l, i) {
+      var hx = l.fx * W;
+      var hy = l.fy * H;
+      var size = l.fs * minDim;
+      var speed = (0.06 + seeded(i, 60) * 0.12) * (seeded(i, 61) > 0.5 ? 1 : -1);
+      var prev = cards[i];
+      var pts = buildShardPoints(size, i);
+
+      var cx = 0, cy = 0;
+      for (var k = 0; k < pts.length; k++) { cx += pts[k].x; cy += pts[k].y; }
+      cx /= pts.length; cy /= pts.length;
+
+      var verts = [cx, cy];
+      for (var k2 = 0; k2 < pts.length; k2++) verts.push(pts[k2].x, pts[k2].y);
+      verts.push(pts[0].x, pts[0].y);
+
+      var buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+
+      return {
+        x: hx, y: hy, size: size,
+        rot: prev ? prev.rot : l.rot * Math.PI / 180,
+        rotSpeed: speed,
+        buffer: buf,
+        vertCount: verts.length / 2,
+        colorIdx: i % 4,
+        hasHalftone: seeded(i, 70) > 0.55
+      };
+    });
+  }
+
+  // ---------------- background baked as a texture (built once via 2D canvas) ----------------
+
+  var bgTexture = gl.createTexture();
+
+  function rebuildBackground() {
+    if (!W || !H) return;
+    var pal = activePalette;
+    var bw = Math.max(1, Math.round(W * dpr));
+    var bh = Math.max(1, Math.round(H * dpr));
+    var off = document.createElement('canvas');
+    off.width = bw; off.height = bh;
+    var octx = off.getContext('2d');
+    octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    var grad = octx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, shadeHex(pal.bg, 0.05));
+    grad.addColorStop(1, shadeHex(pal.bg, -0.10));
+    octx.fillStyle = grad;
+    octx.fillRect(0, 0, W, H);
+
+    for (var i = 0; i < BG_SHAPES.length; i++) {
+      var s = BG_SHAPES[i];
+      var color = s.tint === 'accent' ? pal.bgAccent : pal.cards[parseInt(s.tint.replace('card', ''), 10) % pal.cards.length];
+      var pts = buildRegularPoly(s.fs * minDim, s.sides, i + 100);
+      octx.save();
+      octx.translate(s.fx * W, s.fy * H);
+      octx.rotate(s.rot * Math.PI / 180);
+      octx.globalAlpha = s.alpha;
+      octx.fillStyle = color;
+      octx.beginPath();
+      octx.moveTo(pts[0].x, pts[0].y);
+      for (var p = 1; p < pts.length; p++) octx.lineTo(pts[p].x, pts[p].y);
+      octx.closePath();
+      octx.fill();
+      octx.restore();
+    }
+
+    // sparse dot texture baked straight into the background bitmap
+    octx.save();
+    octx.globalAlpha = 0.18;
+    octx.fillStyle = pal.outline;
+    var spacing = 30;
+    for (var yy = 0; yy < H; yy += spacing) {
+      for (var xx = 0; xx < W; xx += spacing) {
+        octx.beginPath();
+        octx.arc(xx, yy, 30 * 0.09, 0, Math.PI * 2);
+        octx.fill();
+      }
+    }
+    octx.restore();
+
+    gl.bindTexture(gl.TEXTURE_2D, bgTexture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, off);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+  }
+
+  // ---------------- settings ----------------
+
+  var settings = {
+    rotationSpeed: 1.0,
+    pixelSize: 4,
+    ditherEnabled: true,
+    paletteId: 'original',
+    materialYou: false,
+    outlineWidth: 1.0,
+    lockScale: 1.15,
+    lockOutline: 1.6
+  };
+
+  var activePalette = PALETTES.original;
+  var lastMetadata = null;
+  var isLocked = false;
+  var lockT = 0;
+
+  // charging "wave": a one-shot spring impulse, not a persistent state.
+  // Detection is best-effort — this event/field isn't documented yet on the
+  // Wallify-Repo API doc at the time this was written, so several plausible
+  // shapes are covered. metadata is logged once so the real field/event name
+  // can be confirmed via `adb logcat WallifyJS:V` while plugging in a charger.
+  var isCharging = false;
+  var waveOffset = 0;
+  var waveVel = 0;
+  var WAVE_KICK = 900;       // initial upward velocity, px/s
+  var WAVE_SPRING_K = 45;
+  var WAVE_DAMPING = 7;
+  var metadataLogged = false;
+
+  function triggerWave() {
+    waveVel -= WAVE_KICK;
+  }
+
+  function setCharging(newVal) {
+    if (typeof newVal !== 'boolean') return;
+    if (newVal && !isCharging) triggerWave();
+    isCharging = newVal;
+  }
+
+  function detectCharging(metadata) {
+    if (!metadata) return;
+    if (typeof metadata.isCharging === 'boolean') { setCharging(metadata.isCharging); return; }
+    if (typeof metadata.charging === 'boolean') { setCharging(metadata.charging); return; }
+    if (metadata.battery && typeof metadata.battery.charging === 'boolean') { setCharging(metadata.battery.charging); return; }
+    if (metadata.battery && typeof metadata.battery.isCharging === 'boolean') { setCharging(metadata.battery.isCharging); return; }
+  }
+
+  function refreshPalette() {
+    activePalette = settings.materialYou ? materialPalette(lastMetadata) : (PALETTES[settings.paletteId] || PALETTES.original);
+    rebuildBackground();
+  }
+
+  function applyMetadata(metadata) {
+    lastMetadata = metadata;
+    isLocked = !!(metadata && metadata.isUnlocked === false);
+    detectCharging(metadata);
+    if (!metadataLogged && metadata) {
+      metadataLogged = true;
+      console.log('Paper Shards: metadata snapshot ->', JSON.stringify(metadata));
+    }
+  }
+
+  function readSettings() {
+    var engine = window.WallpaperEngine;
+    if (!engine) return;
+    settings.rotationSpeed = parseFloat(engine.getSetting('rotationSpeed', '1.0')) || 1.0;
+    settings.pixelSize = parseFloat(engine.getSetting('pixelSize', '4')) || 4;
+    settings.ditherEnabled = engine.getSetting('ditherEnabled', 'true') === 'true';
+    settings.paletteId = engine.getSetting('paletteId', 'original');
+    settings.materialYou = engine.getSetting('materialYou', 'false') === 'true';
+    settings.outlineWidth = parseFloat(engine.getSetting('outlineWidth', '1.0')) || 1.0;
+    settings.lockScale = parseFloat(engine.getSetting('lockScale', '1.15')) || 1.15;
+    settings.lockOutline = parseFloat(engine.getSetting('lockOutline', '1.6')) || 1.6;
+    refreshPalette();
+  }
+
+  window.addEventListener('wallpaperEngineReady', function (e) { applyMetadata(e.detail); readSettings(); });
+  window.addEventListener('wallpaperUpdate', function (e) { applyMetadata(e.detail); readSettings(); });
+  window.addEventListener('wallpaperUnlock', function (e) { applyMetadata(e.detail); });
+
+  // best-effort guesses at dedicated event names, in case charging state
+  // arrives this way instead of (or in addition to) the metadata fields above
+  window.addEventListener('wallpaperChargingStart', function () { setCharging(true); });
+  window.addEventListener('wallpaperChargingStop', function () { setCharging(false); });
+  window.addEventListener('wallpaperBatteryChange', function (e) {
+    var d = e.detail || {};
+    if (typeof d.charging === 'boolean') setCharging(d.charging);
+    else if (typeof d.isCharging === 'boolean') setCharging(d.isCharging);
+  });
+
+
+  // ---------------- pixelation framebuffer ----------------
+
+  var blockFBO = null, blockTexture = null, blockW = 0, blockH = 0;
+
+  function ensureBlockFBO(ow, oh) {
+    if (blockFBO && blockW === ow && blockH === oh) return;
+    blockW = ow; blockH = oh;
+    if (!blockFBO) blockFBO = gl.createFramebuffer();
+    if (!blockTexture) blockTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, blockTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, ow, oh, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, blockFBO);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, blockTexture, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+
+  // ---------------- resize ----------------
+
+  function resize() {
+    W = canvas.clientWidth || window.innerWidth;
+    H = canvas.clientHeight || window.innerHeight;
+    minDim = Math.min(W, H);
+    canvas.width = Math.ceil(W * dpr);
+    canvas.height = Math.ceil(H * dpr);
+
+    var quad = new Float32Array([0, 0, W, 0, 0, H, W, H]);
+    gl.bindBuffer(gl.ARRAY_BUFFER, bgBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
+
+    buildCards();
+    rebuildBackground();
+  }
+
+  // ---------------- drawing ----------------
+
+  function drawBackground(projMatrix) {
+    gl.useProgram(texProgram);
+    gl.uniformMatrix3fv(texLoc.uMatrix, false, projMatrix);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, bgTexture);
+    gl.uniform1i(texLoc.uTexture, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, bgBuffer);
+    gl.enableVertexAttribArray(texLoc.aPosition);
+    gl.vertexAttribPointer(texLoc.aPosition, 2, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, bgTexCoordBuffer);
+    gl.enableVertexAttribArray(texLoc.aTexCoord);
+    gl.vertexAttribPointer(texLoc.aTexCoord, 2, gl.FLOAT, false, 0, 0);
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+
+  function drawCards(projMatrix) {
+    var pal = activePalette;
+    var sizeMul = 1 + lockT * (settings.lockScale - 1);
+    var outlineMul = settings.outlineWidth * (1 + lockT * (settings.lockOutline - 1));
+    var shadowRgba = parseRgba(pal.shadow);
+
+    gl.useProgram(shapeProgram);
+    gl.enableVertexAttribArray(shapeLoc.aPosition);
+
+    for (var j = 0; j < cards.length; j++) {
+      var card = cards[j];
+      var offset = card.size * 0.045;
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, card.buffer);
+      gl.vertexAttribPointer(shapeLoc.aPosition, 2, gl.FLOAT, false, 0, 0);
+
+      var baseColor = hexToRgb01(pal.cards[card.colorIdx % pal.cards.length]);
+      var outlineColor = hexToRgb01(pal.outline);
+      var outlinePx = Math.max(2, card.size * 0.03) * outlineMul;
+
+      // shadow pass
+      var mShadow = m3Multiply(projMatrix, m3Translation(card.x + offset * sizeMul, card.y + waveOffset + offset * 1.3 * sizeMul));
+      mShadow = m3Multiply(mShadow, m3Rotation(card.rot));
+      mShadow = m3Multiply(mShadow, m3Scaling(sizeMul, sizeMul));
+      gl.uniformMatrix3fv(shapeLoc.uMatrix, false, mShadow);
+      gl.uniform1f(shapeLoc.uOutlineExpand, 0);
+      gl.uniform3fv(shapeLoc.uColor, [shadowRgba[0], shadowRgba[1], shadowRgba[2]]);
+      gl.uniform1f(shapeLoc.uAlpha, shadowRgba[3]);
+      gl.uniform1f(shapeLoc.uHalftone, 0);
+      gl.drawArrays(gl.TRIANGLE_FAN, 0, card.vertCount);
+
+      // shared body matrix (no offset)
+      var mBody = m3Multiply(projMatrix, m3Translation(card.x, card.y + waveOffset));
+      mBody = m3Multiply(mBody, m3Rotation(card.rot));
+      mBody = m3Multiply(mBody, m3Scaling(sizeMul, sizeMul));
+      gl.uniformMatrix3fv(shapeLoc.uMatrix, false, mBody);
+
+      // outline "halo" pass — same geometry pushed outward, drawn behind the fill
+      gl.uniform1f(shapeLoc.uOutlineExpand, outlinePx / sizeMul);
+      gl.uniform3fv(shapeLoc.uColor, outlineColor);
+      gl.uniform1f(shapeLoc.uAlpha, 1);
+      gl.uniform1f(shapeLoc.uHalftone, 0);
+      gl.drawArrays(gl.TRIANGLE_FAN, 0, card.vertCount);
+
+      // fill pass, with an optional halftone dot tint
+      gl.uniform1f(shapeLoc.uOutlineExpand, 0);
+      gl.uniform3fv(shapeLoc.uColor, baseColor);
+      gl.uniform1f(shapeLoc.uAlpha, 1);
+      if (card.hasHalftone) {
+        gl.uniform1f(shapeLoc.uHalftone, 1);
+        gl.uniform3fv(shapeLoc.uDotColor, hexToRgb01(shadeHex(pal.cards[card.colorIdx % pal.cards.length], -0.22)));
+        gl.uniform1f(shapeLoc.uDotSpacing, 12);
+        gl.uniform1f(shapeLoc.uDotRadius, 1.6);
+      } else {
+        gl.uniform1f(shapeLoc.uHalftone, 0);
+      }
+      gl.drawArrays(gl.TRIANGLE_FAN, 0, card.vertCount);
+    }
+  }
+
+  function drawScene(targetW, targetH) {
+    var proj = m3Projection(W, H);
+    gl.clearColor(0, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    drawBackground(proj);
+    drawCards(proj);
+  }
+
+  function blitToScreen() {
+    gl.useProgram(blitProgram);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, blockTexture);
+    gl.uniform1i(blitLoc.uTexture, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+    gl.enableVertexAttribArray(blitLoc.aPosition);
+    gl.vertexAttribPointer(blitLoc.aPosition, 2, gl.FLOAT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+
+  function drawDither() {
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.useProgram(ditherProgram);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, ditherTexture);
+    gl.uniform1i(ditherLoc.uTexture, 0);
+    gl.uniform2f(ditherLoc.uTileScale, canvas.width / 4, canvas.height / 4);
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+    gl.enableVertexAttribArray(ditherLoc.aPosition);
+    gl.vertexAttribPointer(ditherLoc.aPosition, 2, gl.FLOAT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+
+  function renderFrame() {
+    gl.disable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+    var pxSize = Math.max(1, settings.pixelSize);
+
+    if (pxSize <= 1.01) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.enable(gl.BLEND);
+      drawScene();
+    } else {
+      var ow = Math.max(1, Math.round(W / pxSize));
+      var oh = Math.max(1, Math.round(H / pxSize));
+      ensureBlockFBO(ow, oh);
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, blockFBO);
+      gl.viewport(0, 0, ow, oh);
+      gl.enable(gl.BLEND);
+      drawScene();
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.disable(gl.BLEND);
+      blitToScreen();
+    }
+
+    if (settings.ditherEnabled) {
+      drawDither();
+    }
+  }
+
+  // ---------------- rotation + lock animation ----------------
+
+  var LOCK_ANIM_SPEED = 5.0;
+
+  function updateRotation(dt) {
+    var mul = settings.rotationSpeed;
+    for (var i = 0; i < cards.length; i++) {
+      var c = cards[i];
+      c.rot += c.rotSpeed * mul * dt;
+      if (c.rot > 1000 || c.rot < -1000) c.rot = c.rot % (Math.PI * 2);
+    }
+    var target = isLocked ? 1 : 0;
+    lockT += (target - lockT) * Math.min(dt * LOCK_ANIM_SPEED, 1);
+
+    var waveAccel = (0 - waveOffset) * WAVE_SPRING_K - waveVel * WAVE_DAMPING;
+    waveVel += waveAccel * dt;
+    waveOffset += waveVel * dt;
+  }
+
+  // ---------------- main loop, pause/resume, context loss ----------------
+
+  var running = true;
+  var last = performance.now();
+
+  function frame(now) {
+    var dt = Math.min((now - last) / 1000, 0.1);
+    last = now;
+    if (running) {
+      updateRotation(dt);
+      renderFrame();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('wallpaperPause', function () { running = false; });
+  window.addEventListener('wallpaperResume', function () {
+    if (!running) { running = true; last = performance.now(); }
+  });
+
+  canvas.addEventListener('webglcontextlost', function (e) { e.preventDefault(); running = false; });
+  canvas.addEventListener('webglcontextrestored', function () { running = true; last = performance.now(); });
+
+  window.addEventListener('resize', resize);
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(resize).observe(canvas);
+  }
+
+  resize();
+  refreshPalette();
+  readSettings();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

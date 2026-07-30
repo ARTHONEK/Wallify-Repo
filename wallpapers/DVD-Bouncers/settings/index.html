@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #141218;
+      color: #E6E0E9;
+    }
+
+    .field {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .val {
+      float: right;
+      color: #D0BCFF;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: #D0BCFF;
+    }
+
+    .checkbox-field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .checkbox-field label {
+      margin: 0;
+      flex: 1;
+    }
+
+    input[type="checkbox"] {
+      flex: 0 0 auto;
+      width: 22px;
+      height: 22px;
+      margin: 0;
+      accent-color: #D0BCFF;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="field">
+    <label for="count">
+      Количество фигур:
+      <span id="countVal" class="val">6</span>
+    </label>
+
+<input
+  type="range"
+  id="count"
+  min="1"
+  max="20"
+  value="6"
+>
+
+  </div>
+
+  <div class="field">
+    <label for="size">
+      Размер (px):
+      <span id="sizeVal" class="val">90</span>
+    </label>
+
+<input
+  type="range"
+  id="size"
+  min="40"
+  max="160"
+  value="90"
+>
+
+  </div>
+
+  <div class="checkbox-field">
+    <label for="collision">
+      Столкновения между собой
+    </label>
+
+<input
+  type="checkbox"
+  id="collision"
+  checked
+>
+
+  </div>
+
+  <div class="checkbox-field">
+    <label for="materialYou">
+      Использовать цвета Material You
+    </label>
+
+<input
+  type="checkbox"
+  id="materialYou"
+>
+
+  </div>
+
+  <div class="checkbox-field">
+    <label for="tapChange">
+      Смена фигур по нажатию
+    </label>
+
+<input
+  type="checkbox"
+  id="tapChange"
+  checked
+>
+
+  </div>
+
+  <div class="checkbox-field">
+    <label for="lockAnim">
+      Анимация при блокировке
+    </label>
+
+<input
+  type="checkbox"
+  id="lockAnim"
+  checked
+>
+
+  </div>
+
+  <script>
+    const countInput = document.getElementById('count');
+    const sizeInput = document.getElementById('size');
+
+    const collisionInput = document.getElementById('collision');
+    const materialYouInput = document.getElementById('materialYou');
+    const tapChangeInput = document.getElementById('tapChange');
+    const lockAnimInput = document.getElementById('lockAnim');
+
+    const countVal = document.getElementById('countVal');
+    const sizeVal = document.getElementById('sizeVal');
+
+    /*
+      Применение цветов Material You
+      к странице настроек.
+    */
+    function applyColors(colors) {
+      if (!colors) return;
+
+      if (colors.background) {
+        document.body.style.background = colors.background;
+      }
+
+      if (colors.onBackground) {
+        document.body.style.color = colors.onBackground;
+      }
+
+      if (colors.primary) {
+        const primary = colors.primary;
+
+        countVal.style.color = primary;
+        sizeVal.style.color = primary;
+
+        countInput.style.accentColor = primary;
+        sizeInput.style.accentColor = primary;
+
+        collisionInput.style.accentColor = primary;
+        materialYouInput.style.accentColor = primary;
+        tapChangeInput.style.accentColor = primary;
+        lockAnimInput.style.accentColor = primary;
+      }
+    }
+
+    /*
+      Получение сохранённой настройки.
+
+      Если Wallify ещё не передал значение,
+      используется значение по умолчанию.
+    */
+    function getSetting(key, fallback) {
+      if (!window.WallpaperEngine) {
+        return fallback;
+      }
+
+      return window.WallpaperEngine.getSetting(
+        key,
+        String(fallback)
+      );
+    }
+
+    /*
+      Загрузка настроек в элементы страницы.
+    */
+    function loadSettings(detail) {
+      if (detail && detail.accentColors) {
+        applyColors(detail.accentColors);
+      }
+
+      countInput.value = getSetting(
+        'shapeCount',
+        6
+      );
+
+      sizeInput.value = getSetting(
+        'shapeSize',
+        90
+      );
+
+      collisionInput.checked =
+        getSetting(
+          'enableCollisions',
+          true
+        ) === 'true';
+
+      materialYouInput.checked =
+        getSetting(
+          'useMaterialYou',
+          false
+        ) === 'true';
+
+      tapChangeInput.checked =
+        getSetting(
+          'changeOnTap',
+          true
+        ) === 'true';
+
+      lockAnimInput.checked =
+        getSetting(
+          'lockAnim',
+          true
+        ) === 'true';
+
+      countVal.textContent =
+        countInput.value;
+
+      sizeVal.textContent =
+        sizeInput.value;
+    }
+
+    /*
+      Сохранение настройки через API Wallify.
+    */
+    function saveSetting(key, value) {
+      if (
+        window.WallpaperEngine &&
+        typeof window.WallpaperEngine.saveSetting === 'function'
+      ) {
+        window.WallpaperEngine.saveSetting(
+          key,
+          String(value)
+        );
+      }
+    }
+
+    /*
+      События Wallify.
+    */
+    window.addEventListener(
+      'wallpaperEngineReady',
+      (event) => {
+        loadSettings(event.detail);
+      }
+    );
+
+    window.addEventListener(
+      'wallpaperUpdate',
+      (event) => {
+        if (
+          event.detail &&
+          event.detail.accentColors
+        ) {
+          applyColors(
+            event.detail.accentColors
+          );
+        }
+
+        loadSettings(event.detail);
+      }
+    );
+
+    /*
+      Изменение количества фигур.
+    */
+    countInput.addEventListener(
+      'input',
+      (event) => {
+        const value = event.target.value;
+
+        countVal.textContent = value;
+
+        saveSetting(
+          'shapeCount',
+          value
+        );
+      }
+    );
+
+    /*
+      Изменение размера фигур.
+    */
+    sizeInput.addEventListener(
+      'input',
+      (event) => {
+        const value = event.target.value;
+
+        sizeVal.textContent = value;
+
+        saveSetting(
+          'shapeSize',
+          value
+        );
+      }
+    );
+
+    /*
+      Переключатели.
+    */
+    collisionInput.addEventListener(
+      'change',
+      (event) => {
+        saveSetting(
+          'enableCollisions',
+          event.target.checked
+        );
+      }
+    );
+
+    materialYouInput.addEventListener(
+      'change',
+      (event) => {
+        saveSetting(
+          'useMaterialYou',
+          event.target.checked
+        );
+      }
+    );
+
+    tapChangeInput.addEventListener(
+      'change',
+      (event) => {
+        saveSetting(
+          'changeOnTap',
+          event.target.checked
+        );
+      }
+    );
+
+    lockAnimInput.addEventListener(
+      'change',
+      (event) => {
+        saveSetting(
+          'lockAnim',
+          event.target.checked
+        );
+      }
+    );
+  </script>
+
+</body>
+</html>

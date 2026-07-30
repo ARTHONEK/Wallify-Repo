@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-30T10:02:21Z",
+  "updatedAt": "2026-07-30T11:12:22Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -86,8 +86,8 @@
       "id": "yui-material",
       "name": "Yui Material",
       "author": "rich_beluga",
-      "version": "1.3.0",
-      "description": "Фигуры Material Shapes с лёгким дрейфом в простое, акселерометром разной силы на каждую фигуру и столкновениями друг с другом. Хирасава Юи снизу экрана с гироскоп-параллаксом (zoom 1.1x, сглаженные данные).",
+      "version": "1.5.0",
+      "description": "Фигуры Material Shapes с лёгким дрейфом в простое, акселерометром разной силы на каждую фигуру. Хирасава Юи снизу экрана с гироскоп-параллаксом. Зум, сглаживание, размер фигур и сила акселерометра настраиваются на экране настроек. Требует GPU-рендеринг WebView - в «Простом режиме отрисовки» (Настройки → Эксперименты) обои не отобразятся",
       "path": "wallpapers/yui-material",
       "main": "index.html",
       "useGyroscope": true,
@@ -95,7 +95,7 @@
       "cover": "cover.png",
       "icon": "icon.png",
       "createdAt": "2026-07-27T15:21:09Z",
-      "updatedAt": "2026-07-29T10:54:43Z",
+      "updatedAt": "2026-07-30T10:31:35Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/yui-material.zip"
     },
     {
@@ -134,7 +134,7 @@
       "id": "material-flow",
       "name": "Material Flow",
       "author": "@YouRooni",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "description": "Плавающие градиентные фигуры Material 3 с всплесками при включении и разблокировке.",
       "path": "wallpapers/material-flow",
       "main": "index.html",
@@ -157,7 +157,7 @@
         "particles"
       ],
       "createdAt": "2026-07-29T20:09:49Z",
-      "updatedAt": "2026-07-29T20:14:14Z",
+      "updatedAt": "2026-07-30T11:12:22Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/material-flow.zip"
     },
     {

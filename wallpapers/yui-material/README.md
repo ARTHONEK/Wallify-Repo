@@ -32,9 +32,9 @@ Monet цвета берутся из системы (требуется Android 
 
 Ниже представлены скриншоты обоев в разных цветовых схемах (красный и зелёный Monet)
 
-[Yui Material, красный](screenshots/screenshot_1.jpg)
+![Yui Material, красный](screenshots/screenshot_1.jpg)
 
-[Yui Material, зеленый](screenshots/screenshot_2.jpg)
+![Yui Material, зеленый](screenshots/screenshot_2.jpg)
 
 ---
 

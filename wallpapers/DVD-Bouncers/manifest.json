@@ -4,7 +4,7 @@
   "author": "Artho",
   "version": "1.0.0",
   "minAppVersion": ">=1.0.0",
-  "cover": "cover.jpg",
+  "cover": "cover.jpeg",
   "icon": "icon.png",
   "main": "index.html",
   "settingsPath": "settings/index.html",

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #141218;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let paused = false;
+    let isRunning = false;
+    let lastTime = performance.now();
+
+    // Палитры
+    let myPalette = ['#D0BCFF', '#CCC2DC', '#EFB8C8', '#4F378B', '#EADDFF'];
+    const vibrantPalette = ['#FF5722', '#00BCD4', '#8BC34A', '#FFEB3B', '#E91E63', '#9C27B0', '#03A9F4'];
+    let activePalette = myPalette;
+    let bgColor = '#141218';
+
+    // Настройки по умолчанию
+    let count = 6;
+    let sizePx = 90;
+    let enableCollision = true;
+    let enableMaterialYou = false;
+    let enableTapChange = true;
+    let enableLockAnim = true;
+
+    const SHAPES = ['squircle', 'circle', 'triangle', 'star', 'hexagon'];
+    let boxes = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class ShapeItem {
+      constructor() {
+        this.shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+        this.colorIndex = Math.floor(Math.random() * activePalette.length);
+        const speed = 150 + Math.random() * 100;
+        const angle = Math.random() * Math.PI * 2;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        
+        this.scale = 1.0;
+        this.targetScale = 1.0;
+        this.morph = 0;
+        this.morphing = false;
+        this.morphSwapped = false;
+        this.resetPosition();
+      }
+
+      resetPosition() {
+        const maxX = Math.max(0, canvas.width - sizePx);
+        const maxY = Math.max(0, canvas.height - sizePx);
+        this.x = Math.random() * maxX;
+        this.y = Math.random() * maxY;
+      }
+
+      nextColor() {
+        if (activePalette.length > 0) {
+          this.colorIndex = (this.colorIndex + 1) % activePalette.length;
+        }
+      }
+
+      nextShape() {
+        if (this.morphing) return;
+        this.morphing = true;
+        this.morphSwapped = false;
+        this.morph = 0;
+      }
+
+      isPointInside(px, py) {
+        return px >= this.x && px <= this.x + sizePx &&
+               py >= this.y && py <= this.y + sizePx;
+      }
+
+      update(dt) {
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+
+        if (this.morphing) {
+          this.morph += dt * 4.2;
+          if (!this.morphSwapped && this.morph >= 0.5) {
+            const currentIndex = SHAPES.indexOf(this.shape);
+            this.shape = SHAPES[(currentIndex + 1) % SHAPES.length];
+            this.nextColor();
+            this.morphSwapped = true;
+          }
+          if (this.morph >= 1) {
+            this.morph = 1;
+            this.morphing = false;
+          }
+        }
+
+        if (enableLockAnim) {
+          this.scale += (this.targetScale - this.scale) * Math.min(1, dt * 10);
+        } else {
+          this.scale = 1.0;
+        }
+
+        if (this.x <= 0) {
+          this.x = 0;
+          this.vx = Math.abs(this.vx);
+          this.nextColor();
+        } else if (this.x + sizePx >= canvas.width) {
+          this.x = canvas.width - sizePx;
+          this.vx = -Math.abs(this.vx);
+          this.nextColor();
+        }
+
+        if (this.y <= 0) {
+          this.y = 0;
+          this.vy = Math.abs(this.vy);
+          this.nextColor();
+        } else if (this.y + sizePx >= canvas.height) {
+          this.y = canvas.height - sizePx;
+          this.vy = -Math.abs(this.vy);
+          this.nextColor();
+        }
+      }
+
+      draw(ctx) {
+        ctx.save();
+        
+        const centerX = this.x + sizePx / 2;
+        const centerY = this.y + sizePx / 2;
+        ctx.translate(centerX, centerY);
+        const morphScale = this.morphing ? (0.72 + 0.28 * Math.abs(this.morph * 2 - 1)) : 1;
+        ctx.scale(this.scale * morphScale, this.scale * morphScale);
+        ctx.translate(-sizePx / 2, -sizePx / 2);
+
+        ctx.globalAlpha = this.morphing ? (0.55 + 0.45 * Math.abs(this.morph * 2 - 1)) : 1;
+        ctx.fillStyle = activePalette[this.colorIndex % activePalette.length] || '#D0BCFF';
+
+        ctx.beginPath();
+        switch (this.shape) {
+          case 'circle':
+            ctx.arc(sizePx / 2, sizePx / 2, sizePx / 2, 0, Math.PI * 2);
+            break;
+
+          case 'triangle':
+            ctx.moveTo(sizePx / 2, 0);
+            ctx.lineTo(sizePx, sizePx);
+            ctx.lineTo(0, sizePx);
+            ctx.closePath();
+            break;
+
+          case 'hexagon':
+            for (let i = 0; i < 6; i++) {
+              const angle = (Math.PI / 3) * i - Math.PI / 6;
+              const hx = sizePx / 2 + (sizePx / 2) * Math.cos(angle);
+              const hy = sizePx / 2 + (sizePx / 2) * Math.sin(angle);
+              if (i === 0) ctx.moveTo(hx, hy);
+              else ctx.lineTo(hx, hy);
+            }
+            ctx.closePath();
+            break;
+
+          case 'star': {
+            // Мягкая четырёхконечная звезда: внешние лучи остаются выразительными,
+            // а внутренние углубления сглаживаются квадратичными кривыми.
+            const cx = sizePx / 2;
+            const cy = sizePx / 2;
+            const outerR = sizePx * 0.50;
+            const innerR = sizePx * 0.27;
+            const points = [];
+
+            for (let i = 0; i < 8; i++) {
+              const r = i % 2 === 0 ? outerR : innerR;
+              const angle = i * Math.PI / 4 - Math.PI / 2;
+              points.push({
+                x: cx + r * Math.cos(angle),
+                y: cy + r * Math.sin(angle)
+              });
+            }
+
+            ctx.moveTo(points[0].x, points[0].y);
+
+            for (let i = 1; i <= 8; i++) {
+              const current = points[i % 8];
+              const previous = points[(i - 1) % 8];
+
+              if (i % 2 === 0) {
+                // Внешний луч — почти острый.
+                ctx.lineTo(current.x, current.y);
+              } else {
+                // Внутреннее углубление — плавное и округлённое.
+                const next = points[(i + 1) % 8];
+                const startX = previous.x + (current.x - previous.x) * 0.62;
+                const startY = previous.y + (current.y - previous.y) * 0.62;
+                const endX = current.x + (next.x - current.x) * 0.38;
+                const endY = current.y + (next.y - current.y) * 0.38;
+                ctx.lineTo(startX, startY);
+                ctx.quadraticCurveTo(current.x, current.y, endX, endY);
+              }
+            }
+
+            ctx.closePath();
+            break;
+          }
+
+          case 'squircle':
+          default:
+            const radius = sizePx * 0.25;
+            if (ctx.roundRect) {
+              ctx.roundRect(0, 0, sizePx, sizePx, radius);
+            } else {
+              ctx.rect(0, 0, sizePx, sizePx);
+            }
+            break;
+        }
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function initBoxes() {
+      boxes = [];
+      for (let i = 0; i < count; i++) {
+        boxes.push(new ShapeItem());
+      }
+    }
+
+    canvas.addEventListener('pointerdown', () => {
+      if (!enableTapChange) return;
+      // По нажатию все фигуры одновременно меняют форму и цвет.
+      boxes.forEach(box => {
+        box.nextShape();
+      });
+    });
+
+    function handleBoxCollisions() {
+      if (!enableCollision) return;
+
+      for (let i = 0; i < boxes.length; i++) {
+        for (let j = i + 1; j < boxes.length; j++) {
+          const b1 = boxes[i];
+          const b2 = boxes[j];
+
+          if (
+            b1.x < b2.x + sizePx &&
+            b1.x + sizePx > b2.x &&
+            b1.y < b2.y + sizePx &&
+            b1.y + sizePx > b2.y
+          ) {
+            const overlapX = (sizePx - Math.abs((b1.x + sizePx / 2) - (b2.x + sizePx / 2)));
+            const overlapY = (sizePx - Math.abs((b1.y + sizePx / 2) - (b2.y + sizePx / 2)));
+
+            if (overlapX < overlapY) {
+              if (b1.x < b2.x) {
+                b1.x -= overlapX / 2;
+                b2.x += overlapX / 2;
+              } else {
+                b1.x += overlapX / 2;
+                b2.x -= overlapX / 2;
+              }
+              const temp = b1.vx;
+              b1.vx = b2.vx;
+              b2.vx = temp;
+            } else {
+              if (b1.y < b2.y) {
+                b1.y -= overlapY / 2;
+                b2.y += overlapY / 2;
+              } else {
+                b1.y += overlapY / 2;
+                b2.y -= overlapY / 2;
+              }
+              const temp = b1.vy;
+              b1.vy = b2.vy;
+              b2.vy = temp;
+            }
+            b1.nextColor();
+            b2.nextColor();
+          }
+        }
+      }
+    }
+
+    function loadSettings() {
+      if (!window.WallpaperEngine) return;
+
+      const wallify = window.WallpaperEngine;
+      // Читаем обе разновидности ключей (из defaultSettings и простые)
+      const rawCount = parseInt(
+        wallify.getSetting('shapeCount', String(count)), 
+        10
+      );
+      const rawSize = parseInt(
+        wallify.getSetting('shapeSize', String(sizePx)), 
+        10
+      );
+      
+      enableCollision = (wallify.getSetting('enableCollisions', 'true') === 'true');
+      enableMaterialYou = (wallify.getSetting('useMaterialYou', 'false') === 'true');
+      enableTapChange = (wallify.getSetting('changeOnTap', 'true') === 'true');
+      enableLockAnim = (wallify.getSetting('lockAnim', 'true') === 'true');
+
+      activePalette = enableMaterialYou ? myPalette : vibrantPalette;
+
+      let needReinit = false;
+      if (rawCount !== count) {
+        count = rawCount;
+        needReinit = true;
+      }
+      sizePx = rawSize;
+
+      if (needReinit || boxes.length === 0) {
+        initBoxes();
+      }
+    }
+
+    function applyMetadata(metadata) {
+      if (!metadata) return;
+      
+      if (typeof metadata.isUnlocked === 'boolean') {
+        const locked = !metadata.isUnlocked;
+        paused = locked;
+        boxes.forEach(b => b.targetScale = (enableLockAnim && locked) ? 1.18 : 1.0);
+        if (!locked) {
+          lastTime = performance.now();
+          requestAnimationFrame(frame);
+        }
+      }
+
+      if (metadata.accentColors) {
+        const c = metadata.accentColors;
+        myPalette = [
+          c.primary,
+          c.secondary,
+          c.tertiary,
+          c.primaryContainer,
+          c.onPrimaryContainer
+        ].filter(Boolean);
+
+        bgColor = c.background || '#141218';
+        if (enableMaterialYou) {
+          activePalette = myPalette;
+        }
+      }
+    }
+
+    function frame(now) {
+      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (const box of boxes) {
+        box.update(dt);
+      }
+
+      handleBoxCollisions();
+
+      for (const box of boxes) {
+        box.draw(ctx);
+      }
+
+      if (paused) {
+        let allDone = true;
+        for (const box of boxes) {
+          if (Math.abs(box.scale - box.targetScale) > 0.01) {
+            allDone = false;
+            break;
+          }
+        }
+        if (!allDone) {
+          requestAnimationFrame(frame);
+        }
+        return;
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    function startLoop() {
+      if (isRunning) return;
+      isRunning = true;
+      initBoxes();
+      lastTime = performance.now();
+      requestAnimationFrame(frame);
+    }
+
+    // Запускаем сразу при загрузке документа
+    document.addEventListener('DOMContentLoaded', () => {
+      startLoop();
+    });
+    // Запасной старт на случай, если DOM уже был готов
+    startLoop();
+
+    // События Wallify API
+    window.addEventListener('wallpaperEngineReady', (e) => {
+      applyMetadata(e.detail);
+      loadSettings();
+    });
+
+    window.addEventListener('wallpaperUpdate', (e) => {
+      applyMetadata(e.detail);
+      loadSettings();
+    });
+
+    window.addEventListener('wallpaperPause', () => { 
+      paused = true;
+      if (enableLockAnim) {
+        boxes.forEach(b => b.targetScale = 1.35);
+        lastTime = performance.now();
+        requestAnimationFrame(frame);
+      }
+    });
+
+    window.addEventListener('wallpaperResume', () => {
+      paused = false;
+      boxes.forEach(b => b.targetScale = 1.0);
+      lastTime = performance.now();
+      requestAnimationFrame(frame);
+    });
+  </script>
+</body>
+</html>

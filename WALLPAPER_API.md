@@ -1,7 +1,7 @@
 # Wallify — документация для разработчиков обоев
 
 Полное описание формата, API и поведения движка. Актуально для версии приложения **1.0.0**
-(`versionCode 3`), `minSdk 26`, `targetSdk 35`.
+(`versionCode 8`), `minSdk 26`, `targetSdk 35`.
 
 Документ самодостаточен: его можно целиком отдать другому разработчику или языковой модели
 как единственный источник правды по платформе.
@@ -156,8 +156,8 @@ Wallify — движок живых обоев для Android, где обои �
 ├── My Wallpaper/
 │   ├── manifest.json            описание комплекта
 │   ├── index.html               точка входа
-│   ├── cover.jpg                обложка в списке
-│   ├── icon.png                 запасной вариант обложки
+│   ├── cover.jpg                широкий баннер карточки
+│   ├── icon.png                 квадратная иконка
 │   ├── README.md                показывается в каталоге
 │   ├── assets/
 │   │   ├── style.css
@@ -219,7 +219,7 @@ Wallify — движок живых обоев для Android, где обои �
 | `version` | string | `1.0.0` | Версия комплекта. По ней определяется наличие обновления в каталоге |
 | `minAppVersion` | string | — | Требование к версии приложения, см. [раздел 14](#14-совместимость-версий) |
 | `cover` | string | — | Путь к обложке относительно папки комплекта |
-| `icon` | string | — | Путь к иконке, используется если нет обложки |
+| `icon` | string | — | Путь к квадратной иконке. Если задано только одно изображение, оно используется и как icon, и как cover |
 | `main` | string | `index.html` | Точка входа |
 | `settingsPath` | string | — | Путь к странице настроек |
 | `useGyroscope` | boolean | `false` | Включает поток событий акселерометра. Без него сенсор не регистрируется вообще |
@@ -383,11 +383,21 @@ console.log(all); // { shapeCount: "8", speed: "fast" }
   "theme": "dark",
   "accentColors": {
     "primary": "#D0BCFF",
+    "onPrimary": "#381E72",
+    "primaryContainer": "#4F378B",
+    "onPrimaryContainer": "#EADDFF",
     "secondary": "#CCC2DC",
     "tertiary": "#EFB8C8",
     "surface": "#1D192B",
+    "onSurface": "#E6E0E9",
     "background": "#141218",
-    "surfaceContainer": "#211F26"
+    "surfaceContainer": "#211F26",
+    "outline": "#938F99"
+  },
+  "battery": {
+    "level": 73,
+    "isCharging": true,
+    "plugged": "usb"
   },
   "screen": "home",
   "isUnlocked": true,
@@ -410,6 +420,9 @@ console.log(all); // { shapeCount: "8", speed: "fast" }
 |---|---|---|
 | `theme` | `light`, `dark` | Текущая тема системы |
 | `accentColors` | object | Палитра, см. ниже |
+| `battery.level` | number | Заряд от `0` до `100`, либо `-1`, если система не сообщила значение |
+| `battery.isCharging` | boolean | Идёт зарядка или устройство полностью заряжено от подключённого питания |
+| `battery.plugged` | `none`, `ac`, `usb`, `wireless` | Источник питания |
 | `screen` | `home`, `preview`, `settings` | Где сейчас выполняется страница |
 | `isUnlocked` | boolean | `false`, когда активен экран блокировки |
 | `device.model` | string | Модель устройства |
@@ -427,6 +440,10 @@ console.log(all); // { shapeCount: "8", speed: "fast" }
 ### Палитра Material You
 
 Цвета приходят строками `#RRGGBB` без альфа-канала.
+
+`accentColors` содержит полную схему Material 3: `primary/onPrimary`, `secondary/onSecondary`,
+`tertiary/onTertiary`, их контейнеры, `background/onBackground`, все surface-контейнеры,
+inverse/fixed-варианты, `error`, `outline` и `scrim`.
 
 | Ключ | Назначение |
 |---|---|
@@ -463,6 +480,8 @@ console.log(all); // { shapeCount: "8", speed: "fast" }
 | `wallpaperUnlock` | Устройство разблокировано | метаданные |
 | `wallpaperScreenOn` | Экран включился | метаданные |
 | `wallpaperScreenOff` | Экран выключился | метаданные |
+| `wallpaperCharging` | Подключено питание | метаданные с новым состоянием батареи |
+| `wallpaperDischarging` | Питание отключено | метаданные с новым состоянием батареи |
 | `wallpaperThemeChange` | Сменилась светлая/тёмная тема | метаданные |
 | `wallpaperPause` | Пользователь поставил обои на паузу | — |
 | `wallpaperResume` | Пауза снята | — |
@@ -486,6 +505,8 @@ console.log(all); // { shapeCount: "8", speed: "fast" }
 ACTION_SCREEN_ON   → wallpaperUpdate + wallpaperScreenOn
 ACTION_USER_PRESENT→ wallpaperUpdate + wallpaperUnlock
 ACTION_SCREEN_OFF  → wallpaperUpdate + wallpaperScreenOff
+POWER_CONNECTED    → wallpaperUpdate + wallpaperCharging
+POWER_DISCONNECTED → wallpaperUpdate + wallpaperDischarging
 ```
 
 `wallpaperUpdate` приходит всегда, а специфическое событие — дополнительно. Если вам достаточно
@@ -985,10 +1006,13 @@ GitHub Releases, сопоставляя их с именем файла из `do
 - заголовки `#`, `##`, `###`;
 - жирный текст `**текст**`;
 - моноширинный `` `код` ``;
+- маркированные списки и цитаты;
+- ссылки и изображения `![Описание](screens/example.png)`;
 - абзацы, разделённые пустой строкой.
 
 HTML в README экранируется по соображениям безопасности: содержимое приходит из чужого
 репозитория и не должно выполняться.
+Относительные пути изображений разрешаются относительно папки комплекта как в GitHub.
 
 ---
 

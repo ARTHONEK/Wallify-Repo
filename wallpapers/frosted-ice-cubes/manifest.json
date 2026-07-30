@@ -1,0 +1,12 @@
+{
+  "name": "Frosted Ice Cubes",
+  "description": "Кубики льда: реагируют на касание, плавно возвращаются на место, есть режим гравитации и настройки фона",
+  "author": "Jardaken",
+  "version": "1.1.0",
+  "minAppVersion": ">=1.0.0",
+  "cover": "cover.png",
+  "main": "index.html",
+  "settingsPath": "settings/index.html",
+  "useGyroscope": false,
+  "isLite": false
+}

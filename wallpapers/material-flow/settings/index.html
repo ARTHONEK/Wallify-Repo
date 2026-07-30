@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Material Flow — настройки</title>
+<style>
+  :root {
+    --primary: #D0BCFF;
+    --secondary: #CCC2DC;
+    --tertiary: #EFB8C8;
+    --surface: #1D192B;
+    --background: #141218;
+    --surface-container: #211F26;
+    --on-surface: #E6E1E5;
+    --on-surface-variant: #CAC4D0;
+    --on-primary: #381E72;
+    --divider: rgba(230, 225, 229, 0.10);
+    --segment-bg: rgba(230, 225, 229, 0.06);
+    --range-track: rgba(230, 225, 229, 0.18);
+    --switch-track: rgba(230, 225, 229, 0.20);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--background);
+    color: var(--on-surface);
+    font-family: "Roboto", system-ui, -apple-system, sans-serif;
+  }
+
+  body { padding: 20px 16px 48px; }
+
+  h1 {
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 500;
+    margin: 4px 0 2px;
+    color: var(--on-surface);
+  }
+
+  .sub {
+    font-size: 13px;
+    color: var(--on-surface-variant);
+    margin: 0 0 20px;
+  }
+
+  .card {
+    background: var(--surface-container);
+    color: var(--on-surface);
+    border-radius: 24px;
+    padding: 18px 18px 8px;
+    margin-bottom: 16px;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--divider);
+  }
+
+  .row.block { display: block; }
+  .row:last-child { border-bottom: none; }
+
+  .row-label {
+    font-size: 15px;
+    line-height: 20px;
+    color: var(--on-surface);
+  }
+
+  .row-sub {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--on-surface-variant);
+    margin-top: 2px;
+  }
+
+  .section-title {
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin: 0 4px 8px;
+  }
+
+  .value-pill {
+    font-size: 12px;
+    color: var(--primary);
+    min-width: 34px;
+    text-align: right;
+  }
+
+  /* Material 3 segmented control — нужен только для скорости. */
+  .segmented {
+    display: flex;
+    gap: 6px;
+    background: var(--segment-bg);
+    border-radius: 999px;
+    padding: 4px;
+    margin-top: 8px;
+  }
+
+  .segmented button {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    color: var(--on-surface-variant);
+    font: inherit;
+    font-size: 13px;
+    padding: 8px 8px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .segmented button.active {
+    background: var(--primary);
+    color: var(--on-primary);
+    font-weight: 500;
+  }
+
+  /* Material 3 slider */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--range-track);
+    margin: 12px 0 4px;
+    accent-color: var(--primary);
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 4px solid var(--surface-container);
+    box-shadow: 0 0 0 1px var(--primary);
+    cursor: pointer;
+  }
+
+  /* Material 3 switch */
+  .switch {
+    position: relative;
+    width: 48px;
+    height: 28px;
+    flex: 0 0 auto;
+  }
+
+  .switch input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .switch .track {
+    position: absolute;
+    inset: 0;
+    background: var(--switch-track);
+    border-radius: 999px;
+    transition: background 0.2s ease;
+    cursor: pointer;
+  }
+
+  .switch .thumb {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--on-surface-variant);
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+
+  .switch input:checked + .track { background: var(--primary); }
+  .switch input:checked + .track .thumb {
+    transform: translateX(20px);
+    background: var(--on-primary);
+  }
+</style>
+</head>
+<body>
+  <h1>Material Flow</h1>
+  <p class="sub">Настройки живых обоев</p>
+
+  <div class="card">
+    <p class="section-title">Форма</p>
+    <div class="row block">
+      <div class="row-label">Количество фигур <span class="value-pill" id="countValue">6</span></div>
+      <input id="count" type="range" min="2" max="20" step="1" value="6">
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="section-title">Движение</p>
+    <div class="row block">
+      <div class="row-label">Скорость</div>
+      <div class="segmented" id="speedSeg">
+        <button type="button" data-v="slow">Медленно</button>
+        <button type="button" data-v="normal">Обычно</button>
+        <button type="button" data-v="fast">Быстро</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="section-title">Внешний вид</p>
+
+    <div class="row">
+      <div>
+        <div class="row-label">Свечение</div>
+        <div class="row-sub">Мягкое сияние вокруг фигур</div>
+      </div>
+      <label class="switch" aria-label="Свечение">
+        <input type="checkbox" id="glow">
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    </div>
+
+    <div class="row">
+      <div>
+        <div class="row-label">Частицы</div>
+        <div class="row-sub">Плывущие вверх искры на фоне</div>
+      </div>
+      <label class="switch" aria-label="Частицы">
+        <input type="checkbox" id="particles">
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    </div>
+
+    <div class="row block">
+      <div class="row-label">Затемнение фона <span class="value-pill" id="dimValue">0%</span></div>
+      <input id="dim" type="range" min="0" max="1" step="0.05" value="0">
+    </div>
+  </div>
+
+<script>
+(function () {
+  const root = document.documentElement;
+
+  function hexToRgb(hex) {
+    if (typeof hex !== 'string') return null;
+    const clean = hex.trim().replace('#', '');
+    if (!/^[0-9a-fA-F]{6}$/.test(clean)) return null;
+    const n = parseInt(clean, 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+
+  function onColor(hex, fallback) {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return fallback;
+    const srgb = rgb.map(v => {
+      const c = v / 255;
+      return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    const luminance = 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+    return luminance > 0.42 ? '#1D1B20' : '#FFFFFF';
+  }
+
+  function applyMetadata(meta) {
+    if (!meta) return;
+    const c = meta.accentColors || {};
+    const dark = meta.theme !== 'light';
+
+    root.style.setProperty('--primary', c.primary || (dark ? '#D0BCFF' : '#6750A4'));
+    root.style.setProperty('--secondary', c.secondary || (dark ? '#CCC2DC' : '#625B71'));
+    root.style.setProperty('--tertiary', c.tertiary || (dark ? '#EFB8C8' : '#7D5260'));
+    root.style.setProperty('--surface', c.surface || (dark ? '#1D192B' : '#FFFBFE'));
+    root.style.setProperty('--background', c.background || (dark ? '#141218' : '#FFFBFE'));
+    root.style.setProperty('--surface-container', c.surfaceContainer || (dark ? '#211F26' : '#F3EDF7'));
+    root.style.setProperty('--on-surface', dark ? '#E6E1E5' : '#1D1B20');
+    root.style.setProperty('--on-surface-variant', dark ? '#CAC4D0' : '#49454F');
+    root.style.setProperty('--on-primary', onColor(c.primary, dark ? '#381E72' : '#FFFFFF'));
+    root.style.setProperty('--divider', dark ? 'rgba(230,225,229,0.10)' : 'rgba(29,27,32,0.10)');
+    root.style.setProperty('--segment-bg', dark ? 'rgba(230,225,229,0.06)' : 'rgba(29,27,32,0.06)');
+    root.style.setProperty('--range-track', dark ? 'rgba(230,225,229,0.18)' : 'rgba(29,27,32,0.18)');
+    root.style.setProperty('--switch-track', dark ? 'rgba(230,225,229,0.20)' : 'rgba(29,27,32,0.20)');
+  }
+
+  function init(engine, meta) {
+    applyMetadata(meta);
+
+    const count = document.getElementById('count');
+    const countValue = document.getElementById('countValue');
+    const dim = document.getElementById('dim');
+    const dimValue = document.getElementById('dimValue');
+    const glow = document.getElementById('glow');
+    const particles = document.getElementById('particles');
+
+    count.value = engine.getSetting('shapeCount', '6');
+    countValue.textContent = count.value;
+    count.addEventListener('input', () => {
+      countValue.textContent = count.value;
+      engine.saveSetting('shapeCount', count.value);
+    });
+
+    const speedSeg = document.getElementById('speedSeg');
+    const setSpeedActive = (value) => {
+      [...speedSeg.children].forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.v === value);
+      });
+    };
+    setSpeedActive(engine.getSetting('speed', 'normal'));
+    [...speedSeg.children].forEach(btn => {
+      btn.addEventListener('click', () => {
+        engine.saveSetting('speed', btn.dataset.v);
+        setSpeedActive(btn.dataset.v);
+      });
+    });
+
+    const wireSwitch = (el, key, def) => {
+      el.checked = engine.getSetting(key, def ? 'true' : 'false') === 'true';
+      el.addEventListener('change', () => {
+        engine.saveSetting(key, el.checked ? 'true' : 'false');
+      });
+    };
+    wireSwitch(glow, 'glow', true);
+    wireSwitch(particles, 'particles', true);
+
+    dim.value = engine.getSetting('bgDim', '0');
+    dimValue.textContent = Math.round(parseFloat(dim.value || '0') * 100) + '%';
+    dim.addEventListener('input', () => {
+      dimValue.textContent = Math.round(parseFloat(dim.value || '0') * 100) + '%';
+      engine.saveSetting('bgDim', dim.value);
+    });
+  }
+
+  window.addEventListener('wallpaperEngineReady', (e) => {
+    if (window.WallpaperEngine) init(window.WallpaperEngine, e.detail);
+  }, { once: true });
+
+  window.addEventListener('wallpaperUpdate', (e) => applyMetadata(e.detail));
+  window.addEventListener('wallpaperThemeChange', (e) => applyMetadata(e.detail));
+})();
+</script>
+</body>
+</html>

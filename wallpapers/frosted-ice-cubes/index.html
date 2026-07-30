@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Frosted Ice Cubes</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: #F4EFDB;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  #stage {
+    position: fixed;
+    inset: 0;
+    display: block;
+  }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<script>
+(function () {
+  "use strict";
+
+  var canvas = document.getElementById('stage');
+  var ctx = canvas.getContext('2d');
+  var dpr = Math.min(window.devicePixelRatio || 1, 3);
+
+  var W = 0, H = 0, minDim = 0;
+
+  var DEFAULT_BG = '#F4EFDB';
+
+  // ---- layout (fractions of viewport) — scattered diagonal drift ----
+  var LAYOUT = [
+    { fx: 0.86, fy: 0.11, fs: 0.20, rot:  16 },
+    { fx: 0.70, fy: 0.28, fs: 0.23, rot: -12 },
+    { fx: 0.14, fy: 0.40, fs: 0.27, rot:   6 },
+    { fx: 0.46, fy: 0.38, fs: 0.24, rot:  22 },
+    { fx: 0.04, fy: 0.53, fs: 0.21, rot: -18 },
+    { fx: 0.64, fy: 0.50, fs: 0.29, rot:   9 },
+    { fx: 0.22, fy: 0.61, fs: 0.19, rot:  27 },
+    { fx: 0.43, fy: 0.67, fs: 0.27, rot:  -6 },
+    { fx: 0.82, fy: 0.62, fs: 0.24, rot:  13 },
+    { fx: 0.09, fy: 0.79, fs: 0.29, rot:  -9 },
+    { fx: 0.46, fy: 0.85, fs: 0.25, rot:  15 },
+    { fx: 0.76, fy: 0.81, fs: 0.27, rot: -21 },
+    { fx: 0.97, fy: 0.90, fs: 0.22, rot:  11 },
+    { fx: -0.03, fy: 0.68, fs: 0.20, rot:  30 }
+  ];
+
+  var cubes = [];
+
+  function buildCubeGradients(cube) {
+    var size = cube.size;
+
+    var shadowGrad = ctx.createRadialGradient(
+      size * 0.10, size * 0.34, size * 0.05,
+      size * 0.10, size * 0.34, size * 0.62
+    );
+    shadowGrad.addColorStop(0, 'rgba(90,78,44,0.22)');
+    shadowGrad.addColorStop(1, 'rgba(90,78,44,0)');
+    cube.shadowGrad = shadowGrad;
+
+    var bodyGrad = ctx.createLinearGradient(0, -size / 2, 0, size / 2);
+    bodyGrad.addColorStop(0, '#D8ECF5');
+    bodyGrad.addColorStop(0.55, '#F1FAFF');
+    bodyGrad.addColorStop(1, '#FFFFFF');
+    cube.bodyGrad = bodyGrad;
+
+    var topGrad = ctx.createLinearGradient(0, -size / 2, 0, -size * 0.02);
+    topGrad.addColorStop(0, 'rgba(96,164,205,0.85)');
+    topGrad.addColorStop(1, 'rgba(96,164,205,0)');
+    cube.topGrad = topGrad;
+  }
+
+  function buildCubes() {
+    cubes = LAYOUT.map(function (l, i) {
+      var hx = l.fx * W;
+      var hy = l.fy * H;
+      var size = l.fs * minDim;
+      var hrot = l.rot * Math.PI / 180;
+      var prev = cubes[i];
+      var cube = {
+        hx: hx, hy: hy, size: size, hrot: hrot,
+        x: prev ? prev.x : hx,
+        y: prev ? prev.y : hy,
+        rot: prev ? prev.rot : hrot,
+        vx: prev ? prev.vx : 0,
+        vy: prev ? prev.vy : 0,
+        vrot: prev ? prev.vrot : 0,
+        phase: i * 1.7 + 0.4
+      };
+      buildCubeGradients(cube);
+      return cube;
+    });
+  }
+
+  function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    minDim = Math.min(W, H);
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    buildCubes();
+  }
+
+  // ---------------- drawing ----------------
+
+  function roundedRectPath(c, w, h, r) {
+    var x = -w / 2, y = -h / 2;
+    r = Math.min(r, w / 2, h / 2);
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+
+  function drawCube(cube) {
+    var size = cube.size;
+    var radius = size * 0.30;
+
+    ctx.save();
+    ctx.translate(cube.x, cube.y);
+
+    // contact shadow, drawn before rotation so it stays grounded-looking
+    ctx.fillStyle = cube.shadowGrad;
+    ctx.beginPath();
+    ctx.ellipse(size * 0.10, size * 0.34, size * 0.62, size * 0.42, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.rotate(cube.rot);
+
+    // body
+    roundedRectPath(ctx, size, size, radius);
+    ctx.fillStyle = cube.bodyGrad;
+    ctx.fill();
+
+    ctx.save();
+    roundedRectPath(ctx, size, size, radius);
+    ctx.clip();
+
+    // icy blue crest along the top edge
+    ctx.fillStyle = cube.topGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, -size * 0.28, size * 0.66, size * 0.36, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // glassy specular highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.beginPath();
+    ctx.ellipse(-size * 0.16, -size * 0.08, size * 0.11, size * 0.05, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // faint secondary glint
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.beginPath();
+    ctx.ellipse(size * 0.10, size * 0.18, size * 0.06, size * 0.03, 0.6, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+
+    // rim light
+    roundedRectPath(ctx, size, size, radius);
+    ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+    ctx.lineWidth = Math.max(1, size * 0.018);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  var currentBg = { r: 0xF4, g: 0xEF, b: 0xDB };
+  var targetBg = { r: 0xF4, g: 0xEF, b: 0xDB };
+
+  function hexToRgb(hex) {
+    var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!m) return null;
+    return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) };
+  }
+
+  function render(dt) {
+    currentBg.r += (targetBg.r - currentBg.r) * Math.min(dt * 4, 1);
+    currentBg.g += (targetBg.g - currentBg.g) * Math.min(dt * 4, 1);
+    currentBg.b += (targetBg.b - currentBg.b) * Math.min(dt * 4, 1);
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = 'rgb(' + (currentBg.r | 0) + ',' + (currentBg.g | 0) + ',' + (currentBg.b | 0) + ')';
+    ctx.fillRect(0, 0, W, H);
+    for (var i = 0; i < cubes.length; i++) drawCube(cubes[i]);
+  }
+
+  // ---------------- settings ----------------
+
+  var settings = {
+    pushForce: 1.5,
+    returnSpeed: 1.0,
+    gravityMode: false,
+    materialBackground: false,
+    backgroundColor: DEFAULT_BG
+  };
+
+  function applyBackgroundSetting(metadata) {
+    if (settings.materialBackground && metadata && metadata.accentColors && metadata.accentColors.background) {
+      var rgb = hexToRgb(metadata.accentColors.background);
+      if (rgb) targetBg = rgb;
+      return;
+    }
+    var own = hexToRgb(settings.backgroundColor) || hexToRgb(DEFAULT_BG);
+    targetBg = own;
+  }
+
+  function readSettings() {
+    var engine = window.WallpaperEngine;
+    if (!engine) return;
+    settings.pushForce = parseFloat(engine.getSetting('pushForce', '1.5')) || 1.5;
+    settings.returnSpeed = parseFloat(engine.getSetting('returnSpeed', '1.0')) || 1.0;
+    settings.gravityMode = engine.getSetting('gravityMode', 'false') === 'true';
+    settings.materialBackground = engine.getSetting('materialBackground', 'false') === 'true';
+    settings.backgroundColor = engine.getSetting('backgroundColor', DEFAULT_BG) || DEFAULT_BG;
+    applyBackgroundSetting(engine.metadata);
+  }
+
+  window.addEventListener('wallpaperEngineReady', function (e) {
+    readSettings();
+    applyBackgroundSetting(e.detail);
+  });
+  window.addEventListener('wallpaperUpdate', function (e) {
+    readSettings();
+    applyBackgroundSetting(e.detail);
+  });
+
+  // ---------------- physics: spring mode ----------------
+
+  var BASE_SPRING_K = 46;
+  var BASE_DAMPING = 7;
+  var ROT_K = 55;
+  var ROT_DAMPING = 8;
+  var IDLE_AMP = 0.012;
+  var IDLE_SPEED = 0.5;
+
+  var clock = 0;
+
+  function stepSpring(dt) {
+    clock += dt;
+    var k = BASE_SPRING_K * settings.returnSpeed;
+    var damping = BASE_DAMPING * Math.sqrt(settings.returnSpeed);
+
+    for (var i = 0; i < cubes.length; i++) {
+      var c = cubes[i];
+
+      var idleX = Math.sin(clock * IDLE_SPEED + c.phase) * IDLE_AMP * minDim;
+      var idleY = Math.cos(clock * IDLE_SPEED * 0.8 + c.phase) * IDLE_AMP * minDim;
+      var targetX = c.hx + idleX;
+      var targetY = c.hy + idleY;
+
+      var ax = (targetX - c.x) * k - c.vx * damping;
+      var ay = (targetY - c.y) * k - c.vy * damping;
+      c.vx += ax * dt;
+      c.vy += ay * dt;
+      c.x += c.vx * dt;
+      c.y += c.vy * dt;
+
+      var arot = (c.hrot - c.rot) * ROT_K - c.vrot * ROT_DAMPING;
+      c.vrot += arot * dt;
+      c.rot += c.vrot * dt;
+    }
+  }
+
+  // ---------------- physics: gravity mode ----------------
+
+  var GRAVITY = 1500;
+  var RESTITUTION = 0.4;
+  var FLOOR_FRICTION = 0.86;
+
+  function stepGravity(dt) {
+    var i, c;
+    for (i = 0; i < cubes.length; i++) {
+      c = cubes[i];
+      c.vy += GRAVITY * dt;
+      c.x += c.vx * dt;
+      c.y += c.vy * dt;
+      c.rot += c.vrot * dt;
+      c.vrot *= (1 - Math.min(dt * 0.6, 1));
+    }
+
+    // pairwise collisions — square (AABB) colliders, resolved on the
+    // shallower axis so cubes stack and slide instead of endlessly spinning
+    for (i = 0; i < cubes.length; i++) {
+      for (var j = i + 1; j < cubes.length; j++) {
+        var a = cubes[i], b = cubes[j];
+        var ha = a.size * 0.47, hb = b.size * 0.47;
+        var dx = b.x - a.x, dy = b.y - a.y;
+        var overlapX = ha + hb - Math.abs(dx);
+        var overlapY = ha + hb - Math.abs(dy);
+        if (overlapX > 0 && overlapY > 0) {
+          if (overlapX < overlapY) {
+            var sx = dx < 0 ? -1 : 1;
+            a.x -= sx * overlapX / 2;
+            b.x += sx * overlapX / 2;
+            var rvx = b.vx - a.vx;
+            if (sx * rvx < 0) {
+              var impX = -(1 + RESTITUTION) * rvx / 2;
+              a.vx -= impX; b.vx += impX;
+            }
+          } else {
+            var sy = dy < 0 ? -1 : 1;
+            a.y -= sy * overlapY / 2;
+            b.y += sy * overlapY / 2;
+            var rvy = b.vy - a.vy;
+            if (sy * rvy < 0) {
+              var impY = -(1 + RESTITUTION) * rvy / 2;
+              a.vy -= impY; b.vy += impY;
+            }
+          }
+        }
+      }
+    }
+
+    // floor / walls
+    for (i = 0; i < cubes.length; i++) {
+      c = cubes[i];
+      var r = c.size * 0.47;
+      if (c.y + r > H) {
+        c.y = H - r;
+        if (c.vy > 0) c.vy = -c.vy * RESTITUTION;
+        c.vx *= FLOOR_FRICTION;
+      }
+      if (c.x - r < 0) { c.x = r; c.vx = -c.vx * RESTITUTION; }
+      if (c.x + r > W) { c.x = W - r; c.vx = -c.vx * RESTITUTION; }
+      if (c.y - r < 0) { c.y = r; if (c.vy < 0) c.vy = -c.vy * RESTITUTION; }
+    }
+  }
+
+  // ---------------- pointer / touch interaction ----------------
+
+  var pointers = {};
+
+  function pushCubes(px, py, speed) {
+    if (speed <= 0) return;
+    var radius = minDim * 0.46;
+    var forceMul = settings.pushForce;
+    for (var i = 0; i < cubes.length; i++) {
+      var c = cubes[i];
+      var dx = c.x - px;
+      var dy = c.y - py;
+      var dist = Math.sqrt(dx * dx + dy * dy) || 0.001;
+      if (dist > radius) continue;
+      var falloff = 1 - dist / radius;
+      var force = falloff * Math.min(speed, 3200) * 1.5 * forceMul;
+      var nx = dx / dist, ny = dy / dist;
+      c.vx += nx * force * 0.022;
+      c.vy += ny * force * 0.022;
+      var cross = nx * (py - (c._lastPy || py)) - ny * (px - (c._lastPx || px));
+      c.vrot += (cross > 0 ? 1 : -1) * falloff * Math.min(speed, 3200) * 0.00045 * forceMul;
+      c._lastPx = px; c._lastPy = py;
+    }
+  }
+
+  function onPointerDown(e) {
+    pointers[e.pointerId] = { x: e.clientX, y: e.clientY, t: performance.now() };
+    if (canvas.setPointerCapture) {
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+  }
+
+  function onPointerMove(e) {
+    var p = pointers[e.pointerId];
+    if (!p) return;
+    var now = performance.now();
+    var dt = Math.max((now - p.t) / 1000, 0.001);
+    var dx = e.clientX - p.x;
+    var dy = e.clientY - p.y;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    var speed = dist / dt;
+
+    pushCubes(e.clientX, e.clientY, speed);
+
+    p.x = e.clientX;
+    p.y = e.clientY;
+    p.t = now;
+  }
+
+  function onPointerUp(e) {
+    delete pointers[e.pointerId];
+  }
+
+  canvas.addEventListener('pointerdown', onPointerDown, { passive: true });
+  canvas.addEventListener('pointermove', onPointerMove, { passive: true });
+  canvas.addEventListener('pointerup', onPointerUp, { passive: true });
+  canvas.addEventListener('pointercancel', onPointerUp, { passive: true });
+  canvas.addEventListener('pointerleave', onPointerUp, { passive: true });
+
+  // ---------------- main loop, pause/resume ----------------
+
+  var running = true;
+  var last = performance.now();
+
+  function frame(now) {
+    var dt = Math.min((now - last) / 1000, 0.1);
+    last = now;
+    if (running) {
+      if (settings.gravityMode) {
+        stepGravity(dt);
+      } else {
+        stepSpring(dt);
+      }
+      render(dt);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('wallpaperPause', function () { running = false; });
+  window.addEventListener('wallpaperResume', function () {
+    if (!running) {
+      running = true;
+      last = performance.now();
+    }
+  });
+
+  window.addEventListener('resize', resize);
+
+  resize();
+  readSettings();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

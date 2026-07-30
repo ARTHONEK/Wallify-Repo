@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-28T11:04:06Z",
+  "updatedAt": "2026-07-30T10:02:21Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -13,8 +13,9 @@
       "useGyroscope": false,
       "isLite": false,
       "cover": "cover.jpg",
+      "icon": "icon.png",
       "createdAt": "2026-07-27T17:30:00Z",
-      "updatedAt": "2026-07-27T20:03:22Z",
+      "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/fluids.zip"
     },
     {
@@ -28,8 +29,9 @@
       "useGyroscope": false,
       "isLite": false,
       "cover": "cover.png",
+      "icon": "icon.png",
       "createdAt": "2026-07-25T17:52:01Z",
-      "updatedAt": "2026-07-26T23:45:00Z",
+      "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-dynamic.zip"
     },
     {
@@ -43,8 +45,9 @@
       "useGyroscope": false,
       "isLite": true,
       "cover": "cover.png",
+      "icon": "icon.png",
       "createdAt": "2026-07-26T20:30:00Z",
-      "updatedAt": "2026-07-26T20:30:00Z",
+      "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-shapes-lite.zip"
     },
     {
@@ -58,8 +61,9 @@
       "useGyroscope": false,
       "isLite": false,
       "cover": "cover.png",
+      "icon": "icon.png",
       "createdAt": "2026-07-26T20:30:00Z",
-      "updatedAt": "2026-07-26T20:30:00Z",
+      "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/photo-blur-dynamics.zip"
     },
     {
@@ -73,8 +77,9 @@
       "useGyroscope": true,
       "isLite": false,
       "cover": "cover.png",
+      "icon": "icon.png",
       "createdAt": "2026-07-27T15:06:03Z",
-      "updatedAt": "2026-07-27T19:28:54Z",
+      "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/shape-3.zip"
     },
     {
@@ -88,8 +93,9 @@
       "useGyroscope": true,
       "isLite": false,
       "cover": "cover.png",
+      "icon": "icon.png",
       "createdAt": "2026-07-27T15:21:09Z",
-      "updatedAt": "2026-07-27T15:21:09Z",
+      "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/yui-material.zip"
     },
     {
@@ -103,9 +109,82 @@
       "useGyroscope": false,
       "isLite": false,
       "cover": "cover.png",
+      "icon": "icon.png",
       "createdAt": "2026-07-28T10:25:10Z",
-      "updatedAt": "2026-07-28T10:25:10Z",
+      "updatedAt": "2026-07-29T10:54:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3e-shapes.zip"
+    },
+    {
+      "id": "frosted-ice-cubes",
+      "name": "Frosted Ice Cubes",
+      "author": "Jardaken",
+      "version": "1.1.0",
+      "description": "Кубики льда: реагируют на касание, плавно возвращаются на место, есть режим гравитации и настройки фона",
+      "path": "wallpapers/frosted-ice-cubes",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.png",
+      "icon": "icon.png",
+      "createdAt": "2026-07-28T21:59:29Z",
+      "updatedAt": "2026-07-29T10:54:43Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/frosted-ice-cubes.zip"
+    },
+    {
+      "id": "material-flow",
+      "name": "Material Flow",
+      "author": "@YouRooni",
+      "version": "1.0.0",
+      "description": "Плавающие градиентные фигуры Material 3 с всплесками при включении и разблокировке.",
+      "path": "wallpapers/material-flow",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.png",
+      "icon": "icon.jpg",
+      "orientations": [
+        "portrait"
+      ],
+      "themeSupport": [
+        "light",
+        "dark"
+      ],
+      "supportsMonet": true,
+      "tags": [
+        "material",
+        "dynamic",
+        "abstract",
+        "particles"
+      ],
+      "createdAt": "2026-07-29T20:09:49Z",
+      "updatedAt": "2026-07-29T20:14:14Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/material-flow.zip"
+    },
+    {
+      "id": "DVD-Bouncers",
+      "name": "DVD-Bouncers",
+      "author": "Artho",
+      "version": "1.0.0",
+      "description": "Плавающие фигуры в палитре системы с анимацией тапов и блокировки экрана",
+      "path": "wallpapers/DVD-Bouncers",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.jpg",
+      "icon": "icon.png",
+      "themeSupport": [
+        "light",
+        "dark"
+      ],
+      "supportsMonet": true,
+      "tags": [
+        "material",
+        "dynamic",
+        "figures"
+      ],
+      "createdAt": "2026-07-30T08:51:19Z",
+      "updatedAt": "2026-07-30T10:02:21Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/DVD-Bouncers.zip"
     }
   ]
 }

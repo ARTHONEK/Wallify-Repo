@@ -8,7 +8,7 @@
   "settingsPath": "settings/index.html",
   "cover": "cover.jpg",
   "icon": "icon.png",
-  "isLite": false,
+  "isLite": true,
   "supportsMonet": true,
   "tags":["material", "battery", "percentage"]
 }

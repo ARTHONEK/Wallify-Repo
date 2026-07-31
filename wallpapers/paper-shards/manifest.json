@@ -1,0 +1,12 @@
+{
+  "name": "Paper Shards",
+  "description": "Рваные бумажные карточки: медленно вращаются, реагируют на блокировку экрана и на подключение зарядки",
+  "author": "Jardaken",
+  "version": "1.6.1",
+  "minAppVersion": ">=1.0.0",
+  "cover": "cover.jpg",
+  "main": "index.html",
+  "settingsPath": "settings/index.html",
+  "useGyroscope": false,
+  "isLite": false
+}

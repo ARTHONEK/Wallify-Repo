@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
+>
+
+<title>Mini Orbit</title>
+
+<style>
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+
+  margin: 0;
+
+  overflow: hidden;
+
+  background: #090812;
+}
+
+canvas {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<canvas id="canvas"></canvas>
+
+<script>
+
+(() => {
+
+  const canvas =
+    document.getElementById(
+      "canvas"
+    );
+
+  const ctx =
+    canvas.getContext(
+      "2d",
+      {
+        alpha: false
+      }
+    );
+
+
+  let width = 0;
+  let height = 0;
+  let dpr = 1;
+
+
+  let startTime =
+    performance.now();
+
+
+  /*
+    Состояние зарядки.
+  */
+
+  let isCharging =
+    false;
+
+
+  /*
+    Плавная яркость звёзд.
+
+    Без зарядки:
+    1.0
+
+    При зарядке:
+    1.65
+  */
+
+  let starBrightness =
+    1;
+
+
+  /*
+    Настройки.
+  */
+
+  const settings = {
+
+    palette:
+      "violet",
+
+    useMonet:
+      false,
+
+    moonCount:
+      2,
+
+    ringCount:
+      1,
+
+    orbitSpeed:
+      1,
+
+    showStars:
+      true
+
+  };
+
+
+  /*
+    Цветовые палитры.
+  */
+
+  const palettes = {
+
+    violet: {
+
+      background:
+        "#090812",
+
+      sun:
+        "#E8C5FF",
+
+      planet:
+        "#8E79C8",
+
+      moon:
+        "#D7C7F2",
+
+      ring:
+        "#CDB7E9",
+
+      stars:
+        "#FFFFFF"
+
+    },
+
+
+    ocean: {
+
+      background:
+        "#061018",
+
+      sun:
+        "#8ED8FF",
+
+      planet:
+        "#347FA8",
+
+      moon:
+        "#B7E8FF",
+
+      ring:
+        "#86CDEB",
+
+      stars:
+        "#E8F8FF"
+
+    },
+
+
+    sunset: {
+
+      background:
+        "#16090B",
+
+      sun:
+        "#FFB07A",
+
+      planet:
+        "#C85C65",
+
+      moon:
+        "#FFD2B4",
+
+      ring:
+        "#F2A07D",
+
+      stars:
+        "#FFF3E8"
+
+    },
+
+
+    forest: {
+
+      background:
+        "#07100D",
+
+      sun:
+        "#A9D5A5",
+
+      planet:
+        "#4E8B6C",
+
+      moon:
+        "#C7E7CB",
+
+      ring:
+        "#92C69B",
+
+      stars:
+        "#EEFFF1"
+
+    }
+
+  };
+
+
+  let colors =
+    palettes.violet;
+
+
+  /*
+    Больше и немного
+    крупнее звёзды.
+  */
+
+  const stars = [];
+
+
+  for (
+    let i = 0;
+    i < 105;
+    i++
+  ) {
+
+    stars.push({
+
+      x:
+        Math.random(),
+
+      y:
+        Math.random(),
+
+      size:
+        0.8
+        +
+        Math.random()
+        *
+        1.5,
+
+      alpha:
+        0.28
+        +
+        Math.random()
+        *
+        0.55,
+
+      phase:
+        Math.random()
+        *
+        Math.PI
+        *
+        2,
+
+      speed:
+        0.25
+        +
+        Math.random()
+        *
+        0.45
+
+    });
+
+  }
+
+
+  function getSetting(
+    key,
+    fallback
+  ) {
+
+    if (
+      window.WallpaperEngine
+    ) {
+
+      return (
+        window.WallpaperEngine
+          .getSetting(
+            key,
+            String(fallback)
+          )
+      );
+
+    }
+
+
+    return String(
+      fallback
+    );
+
+  }
+
+
+  function loadSettings() {
+
+    settings.palette =
+
+      getSetting(
+        "palette",
+        "violet"
+      );
+
+
+    settings.useMonet =
+
+      getSetting(
+        "useMonet",
+        false
+      )
+
+      ===
+
+      "true";
+
+
+    settings.moonCount =
+
+      Math.max(
+        1,
+        Math.min(
+          3,
+          parseInt(
+            getSetting(
+              "moonCount",
+              2
+            ),
+            10
+          )
+        )
+      );
+
+
+    settings.ringCount =
+
+      Math.max(
+        0,
+        Math.min(
+          3,
+          parseInt(
+            getSetting(
+              "ringCount",
+              1
+            ),
+            10
+          )
+        )
+      );
+
+
+    const savedSpeed =
+    
+      parseFloat(
+    
+        getSetting(
+    
+          "orbitSpeed",
+    
+          1
+    
+        )
+    
+      );
+    
+    
+    settings.orbitSpeed =
+    
+      Number.isFinite(
+        savedSpeed
+      )
+    
+      ?
+    
+      savedSpeed
+    
+      :
+    
+      1;
+
+
+    settings.showStars =
+
+      getSetting(
+        "showStars",
+        true
+      )
+
+      ===
+
+      "true";
+
+  }
+
+
+  function hexToRgba(
+    hex,
+    alpha
+  ) {
+
+    if (
+      !hex
+    ) {
+
+      return (
+
+        "rgba(255,255,255,"
+
+        +
+
+        alpha
+
+        +
+
+        ")"
+
+      );
+
+    }
+
+
+    const value =
+
+      hex.replace(
+        "#",
+        ""
+      );
+
+
+    const r =
+
+      parseInt(
+        value.slice(
+          0,
+          2
+        ),
+        16
+      );
+
+
+    const g =
+
+      parseInt(
+        value.slice(
+          2,
+          4
+        ),
+        16
+      );
+
+
+    const b =
+
+      parseInt(
+        value.slice(
+          4,
+          6
+        ),
+        16
+      );
+
+
+    return (
+
+      "rgba("
+
+      +
+
+      r
+
+      +
+
+      ","
+
+      +
+
+      g
+
+      +
+
+      ","
+
+      +
+
+      b
+
+      +
+
+      ","
+
+      +
+
+      alpha
+
+      +
+
+      ")"
+
+    );
+
+  }
+
+
+  function updatePalette(
+    detail
+  ) {
+
+    const monet =
+
+      detail
+      &&
+      detail.accentColors;
+
+
+    if (
+      settings.useMonet
+      &&
+      monet
+    ) {
+
+      colors = {
+
+        background:
+
+          monet.background
+          ||
+          "#090812",
+
+
+        sun:
+
+          monet.primary
+          ||
+          "#E8C5FF",
+
+
+        planet:
+
+          monet.secondary
+          ||
+          "#8E79C8",
+
+
+        moon:
+
+          monet.tertiary
+          ||
+          "#D7C7F2",
+
+
+        ring:
+
+          monet.primary
+          ||
+          "#CDB7E9",
+
+
+        stars:
+
+          monet.onBackground
+          ||
+          "#FFFFFF"
+
+      };
+
+
+      return;
+
+    }
+
+
+    colors =
+
+      palettes[
+        settings.palette
+      ]
+
+      ||
+
+      palettes.violet;
+
+  }
+
+
+  function resize() {
+
+    dpr =
+
+      Math.min(
+        window.devicePixelRatio
+        ||
+        1,
+        2
+      );
+
+
+    width =
+      window.innerWidth;
+
+
+    height =
+      window.innerHeight;
+
+
+    canvas.width =
+
+      Math.round(
+        width
+        *
+        dpr
+      );
+
+
+    canvas.height =
+
+      Math.round(
+        height
+        *
+        dpr
+      );
+
+
+    ctx.setTransform(
+
+      dpr,
+      0,
+      0,
+      dpr,
+      0,
+      0
+
+    );
+
+  }
+
+
+  function circle(
+    x,
+    y,
+    radius,
+    color
+  ) {
+
+    ctx.beginPath();
+
+
+    ctx.arc(
+
+      x,
+      y,
+      radius,
+
+      0,
+
+      Math.PI
+      *
+      2
+
+    );
+
+
+    ctx.fillStyle =
+      color;
+
+
+    ctx.fill();
+
+  }
+
+
+  /*
+    Рисование части кольца.
+
+    Передняя и задняя
+    половины рисуются
+    отдельно.
+
+    Поэтому кольца
+    выглядят объёмными.
+  */
+
+  function drawRingHalf(
+
+    x,
+    y,
+
+    radiusX,
+    radiusY,
+
+    startAngle,
+    endAngle,
+
+    color,
+    lineWidth
+
+  ) {
+
+    ctx.beginPath();
+
+
+    ctx.ellipse(
+
+      x,
+      y,
+
+      radiusX,
+      radiusY,
+
+      -0.24,
+
+      startAngle,
+      endAngle
+
+    );
+
+
+    ctx.strokeStyle =
+      color;
+
+
+    ctx.lineWidth =
+      lineWidth;
+
+
+    ctx.stroke();
+
+  }
+
+
+  function draw(
+    now
+  ) {
+
+    const time =
+
+      (
+        now
+        -
+        startTime
+      )
+
+      /
+      1000;
+
+
+    /*
+      Плавная реакция
+      на зарядку.
+    */
+
+    const targetBrightness =
+
+      isCharging
+
+      ?
+
+      1.65
+
+      :
+
+      1;
+
+
+    starBrightness +=
+
+      (
+        targetBrightness
+        -
+        starBrightness
+      )
+
+      *
+      0.025;
+
+
+    /*
+      Фон.
+    */
+
+    ctx.globalAlpha =
+      1;
+
+
+    ctx.fillStyle =
+      colors.background;
+
+
+    ctx.fillRect(
+
+      0,
+      0,
+
+      width,
+      height
+
+    );
+
+
+    /*
+      Звёзды.
+    */
+
+    if (
+      settings.showStars
+    ) {
+
+      for (
+        const star
+        of
+        stars
+      ) {
+
+        const twinkle =
+
+          0.82
+
+          +
+
+          Math.sin(
+
+            time
+            *
+            star.speed
+
+            +
+
+            star.phase
+
+          )
+
+          *
+          0.18;
+
+
+        ctx.globalAlpha =
+
+          Math.min(
+
+            1,
+
+            star.alpha
+
+            *
+
+            twinkle
+
+            *
+
+            starBrightness
+
+          );
+
+
+        circle(
+
+          star.x
+          *
+          width,
+
+          star.y
+          *
+          height,
+
+          star.size,
+
+          colors.stars
+
+        );
+
+      }
+
+    }
+
+
+    ctx.globalAlpha =
+      1;
+
+
+    /*
+      Солнце.
+    */
+
+    const sunX =
+
+      width
+      *
+      -0.08;
+
+
+    const sunY =
+
+      height
+      *
+      0.23;
+
+
+    const sunRadius =
+
+      Math.min(
+        width,
+        height
+      )
+
+      *
+      0.19;
+
+
+    const sunGlow =
+
+      ctx.createRadialGradient(
+
+        sunX,
+        sunY,
+
+        sunRadius
+        *
+        0.15,
+
+        sunX,
+        sunY,
+
+        sunRadius
+        *
+        2.2
+
+      );
+
+
+    sunGlow.addColorStop(
+
+      0,
+
+      hexToRgba(
+
+        colors.sun,
+
+        0.34
+
+      )
+
+    );
+
+
+    sunGlow.addColorStop(
+
+      1,
+
+      hexToRgba(
+
+        colors.sun,
+
+        0
+
+      )
+
+    );
+
+
+    ctx.fillStyle =
+      sunGlow;
+
+
+    ctx.fillRect(
+
+      0,
+      0,
+
+      width,
+      height
+
+    );
+
+
+    circle(
+
+      sunX,
+      sunY,
+
+      sunRadius,
+
+      colors.sun
+
+    );
+
+
+    /*
+      Планета.
+    */
+
+    const planetX =
+
+      width
+      *
+      0.58;
+
+
+    const planetY =
+
+      height
+      *
+      0.55;
+
+
+    const planetRadius =
+
+      Math.min(
+        width,
+        height
+      )
+
+      *
+      0.15;
+
+
+    /*
+      Задние части колец.
+
+      Рисуются до планеты.
+    */
+
+    for (
+      let i = 0;
+      i < settings.ringCount;
+      i++
+    ) {
+
+      const ringX =
+
+        planetRadius
+
+        *
+
+        (
+          1.55
+          +
+          i
+          *
+          0.22
+        );
+
+
+      const ringY =
+
+        planetRadius
+
+        *
+
+        (
+          0.48
+          +
+          i
+          *
+          0.07
+        );
+
+
+      drawRingHalf(
+
+        planetX,
+        planetY,
+
+        ringX,
+        ringY,
+
+        Math.PI,
+
+        Math.PI
+        *
+        2,
+
+        hexToRgba(
+
+          colors.ring,
+
+          0.42
+
+        ),
+
+        1.8
+
+      );
+
+    }
+
+
+    /*
+      Луны позади планеты.
+    */
+
+    for (
+      let i = 0;
+      i < settings.moonCount;
+      i++
+    ) {
+
+      const angle =
+
+        time
+
+        *
+
+        settings.orbitSpeed
+
+        *
+
+        (
+          0.55
+          +
+          i
+          *
+          0.18
+        )
+
+        +
+
+        i
+
+        *
+
+        (
+          Math.PI
+          *
+          2
+          /
+          settings.moonCount
+        );
+
+
+      const orbitX =
+
+        planetRadius
+
+        *
+
+        (
+          1.85
+          +
+          i
+          *
+          0.42
+        );
+
+
+      const orbitY =
+
+        planetRadius
+
+        *
+
+        (
+          0.72
+          +
+          i
+          *
+          0.16
+        );
+
+
+      if (
+        Math.sin(
+          angle
+        )
+        <
+        0
+      ) {
+
+        circle(
+
+          planetX
+
+          +
+
+          Math.cos(
+            angle
+          )
+
+          *
+
+          orbitX,
+
+
+          planetY
+
+          +
+
+          Math.sin(
+            angle
+          )
+
+          *
+
+          orbitY,
+
+
+          planetRadius
+
+          *
+
+          (
+            0.15
+            -
+            i
+            *
+            0.02
+          ),
+
+
+          colors.moon
+
+        );
+
+      }
+
+    }
+
+
+    /*
+      Планета.
+    */
+
+    const planetGradient =
+
+      ctx.createRadialGradient(
+
+        planetX
+        -
+        planetRadius
+        *
+        0.35,
+
+        planetY
+        -
+        planetRadius
+        *
+        0.4,
+
+        planetRadius
+        *
+        0.05,
+
+        planetX,
+
+        planetY,
+
+        planetRadius
+
+      );
+
+
+    planetGradient.addColorStop(
+
+      0,
+
+      colors.moon
+
+    );
+
+
+    planetGradient.addColorStop(
+
+      1,
+
+      colors.planet
+
+    );
+
+
+    circle(
+
+      planetX,
+
+      planetY,
+
+      planetRadius,
+
+      planetGradient
+
+    );
+
+
+    /*
+      Передние части колец.
+
+      Рисуются поверх
+      планеты.
+    */
+
+    for (
+      let i = 0;
+      i < settings.ringCount;
+      i++
+    ) {
+
+      const ringX =
+
+        planetRadius
+
+        *
+
+        (
+          1.55
+          +
+          i
+          *
+          0.22
+        );
+
+
+      const ringY =
+
+        planetRadius
+
+        *
+
+        (
+          0.48
+          +
+          i
+          *
+          0.07
+        );
+
+
+      drawRingHalf(
+
+        planetX,
+
+        planetY,
+
+        ringX,
+
+        ringY,
+
+        0,
+
+        Math.PI,
+
+        hexToRgba(
+
+          colors.ring,
+
+          0.75
+
+        ),
+
+        1.8
+
+      );
+
+    }
+
+
+    /*
+      Луны перед планетой.
+    */
+
+    for (
+      let i = 0;
+      i < settings.moonCount;
+      i++
+    ) {
+
+      const angle =
+
+        time
+
+        *
+
+        settings.orbitSpeed
+
+        *
+
+        (
+          0.55
+          +
+          i
+          *
+          0.18
+        )
+
+        +
+
+        i
+
+        *
+
+        (
+          Math.PI
+          *
+          2
+          /
+          settings.moonCount
+        );
+
+
+      const orbitX =
+
+        planetRadius
+
+        *
+
+        (
+          1.85
+          +
+          i
+          *
+          0.42
+        );
+
+
+      const orbitY =
+
+        planetRadius
+
+        *
+
+        (
+          0.72
+          +
+          i
+          *
+          0.16
+        );
+
+
+      if (
+        Math.sin(
+          angle
+        )
+        >=
+        0
+      ) {
+
+        circle(
+
+          planetX
+
+          +
+
+          Math.cos(
+            angle
+          )
+
+          *
+
+          orbitX,
+
+
+          planetY
+
+          +
+
+          Math.sin(
+            angle
+          )
+
+          *
+
+          orbitY,
+
+
+          planetRadius
+
+          *
+
+          (
+            0.15
+            -
+            i
+            *
+            0.02
+          ),
+
+
+          colors.moon
+
+        );
+
+      }
+
+    }
+
+
+    ctx.globalAlpha =
+      1;
+
+
+    requestAnimationFrame(
+      draw
+    );
+
+  }
+
+
+  window.addEventListener(
+
+    "wallpaperEngineReady",
+
+    event => {
+
+      loadSettings();
+
+
+      const detail =
+        event.detail;
+
+
+      if (
+
+        detail
+
+        &&
+
+        detail.battery
+
+        &&
+
+        typeof
+        detail.battery.isCharging
+
+        ===
+
+        "boolean"
+
+      ) {
+
+        isCharging =
+
+          detail.battery
+            .isCharging;
+
+      }
+
+
+      updatePalette(
+        detail
+      );
+
+    }
+
+  );
+
+
+  window.addEventListener(
+  
+    "wallpaperUpdate",
+  
+    event => {
+  
+      const detail =
+        event.detail;
+  
+  
+      /*
+        Перечитываем настройки.
+  
+        Именно этого не хватало:
+        без loadSettings() значения
+        менялись только после
+        полной перезагрузки.
+      */
+  
+      loadSettings();
+  
+  
+      /*
+        Обновляем палитру.
+  
+        Это нужно делать всегда,
+        потому что пользователь
+        может прямо сейчас
+        включить или выключить
+        Material You.
+      */
+  
+      updatePalette(
+        detail
+      );
+  
+  
+      /*
+        Обновляем состояние
+        зарядки.
+      */
+  
+      if (
+  
+        detail
+  
+        &&
+  
+        detail.battery
+  
+        &&
+  
+        typeof
+        detail.battery.isCharging
+  
+        ===
+  
+        "boolean"
+  
+      ) {
+  
+        isCharging =
+  
+          detail.battery
+            .isCharging;
+  
+      }
+  
+    }
+  
+  );
+
+
+  if (
+    !window.WallpaperEngine
+  ) {
+
+    loadSettings();
+
+    updatePalette(
+      null
+    );
+
+  }
+
+
+  window.addEventListener(
+
+    "resize",
+
+    resize
+
+  );
+
+
+  resize();
+
+
+  requestAnimationFrame(
+    draw
+  );
+
+})();
+
+</script>
+
+</body>
+</html>

@@ -1,385 +1,885 @@
 <!DOCTYPE html>
 
 <html lang="ru">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
+>
+
+  <title>Фигуры — настройки</title>
+
+  <!--
+    Нужны только для тестирования
+    страницы в обычном браузере.
+
+    В Wallify UI Kit подключается
+    автоматически.
+  -->
+
+  <link
+    rel="stylesheet"
+    href="wallify-m3.css"
+  >
 
   <style>
-    :root {
-      color-scheme: dark;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
 
     body {
       margin: 0;
-      padding: 20px;
-      min-height: 100vh;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #141218;
-      color: #E6E0E9;
+
+      padding:
+        20px
+        16px
+        48px;
+
+      background:
+        var(
+          --wallify-m3-background,
+          #141218
+        );
+
+      color:
+        var(
+          --wallify-m3-on-surface,
+          #e6e1e5
+        );
+
+      font-family:
+        "Roboto",
+        system-ui,
+        -apple-system,
+        sans-serif;
     }
 
-    .field {
-      margin-bottom: 24px;
+
+    /*
+      Заголовок.
+    */
+
+    h1 {
+      margin:
+        4px
+        0
+        2px;
+
+      font-size:
+        22px;
+
+      line-height:
+        28px;
+
+      font-weight:
+        500;
     }
 
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 500;
-      font-size: 14px;
+
+    /*
+      Подзаголовок.
+    */
+
+    .sub {
+      margin:
+        0
+        0
+        24px;
+
+      font-size:
+        13px;
+
+      color:
+        var(
+          --wallify-m3-on-surface-variant,
+          #cac4d0
+        );
     }
 
-    .val {
-      float: right;
-      color: #D0BCFF;
+
+    /*
+      Название группы.
+    */
+
+    .section-title {
+      margin:
+        24px
+        4px
+        8px;
+
+      font-size:
+        12px;
+
+      line-height:
+        16px;
+
+      letter-spacing:
+        0.08em;
+
+      text-transform:
+        uppercase;
+
+      color:
+        var(
+          --wallify-m3-primary,
+          #d0bcff
+        );
     }
 
-    input[type="range"] {
-      width: 100%;
-      accent-color: #D0BCFF;
+
+    /*
+      Первая группа
+      расположена ближе
+      к заголовку.
+    */
+
+    .section-title.first {
+      margin-top:
+        0;
     }
 
-    .checkbox-field {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 20px;
+
+    /*
+      Значение справа
+      от названия слайдера.
+    */
+
+    .value-pill {
+      float:
+        right;
+
+      font-size:
+        14px;
+
+      font-weight:
+        500;
+
+      color:
+        var(
+          --wallify-m3-primary,
+          #d0bcff
+        );
     }
 
-    .checkbox-field label {
-      margin: 0;
-      flex: 1;
+
+    /*
+      Небольшой отступ
+      внутри карточки
+      со слайдером.
+    */
+
+    .slider-content {
+      gap:
+        8px;
     }
 
-    input[type="checkbox"] {
-      flex: 0 0 auto;
-      width: 22px;
-      height: 22px;
-      margin: 0;
-      accent-color: #D0BCFF;
-    }
   </style>
 
 </head>
 
 <body>
 
-  <div class="field">
-    <label for="count">
-      Количество фигур:
-      <span id="countVal" class="val">6</span>
-    </label>
+  <!--
+    Заголовок.
+  -->
 
-<input
-  type="range"
-  id="count"
-  min="1"
-  max="20"
-  value="6"
+  <h1>
+    Фигуры
+  </h1>
+
+  <p class="sub">
+    Настройки живых обоев
+  </p>
+
+  <!--
+    Группа:
+    Фигуры.
+  -->
+
+  <p class="section-title first">
+    Фигуры
+  </p>
+
+  <div
+    data-wallify-m3="card-group"
+  >
+
+
+<!--
+  Количество фигур.
+-->
+
+<section
+  data-wallify-m3="card"
 >
+
+  <div
+    class="
+      row-content
+      slider-content
+    "
+  >
+
+
+    <div class="row-title">
+
+      Количество фигур
+
+      <span
+        id="countValue"
+        class="value-pill"
+      >
+        6
+      </span>
+
+    </div>
+
+
+    <input
+      id="count"
+
+      type="range"
+
+      min="1"
+      max="20"
+
+      step="1"
+
+      value="6"
+
+      data-wallify-m3="slider"
+    >
+
 
   </div>
 
-  <div class="field">
-    <label for="size">
-      Размер (px):
-      <span id="sizeVal" class="val">90</span>
-    </label>
+</section>
 
-<input
-  type="range"
-  id="size"
-  min="40"
-  max="160"
-  value="90"
+
+
+<!--
+  Размер фигур.
+-->
+
+<section
+  data-wallify-m3="card"
 >
+
+  <div
+    class="
+      row-content
+      slider-content
+    "
+  >
+
+
+    <div class="row-title">
+
+      Размер фигур
+
+      <span
+        id="sizeValue"
+        class="value-pill"
+      >
+        90 px
+      </span>
+
+    </div>
+
+
+    <input
+      id="size"
+
+      type="range"
+
+      min="40"
+      max="160"
+
+      step="1"
+
+      value="90"
+
+      data-wallify-m3="slider"
+    >
+
 
   </div>
 
-  <div class="checkbox-field">
-    <label for="collision">
-      Столкновения между собой
-    </label>
+</section>
 
-<input
-  type="checkbox"
-  id="collision"
-  checked
->
 
   </div>
 
-  <div class="checkbox-field">
-    <label for="materialYou">
-      Использовать цвета Material You
-    </label>
+  <!--
+    Группа:
+    Взаимодействие.
+  -->
 
-<input
-  type="checkbox"
-  id="materialYou"
+  <p class="section-title">
+    Взаимодействие
+  </p>
+
+  <div
+    data-wallify-m3="card-group"
+  >
+
+
+<!--
+  Столкновения.
+-->
+
+<section
+  data-wallify-m3="card"
 >
+
+  <div class="row">
+
+
+    <div class="row-content">
+
+      <div class="row-title">
+        Столкновения
+      </div>
+
+
+      <div class="row-desc">
+
+        Фигуры сталкиваются
+        друг с другом
+
+      </div>
+
+    </div>
+
+
+    <input
+      id="collision"
+
+      type="checkbox"
+
+      data-wallify-m3="switch"
+    >
+
 
   </div>
 
-  <div class="checkbox-field">
-    <label for="tapChange">
-      Смена фигур по нажатию
-    </label>
+</section>
 
-<input
-  type="checkbox"
-  id="tapChange"
-  checked
+
+
+<!--
+  Смена по нажатию.
+-->
+
+<section
+  data-wallify-m3="card"
 >
+
+  <div class="row">
+
+
+    <div class="row-content">
+
+      <div class="row-title">
+
+        Смена по нажатию
+
+      </div>
+
+
+      <div class="row-desc">
+
+        Нажатие меняет
+        форму фигур
+
+      </div>
+
+    </div>
+
+
+    <input
+      id="tapChange"
+
+      type="checkbox"
+
+      data-wallify-m3="switch"
+    >
+
 
   </div>
 
-  <div class="checkbox-field">
-    <label for="lockAnim">
-      Анимация при блокировке
-    </label>
+</section>
 
-<input
-  type="checkbox"
-  id="lockAnim"
-  checked
->
 
   </div>
+
+  <!--
+    Группа:
+    Внешний вид.
+  -->
+
+  <p class="section-title">
+    Внешний вид
+  </p>
+
+  <div
+    data-wallify-m3="card-group"
+  >
+
+
+<!--
+  Material You.
+-->
+
+<section
+  data-wallify-m3="card"
+>
+
+  <div class="row">
+
+
+    <div class="row-content">
+
+      <div class="row-title">
+
+        Цвета Material You
+
+      </div>
+
+
+      <div class="row-desc">
+
+        Использовать системную
+        цветовую палитру
+
+      </div>
+
+    </div>
+
+
+    <input
+      id="materialYou"
+
+      type="checkbox"
+
+      data-wallify-m3="switch"
+    >
+
+
+  </div>
+
+</section>
+
+
+  </div>
+
+  <!--
+    Группа:
+    Анимация.
+  -->
+
+  <p class="section-title">
+    Анимация
+  </p>
+
+  <div
+    data-wallify-m3="card-group"
+  >
+
+
+<!--
+  Анимация при блокировке.
+-->
+
+<section
+  data-wallify-m3="card"
+>
+
+  <div class="row">
+
+
+    <div class="row-content">
+
+      <div class="row-title">
+
+        Анимация при блокировке
+
+      </div>
+
+
+      <div class="row-desc">
+
+        Продолжать анимацию
+        на экране блокировки
+
+      </div>
+
+    </div>
+
+
+    <input
+      id="lockAnim"
+
+      type="checkbox"
+
+      data-wallify-m3="switch"
+    >
+
+
+  </div>
+
+</section>
+
+
+  </div>
+
+  <!--
+    Нужен только
+    для тестирования
+    в обычном браузере.
+
+    В Wallify скрипт
+    подключается автоматически.
+  -->
+
+  <script
+    src="wallify-m3.js"
+  ></script>
 
   <script>
-    const countInput = document.getElementById('count');
-    const sizeInput = document.getElementById('size');
 
-    const collisionInput = document.getElementById('collision');
-    const materialYouInput = document.getElementById('materialYou');
-    const tapChangeInput = document.getElementById('tapChange');
-    const lockAnimInput = document.getElementById('lockAnim');
+    (
+      function ()
+      {
 
-    const countVal = document.getElementById('countVal');
-    const sizeVal = document.getElementById('sizeVal');
 
-    /*
-      Применение цветов Material You
-      к странице настроек.
-    */
-    function applyColors(colors) {
-      if (!colors) return;
+        /*
+          Получаем элементы.
+        */
 
-      if (colors.background) {
-        document.body.style.background = colors.background;
-      }
-
-      if (colors.onBackground) {
-        document.body.style.color = colors.onBackground;
-      }
-
-      if (colors.primary) {
-        const primary = colors.primary;
-
-        countVal.style.color = primary;
-        sizeVal.style.color = primary;
-
-        countInput.style.accentColor = primary;
-        sizeInput.style.accentColor = primary;
-
-        collisionInput.style.accentColor = primary;
-        materialYouInput.style.accentColor = primary;
-        tapChangeInput.style.accentColor = primary;
-        lockAnimInput.style.accentColor = primary;
-      }
-    }
-
-    /*
-      Получение сохранённой настройки.
-
-      Если Wallify ещё не передал значение,
-      используется значение по умолчанию.
-    */
-    function getSetting(key, fallback) {
-      if (!window.WallpaperEngine) {
-        return fallback;
-      }
-
-      return window.WallpaperEngine.getSetting(
-        key,
-        String(fallback)
-      );
-    }
-
-    /*
-      Загрузка настроек в элементы страницы.
-    */
-    function loadSettings(detail) {
-      if (detail && detail.accentColors) {
-        applyColors(detail.accentColors);
-      }
-
-      countInput.value = getSetting(
-        'shapeCount',
-        6
-      );
-
-      sizeInput.value = getSetting(
-        'shapeSize',
-        90
-      );
-
-      collisionInput.checked =
-        getSetting(
-          'enableCollisions',
-          true
-        ) === 'true';
-
-      materialYouInput.checked =
-        getSetting(
-          'useMaterialYou',
-          false
-        ) === 'true';
-
-      tapChangeInput.checked =
-        getSetting(
-          'changeOnTap',
-          true
-        ) === 'true';
-
-      lockAnimInput.checked =
-        getSetting(
-          'lockAnim',
-          true
-        ) === 'true';
-
-      countVal.textContent =
-        countInput.value;
-
-      sizeVal.textContent =
-        sizeInput.value;
-    }
-
-    /*
-      Сохранение настройки через API Wallify.
-    */
-    function saveSetting(key, value) {
-      if (
-        window.WallpaperEngine &&
-        typeof window.WallpaperEngine.saveSetting === 'function'
-      ) {
-        window.WallpaperEngine.saveSetting(
-          key,
-          String(value)
-        );
-      }
-    }
-
-    /*
-      События Wallify.
-    */
-    window.addEventListener(
-      'wallpaperEngineReady',
-      (event) => {
-        loadSettings(event.detail);
-      }
-    );
-
-    window.addEventListener(
-      'wallpaperUpdate',
-      (event) => {
-        if (
-          event.detail &&
-          event.detail.accentColors
-        ) {
-          applyColors(
-            event.detail.accentColors
+        const count =
+          document.getElementById(
+            'count'
           );
+
+
+        const countValue =
+          document.getElementById(
+            'countValue'
+          );
+
+
+        const size =
+          document.getElementById(
+            'size'
+          );
+
+
+        const sizeValue =
+          document.getElementById(
+            'sizeValue'
+          );
+
+
+        const collision =
+          document.getElementById(
+            'collision'
+          );
+
+
+        const materialYou =
+          document.getElementById(
+            'materialYou'
+          );
+
+
+        const tapChange =
+          document.getElementById(
+            'tapChange'
+          );
+
+
+        const lockAnim =
+          document.getElementById(
+            'lockAnim'
+          );
+
+
+
+        /*
+          Инициализация
+          настроек.
+        */
+
+        function init(
+          engine
+        )
+        {
+
+
+          /*
+            Количество фигур.
+          */
+
+          count.value =
+            engine.getSetting(
+              'shapeCount',
+              '6'
+            );
+
+
+          countValue.textContent =
+            count.value;
+
+
+          /*
+            Обновляем
+            внешний вид
+            M3-слайдера.
+          */
+
+          count.dispatchEvent(
+            new Event(
+              'input'
+            )
+          );
+
+
+          count.addEventListener(
+            'input',
+            () =>
+            {
+
+              countValue.textContent =
+                count.value;
+
+
+              engine.saveSetting(
+                'shapeCount',
+                count.value
+              );
+
+            }
+          );
+
+
+
+          /*
+            Размер фигур.
+          */
+
+          size.value =
+            engine.getSetting(
+              'shapeSize',
+              '90'
+            );
+
+
+          sizeValue.textContent =
+            size.value
+            +
+            ' px';
+
+
+          size.dispatchEvent(
+            new Event(
+              'input'
+            )
+          );
+
+
+          size.addEventListener(
+            'input',
+            () =>
+            {
+
+              sizeValue.textContent =
+                size.value
+                +
+                ' px';
+
+
+              engine.saveSetting(
+                'shapeSize',
+                size.value
+              );
+
+            }
+          );
+
+
+
+          /*
+            Универсальное
+            подключение
+            переключателя.
+          */
+
+          function wireSwitch(
+            element,
+            key,
+            defaultValue
+          )
+          {
+
+
+            element.checked =
+
+              engine.getSetting(
+
+                key,
+
+                defaultValue
+                  ?
+                  'true'
+                  :
+                  'false'
+
+              )
+
+              ===
+
+              'true';
+
+
+
+            /*
+              Обновляем
+              M3-переключатель.
+            */
+
+            element.dispatchEvent(
+
+              new Event(
+                'change'
+              )
+
+            );
+
+
+
+            element.addEventListener(
+
+              'change',
+
+              () =>
+              {
+
+                engine.saveSetting(
+
+                  key,
+
+                  element.checked
+                    ?
+                    'true'
+                    :
+                    'false'
+
+                );
+
+              }
+
+            );
+
+
+          }
+
+
+
+          /*
+            Подключаем
+            переключатели.
+          */
+
+          wireSwitch(
+
+            collision,
+
+            'enableCollisions',
+
+            true
+
+          );
+
+
+          wireSwitch(
+
+            materialYou,
+
+            'useMaterialYou',
+
+            false
+
+          );
+
+
+          wireSwitch(
+
+            tapChange,
+
+            'changeOnTap',
+
+            true
+
+          );
+
+
+          wireSwitch(
+
+            lockAnim,
+
+            'lockAnim',
+
+            true
+
+          );
+
+
         }
 
-        loadSettings(event.detail);
-      }
-    );
 
-    /*
-      Изменение количества фигур.
-    */
-    countInput.addEventListener(
-      'input',
-      (event) => {
-        const value = event.target.value;
 
-        countVal.textContent = value;
+        /*
+          Wallify передал API.
+        */
 
-        saveSetting(
-          'shapeCount',
-          value
+        window.addEventListener(
+
+          'wallpaperEngineReady',
+
+          (
+            event
+          ) =>
+          {
+
+            if (
+              window.WallpaperEngine
+            )
+            {
+
+              init(
+                window.WallpaperEngine
+              );
+
+            }
+
+          },
+
+          {
+            once:
+              true
+          }
+
         );
+
+
       }
-    );
+    )();
 
-    /*
-      Изменение размера фигур.
-    */
-    sizeInput.addEventListener(
-      'input',
-      (event) => {
-        const value = event.target.value;
-
-        sizeVal.textContent = value;
-
-        saveSetting(
-          'shapeSize',
-          value
-        );
-      }
-    );
-
-    /*
-      Переключатели.
-    */
-    collisionInput.addEventListener(
-      'change',
-      (event) => {
-        saveSetting(
-          'enableCollisions',
-          event.target.checked
-        );
-      }
-    );
-
-    materialYouInput.addEventListener(
-      'change',
-      (event) => {
-        saveSetting(
-          'useMaterialYou',
-          event.target.checked
-        );
-      }
-    );
-
-    tapChangeInput.addEventListener(
-      'change',
-      (event) => {
-        saveSetting(
-          'changeOnTap',
-          event.target.checked
-        );
-      }
-    );
-
-    lockAnimInput.addEventListener(
-      'change',
-      (event) => {
-        saveSetting(
-          'lockAnim',
-          event.target.checked
-        );
-      }
-    );
   </script>
 
 </body>
+
 </html>

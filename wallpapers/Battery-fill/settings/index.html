@@ -1,598 +1,903 @@
 <!DOCTYPE html>
+
 <html lang="ru">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-:root {
-    color-scheme:
-        dark;
-}
+  <meta charset="UTF-8">
 
-* {
-    box-sizing:
-        border-box;
-}
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
 
-html,
-body {
-    margin: 0;
-    min-height: 100%;
+>
 
-    background:
-        var(--background);
+  <title>Battery Fill — настройки</title>
 
-    color:
-        #e8e3e8;
+  <!--
+    Подключения нужны только
+    для тестирования на ПК.
 
-    font-family:
+    В приложении Wallify
+    UI Kit добавляется автоматически.
+  -->
+
+  <link
+    rel="stylesheet"
+    href="wallify-m3.css"
+  >
+
+  <style>
+
+    /*
+      Основная страница.
+    */
+
+    body {
+      margin: 0;
+
+      padding:
+        20px
+        16px
+        48px;
+
+      background:
+        var(
+          --wallify-m3-background,
+          #141218
+        );
+
+      color:
+        var(
+          --wallify-m3-on-surface,
+          #e6e1e5
+        );
+
+      font-family:
+        "Roboto",
         system-ui,
         -apple-system,
-        BlinkMacSystemFont,
         sans-serif;
-}
-
-body {
-    padding:
-        20px 16px 40px;
-}
-
-h1 {
-    margin:
-        0 0 8px;
-
-    font-size:
-        28px;
-
-    font-weight:
-        700;
-}
-
-.description {
-    margin:
-        0 0 24px;
-
-    color:
-        #c9c3c9;
-
-    line-height:
-        1.45;
-}
+    }
 
 
-/* Карточка */
-.card {
-    padding:
-        18px;
+    /*
+      Заголовок.
+    */
 
-    margin-bottom:
-        16px;
+    h1 {
+      margin:
+        4px
+        0
+        2px;
 
-    border:
-        1px solid
-        rgba(
-            255,
-            255,
-            255,
-            0.08
-        );
-
-    border-radius:
+      font-size:
         22px;
 
-    background:
-        #1c1b1f;
-}
+      line-height:
+        28px;
 
+      font-weight:
+        500;
+    }
 
-/* Строка переключателя */
-.setting-row {
-    display:
-        flex;
 
-    align-items:
-        center;
+    /*
+      Описание.
+    */
 
-    justify-content:
-        space-between;
+    .sub {
+      margin:
+        0
+        0
+        24px;
 
-    gap:
-        16px;
-}
-
-.setting-title {
-    font-size:
-        17px;
-
-    font-weight:
-        650;
-}
-
-.setting-text {
-    margin-top:
-        5px;
-
-    color:
-        #c9c3c9;
-
-    font-size:
-        14px;
-
-    line-height:
-        1.4;
-}
-
-
-/* Переключатель */
-.switch {
-    position:
-        relative;
-
-    flex:
-        0 0 auto;
-
-    width:
-        54px;
-
-    height:
-        32px;
-}
-
-.switch input {
-    width: 0;
-    height: 0;
-
-    opacity: 0;
-}
-
-.slider {
-    position:
-        absolute;
-
-    inset: 0;
-
-    border-radius:
-        999px;
-
-    background:
-        #49454f;
-
-    transition:
-        background
-        200ms ease;
-}
-
-.slider::before {
-    content:
-        "";
-
-    position:
-        absolute;
-
-    top:
-        6px;
-
-    left:
-        6px;
-
-    width:
-        20px;
-
-    height:
-        20px;
-
-    border-radius:
-        50%;
-
-    background:
-        #e8e3e8;
-
-    transition:
-        transform
-        200ms ease;
-}
-
-.switch input:checked
-+ .slider {
-
-    background:
-        #9dc9aa;
-}
-
-.switch input:checked
-+ .slider::before {
-
-    transform:
-        translateX(
-            22px
-        );
-
-    background:
-        #173b24;
-}
-
-
-/* Цвет */
-.color-card {
-
-    transition:
-        opacity
-        250ms ease;
-}
-
-.color-card.disabled {
-
-    opacity:
-        0.42;
-
-    pointer-events:
-        none;
-}
-
-.color-label {
-
-    display:
-        block;
-
-    margin-bottom:
-        12px;
-
-    font-size:
-        17px;
-
-    font-weight:
-        650;
-}
-
-.color-row {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        14px;
-}
-
-input[type="color"] {
-
-    width:
-        58px;
-
-    height:
-        44px;
-
-    padding:
-        3px;
-
-    border:
-        none;
-
-    border-radius:
-        12px;
-
-    background:
-        transparent;
-}
-
-.color-value {
-
-    color:
-        #c9c3c9;
-
-    font-family:
-        monospace;
-
-    font-size:
-        16px;
-}
-
-
-/* Подсказка */
-.note {
-
-    margin-top:
-        12px;
-
-    color:
-        #aaa4ab;
-
-    font-size:
+      font-size:
         13px;
 
-    line-height:
-        1.45;
-}
-</style>
+      line-height:
+        18px;
+
+      color:
+        var(
+          --wallify-m3-on-surface-variant,
+          #cac4d0
+        );
+    }
+
+
+    /*
+      Заголовок группы.
+    */
+
+    .section-title {
+      margin:
+        24px
+        4px
+        8px;
+
+      font-size:
+        12px;
+
+      line-height:
+        16px;
+
+      font-weight:
+        500;
+
+      letter-spacing:
+        0.08em;
+
+      text-transform:
+        uppercase;
+
+      color:
+        var(
+          --wallify-m3-primary,
+          #d0bcff
+        );
+    }
+
+
+    /*
+      Первая группа.
+    */
+
+    .section-title.first {
+      margin-top:
+        0;
+    }
+
+
+    /*
+      Карточка пользовательского
+      цвета.
+    */
+
+    .color-card {
+      transition:
+        opacity
+        220ms ease;
+    }
+
+
+    /*
+      Material You включён.
+
+      Цвет можно увидеть,
+      но изменить нельзя.
+    */
+
+    .color-card.disabled {
+      opacity:
+        0.45;
+
+      pointer-events:
+        none;
+    }
+
+
+    /*
+      Название настройки цвета.
+    */
+
+    .color-label {
+      display:
+        block;
+
+      margin-bottom:
+        12px;
+
+      font-size:
+        16px;
+
+      line-height:
+        22px;
+
+      font-weight:
+        500;
+
+      color:
+        var(
+          --wallify-m3-on-surface,
+          #e6e1e5
+        );
+    }
+
+
+    /*
+      Строка с выбором цвета.
+    */
+
+    .color-row {
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      gap:
+        14px;
+    }
+
+
+    /*
+      Поле выбора цвета.
+    */
+
+    input[type="color"] {
+      flex:
+        0 0 auto;
+
+      width:
+        52px;
+
+      height:
+        44px;
+
+      padding:
+        3px;
+
+      border:
+        1px solid
+        var(
+          --wallify-m3-outline,
+          #938f99
+        );
+
+      border-radius:
+        12px;
+
+      background:
+        transparent;
+
+      cursor:
+        pointer;
+    }
+
+
+    /*
+      HEX-значение.
+    */
+
+    .color-value {
+      color:
+        var(
+          --wallify-m3-primary,
+          #d0bcff
+        );
+
+      font-family:
+        ui-monospace,
+        "SFMono-Regular",
+        Consolas,
+        monospace;
+
+      font-size:
+        15px;
+
+      font-weight:
+        500;
+
+      letter-spacing:
+        0.04em;
+    }
+
+
+    /*
+      Подсказка.
+    */
+
+    .note {
+      margin:
+        12px
+        0
+        0;
+
+      font-size:
+        13px;
+
+      line-height:
+        18px;
+
+      color:
+        var(
+          --wallify-m3-on-surface-variant,
+          #cac4d0
+        );
+    }
+
+  </style>
+
 </head>
 
 <body>
 
-<h1>
+  <!--
+    Название обоев.
+  -->
+
+  <h1>
     Battery Fill
-</h1>
+  </h1>
 
-<p class="description">
-    Настройка цвета и палитры обоев.
-</p>
+  <p class="sub">
+    Настройка цвета
+    и палитры обоев
+  </p>
+
+  <!--
+    Группа:
+    Цветовая палитра.
+  -->
+
+  <p
+    class="
+      section-title
+      first
+    "
+  >
+    Цветовая палитра
+  </p>
+
+  <div
+    data-wallify-m3="card-group"
+  >
 
 
-<div class="card">
+<!--
+  Material You.
+-->
 
-    <div class="setting-row">
+<section
+  data-wallify-m3="card"
+>
 
-        <div>
-
-            <div class="setting-title">
-                Material You
-            </div>
-
-            <div class="setting-text">
-                Использовать системные
-                цвета Android.
-            </div>
-
-        </div>
+  <div class="row">
 
 
-        <label class="switch">
+    <div class="row-content">
 
-            <input
-                id="materialYou"
-                type="checkbox"
-            >
 
-            <span class="slider">
-            </span>
+      <div class="row-title">
 
-        </label>
+        Material You
+
+      </div>
+
+
+      <div class="row-desc">
+
+        Использовать системные
+        цвета Android
+
+      </div>
+
 
     </div>
 
-</div>
+
+    <input
+      id="materialYou"
+
+      type="checkbox"
+
+      data-wallify-m3="switch"
+    >
 
 
-<div
+  </div>
+
+</section>
+
+
+  </div>
+
+  <!--
+    Группа:
+    Пользовательский цвет.
+  -->
+
+  <p class="section-title">
+
+
+Пользовательский цвет
+
+
+  </p>
+
+  <div
     id="colorCard"
-    class="card color-card"
+
+
+class="color-card"
+
+data-wallify-m3="card-group"
+
+
 >
 
+
+<section
+  data-wallify-m3="card"
+>
+
+
+  <div class="row-content">
+
+
     <label
-        class="color-label"
-        for="fillColor"
+      class="color-label"
+
+      for="fillColor"
     >
-        Цвет заполнения
+
+      Цвет заполнения
+
     </label>
+
 
 
     <div class="color-row">
 
-        <input
-            id="fillColor"
-            type="color"
-            value="#5f8f72"
-        >
 
-        <span
-            id="colorValue"
-            class="color-value"
-        >
-            #5F8F72
-        </span>
+      <input
+        id="fillColor"
+
+        type="color"
+
+        value="#5f8f72"
+      >
+
+
+      <span
+        id="colorValue"
+
+        class="color-value"
+      >
+
+        #5F8F72
+
+      </span>
+
 
     </div>
 
 
-    <div class="note">
 
-        Этот цвет используется,
-        когда Material You выключен.
+    <p class="note">
 
-    </div>
+      Используется,
+      когда Material You выключен.
 
-</div>
-
-
-<script>
-
-const materialYou =
-    document.getElementById(
-        "materialYou"
-    );
-
-const fillColor =
-    document.getElementById(
-        "fillColor"
-    );
-
-const colorValue =
-    document.getElementById(
-        "colorValue"
-    );
-
-const colorCard =
-    document.getElementById(
-        "colorCard"
-    );
+    </p>
 
 
-function getEngine() {
-
-    return (
-        window.WallpaperEngine ||
-        null
-    );
-}
+  </div>
 
 
-function saveSetting(
-    key,
-    value
-) {
-
-    const engine =
-        getEngine();
-
-    if (
-        engine
-    ) {
-
-        engine.saveSetting(
-            key,
-            value
-        );
-    }
-
-    else {
-
-        localStorage.setItem(
-            key,
-            value
-        );
-    }
-}
+</section>
 
 
-function loadSettings() {
+  </div>
 
-    const engine =
-        getEngine();
+  <!--
+    Только для локального
+    тестирования.
+
+    В Wallify UI Kit
+    подключается автоматически.
+  -->
+
+  <script
+    src="wallify-m3.js"
+  ></script>
+
+  <script>
+
+    (
+      function ()
+      {
 
 
-    let materialValue =
-        "true";
+        /*
+          Получаем элементы.
+        */
 
-    let color =
-        "#5f8f72";
+        const materialYou =
+
+          document.getElementById(
+            'materialYou'
+          );
 
 
-    if (
-        engine
-    ) {
+        const fillColor =
 
-        materialValue =
-            engine.getSetting(
-                "materialYou",
-                "true"
+          document.getElementById(
+            'fillColor'
+          );
+
+
+        const colorValue =
+
+          document.getElementById(
+            'colorValue'
+          );
+
+
+        const colorCard =
+
+          document.getElementById(
+            'colorCard'
+          );
+
+
+
+        /*
+          Получение API.
+        */
+
+        function getEngine()
+        {
+
+          return (
+
+            window.WallpaperEngine
+
+            ||
+
+            null
+
+          );
+
+        }
+
+
+
+        /*
+          Сохранение настройки.
+
+          В браузере используется
+          localStorage.
+        */
+
+        function saveSetting(
+
+          key,
+
+          value
+
+        )
+        {
+
+
+          const engine =
+
+            getEngine();
+
+
+
+          if (
+            engine
+          )
+          {
+
+            engine.saveSetting(
+
+              key,
+
+              String(value)
+
             );
 
-        color =
-            engine.getSetting(
-                "fillColor",
-                "#5f8f72"
+          }
+
+
+          else
+          {
+
+            localStorage.setItem(
+
+              key,
+
+              String(value)
+
             );
 
-    }
+          }
 
-    else {
 
-        materialValue =
+        }
+
+
+
+        /*
+          Получение настройки.
+        */
+
+        function getSetting(
+
+          key,
+
+          fallback
+
+        )
+        {
+
+
+          const engine =
+
+            getEngine();
+
+
+
+          if (
+            engine
+          )
+          {
+
+            return (
+
+              engine.getSetting(
+
+                key,
+
+                String(fallback)
+
+              )
+
+            );
+
+          }
+
+
+
+          return (
+
             localStorage.getItem(
-                "materialYou"
-            ) ||
-            "true";
+              key
+            )
 
-        color =
-            localStorage.getItem(
-                "fillColor"
-            ) ||
-            "#5f8f72";
-    }
+            ||
 
+            String(
+              fallback
+            )
 
-    materialYou.checked =
-        materialValue ===
-        "true";
+          );
 
 
-    fillColor.value =
-        color;
+        }
 
 
-    updateColorText();
 
-    updateDisabledState();
-}
+        /*
+          Обновление
+          HEX-значения.
+        */
+
+        function updateColorText()
+        {
+
+          colorValue.textContent =
+
+            fillColor
+              .value
+              .toUpperCase();
+
+        }
 
 
-function updateColorText() {
 
-    colorValue.textContent =
-        fillColor
-        .value
-        .toUpperCase();
-}
+        /*
+          Блокировка карточки.
+
+          Если Material You
+          включён, ручной цвет
+          недоступен.
+        */
+
+        function updateDisabledState()
+        {
+
+          colorCard
+            .classList
+            .toggle(
+
+              'disabled',
+
+              materialYou.checked
+
+            );
+
+        }
 
 
-function updateDisabledState() {
 
-    colorCard
-        .classList
-        .toggle(
-            "disabled",
-            materialYou.checked
+        /*
+          Загрузка настроек.
+        */
+
+        function loadSettings()
+        {
+
+
+          /*
+            Material You.
+          */
+
+          materialYou.checked =
+
+            getSetting(
+
+              'materialYou',
+
+              'true'
+
+            )
+
+            ===
+
+            'true';
+
+
+
+          /*
+            Цвет заполнения.
+          */
+
+          fillColor.value =
+
+            getSetting(
+
+              'fillColor',
+
+              '#5f8f72'
+
+            );
+
+
+
+          /*
+            Обновляем
+            M3-переключатель.
+          */
+
+          materialYou.dispatchEvent(
+
+            new Event(
+              'change'
+            )
+
+          );
+
+
+
+          updateColorText();
+
+
+          updateDisabledState();
+
+
+        }
+
+
+
+        /*
+          Изменение Material You.
+        */
+
+        materialYou.addEventListener(
+
+          'change',
+
+          () =>
+          {
+
+
+            saveSetting(
+
+              'materialYou',
+
+              materialYou.checked
+
+            );
+
+
+            updateDisabledState();
+
+
+          }
+
         );
 
-}
 
 
-materialYou.addEventListener(
-    "change",
-    () => {
+        /*
+          Изменение цвета.
+        */
 
-        saveSetting(
-            "materialYou",
-            materialYou.checked
+        fillColor.addEventListener(
+
+          'input',
+
+          () =>
+          {
+
+
+            updateColorText();
+
+
+            saveSetting(
+
+              'fillColor',
+
+              fillColor.value
+
+            );
+
+
+          }
+
         );
 
-        updateDisabledState();
-
-    }
-);
 
 
-fillColor.addEventListener(
-    "input",
-    () => {
+        /*
+          Wallify передал API.
+        */
 
-        updateColorText();
+        window.addEventListener(
 
-        saveSetting(
-            "fillColor",
-            fillColor.value
+          'wallpaperEngineReady',
+
+          () =>
+          {
+
+            loadSettings();
+
+          },
+
+          {
+            once:
+              true
+          }
+
         );
 
-    }
-);
 
 
-/* Ждём мост Wallify */
-window.addEventListener(
-    "wallpaperEngineReady",
-    () => {
+        /*
+          Запуск при открытии
+          в обычном браузере.
+        */
 
-        loadSettings();
+        if (
+          !window.WallpaperEngine
+        )
+        {
 
-    }
-);
+          document.addEventListener(
+
+            'DOMContentLoaded',
+
+            loadSettings,
+
+            {
+              once:
+                true
+            }
+
+          );
+
+        }
 
 
-/* Для проверки в браузере */
-if (
-    !window.WallpaperEngine
-) {
+      }
+    )();
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        loadSettings
-    );
-
-}
-
-</script>
+  </script>
 
 </body>
+
 </html>

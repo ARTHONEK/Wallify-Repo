@@ -2,7 +2,7 @@
   "name": "DVD-Bouncers",
   "description": "Плавающие фигуры в палитре системы с анимацией тапов и блокировки экрана",
   "author": "Artho",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minAppVersion": ">=1.0.0",
   "cover": "cover.jpg",
   "icon": "icon.png",

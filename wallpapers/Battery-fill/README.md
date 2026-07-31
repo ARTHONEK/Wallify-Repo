@@ -48,4 +48,4 @@
 
 ## Автор
 
-**Artho**
+**[Artho](https://artho-bio.vercel.app)**

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-30T21:41:35Z",
+  "updatedAt": "2026-07-31T09:18:49Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -219,6 +219,22 @@
       "createdAt": "2026-07-30T21:41:35Z",
       "updatedAt": "2026-07-30T21:41:35Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/Battery-fill.zip"
+    },
+    {
+      "id": "paper-shards",
+      "name": "Paper Shards",
+      "author": "Jardaken",
+      "version": "1.6.1",
+      "description": "Рваные бумажные карточки: медленно вращаются, реагируют на блокировку экрана и на подключение зарядки",
+      "path": "wallpapers/paper-shards",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.jpg",
+      "icon": "cover.jpg",
+      "createdAt": "2026-07-31T09:18:49Z",
+      "updatedAt": "2026-07-31T09:18:49Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/paper-shards.zip"
     }
   ]
 }

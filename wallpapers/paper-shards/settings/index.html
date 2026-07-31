@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Настройки — Paper Shards</title>
+<style>
+  /* ---- Material 3 tokens ----
+     Defaults match Wallify's own fallback M3 dark reference palette.
+     Overridden live from window.WallpaperEngine.metadata.accentColors
+     when available, so this screen itself follows Material You. */
+  :root {
+    --md-primary: #D0BCFF;
+    --md-on-primary: #381E72;
+    --md-secondary: #CCC2DC;
+    --md-on-secondary: #332D41;
+    --md-tertiary: #EFB8C8;
+    --md-surface: #1D192B;
+    --md-background: #141218;
+    --md-surface-container: #211F26;
+    --md-surface-container-high: #2B2930;
+    --md-on-surface: #E6E1E5;
+    --md-on-surface-variant: #938F99;
+    --md-outline: #49454F;
+
+    --md-shape-xs: 4px;
+    --md-shape-sm: 8px;
+    --md-shape-md: 12px;
+    --md-shape-lg: 16px;
+    --md-shape-xl: 28px;
+    --md-shape-full: 999px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Roboto', system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--md-background);
+    color: var(--md-on-surface);
+    padding: 24px 16px 40px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .page-title {
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 500;
+    margin: 4px 4px 2px;
+    letter-spacing: 0;
+  }
+  .page-subtitle {
+    font-size: 13px;
+    color: var(--md-on-surface-variant);
+    margin: 0 4px 20px;
+  }
+
+  /* ---- M3 filled card ---- */
+  .m3-card {
+    background: var(--md-surface-container);
+    border-radius: var(--md-shape-lg);
+    padding: 16px 16px 18px;
+    margin-bottom: 10px;
+  }
+
+  .m3-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .m3-row-text { flex: 1; min-width: 0; }
+
+  .m3-title {
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 500;
+    color: var(--md-on-surface);
+  }
+  .m3-desc {
+    font-size: 12.5px;
+    line-height: 17px;
+    color: var(--md-on-surface-variant);
+    margin-top: 3px;
+  }
+  .m3-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--md-primary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    padding-top: 1px;
+  }
+
+  /* ---- custom slider: track / fill / thumb are plain divs positioned
+     entirely by JS from one shared value, so the thumb can never drift
+     out of sync with the fill (unlike CSS tricks keyed to the native
+     ::-webkit-slider-thumb, which render inconsistently across WebView
+     versions). The real <input type=range> stays for touch/drag/keyboard
+     handling, fully transparent, sized to match. ---- */
+  .m3-slider {
+    margin-top: 18px;
+    position: relative;
+    height: 20px;
+    padding: 0 10px;
+  }
+  .m3-slider .track,
+  .m3-slider .fill {
+    position: absolute;
+    top: 50%;
+    height: 4px;
+    border-radius: var(--md-shape-full);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+  .m3-slider .track {
+    left: 10px;
+    right: 10px;
+    background: var(--md-outline);
+  }
+  .m3-slider .fill {
+    left: 10px;
+    width: 0;
+    background: var(--md-primary);
+  }
+  .m3-slider .thumb {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    width: 20px;
+    height: 20px;
+    margin-left: -10px;
+    margin-top: -10px;
+    border-radius: 50%;
+    background: var(--md-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    pointer-events: none;
+  }
+  .m3-slider input[type="range"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .m3-slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 32px;
+    height: 32px;
+  }
+
+  /* ---- M3 switch ---- */
+  .m3-switch {
+    position: relative;
+    width: 52px;
+    height: 32px;
+    flex: 0 0 auto;
+  }
+  .m3-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+  .m3-switch .track {
+    position: absolute;
+    inset: 0;
+    background: var(--md-surface-container-high);
+    border: 2px solid var(--md-outline);
+    border-radius: var(--md-shape-full);
+    transition: background 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
+  }
+  .m3-switch .track::before {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 6px;
+    top: 6px;
+    background: var(--md-on-surface-variant);
+    border-radius: 50%;
+    transition: transform 0.2s cubic-bezier(0.2,0,0,1), width 0.15s ease, height 0.15s ease, left 0.15s ease, top 0.15s ease, background 0.2s ease;
+  }
+  .m3-switch input:checked + .track {
+    background: var(--md-primary);
+    border-color: var(--md-primary);
+  }
+  .m3-switch input:checked + .track::before {
+    width: 24px;
+    height: 24px;
+    left: 24px;
+    top: 2px;
+    background: var(--md-on-primary);
+  }
+
+  /* ---- palette picker: 2x2 colour-swatch tiles + label ---- */
+  .palette-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .palette-row.disabled { opacity: 0.4; pointer-events: none; }
+
+  .palette-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    font-family: inherit;
+    padding: 0;
+    cursor: pointer;
+  }
+  .palette-swatch {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--md-shape-md);
+    border: 2px solid var(--md-outline);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    overflow: hidden;
+  }
+  .palette-item.active .palette-swatch {
+    border-color: var(--md-primary);
+    box-shadow: 0 0 0 2px var(--md-surface-container), 0 0 0 4px var(--md-primary);
+  }
+  .palette-label {
+    font-size: 11.5px;
+    color: var(--md-on-surface-variant);
+  }
+  .palette-item.active .palette-label {
+    color: var(--md-primary);
+    font-weight: 500;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--md-primary);
+    margin: 22px 8px 8px;
+  }
+  .section-label:first-of-type { margin-top: 4px; }
+</style>
+</head>
+<body>
+  <div class="page-title">Paper Shards</div>
+  <div class="page-subtitle">Настройки живых обоев</div>
+
+  <div class="section-label">Движение</div>
+
+  <div class="m3-card">
+    <div class="m3-row">
+      <div class="m3-row-text">
+        <div class="m3-title">Скорость вращения</div>
+        <div class="m3-desc">Насколько быстро карточки крутятся на месте — каждая в свою сторону</div>
+      </div>
+      <div class="m3-value" id="rotationSpeedValue">1.0×</div>
+    </div>
+    <div class="m3-slider" data-key="rotationSpeed">
+      <div class="track"></div><div class="fill"></div><div class="thumb"></div>
+      <input type="range" min="0" max="3" step="0.1" value="1.0">
+    </div>
+  </div>
+
+  <div class="section-label">Пикселизация</div>
+
+  <div class="m3-card">
+    <div class="m3-row">
+      <div class="m3-row-text">
+        <div class="m3-title">Пиксельный эффект</div>
+        <div class="m3-desc">1 — выключено, чем больше — тем крупнее пиксельные блоки. Края всегда чёткие</div>
+      </div>
+      <div class="m3-value" id="pixelSizeValue">4</div>
+    </div>
+    <div class="m3-slider" data-key="pixelSize">
+      <div class="track"></div><div class="fill"></div><div class="thumb"></div>
+      <input type="range" min="1" max="10" step="1" value="4">
+    </div>
+  </div>
+
+  <div class="m3-card">
+    <div class="m3-row">
+      <div class="m3-row-text">
+        <div class="m3-title">Зерно / дизеринг</div>
+        <div class="m3-desc">Лёгкая ретро-текстура поверх всей сцены</div>
+      </div>
+      <label class="m3-switch">
+        <input type="checkbox" id="ditherEnabled">
+        <span class="track"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section-label">Обводка</div>
+
+  <div class="m3-card">
+    <div class="m3-row">
+      <div class="m3-row-text">
+        <div class="m3-title">Толщина обводки</div>
+        <div class="m3-desc">Контур вокруг карточек в обычном состоянии</div>
+      </div>
+      <div class="m3-value" id="outlineWidthValue">1.0×</div>
+    </div>
+    <div class="m3-slider" data-key="outlineWidth">
+      <div class="track"></div><div class="fill"></div><div class="thumb"></div>
+      <input type="range" min="0.3" max="3" step="0.1" value="1.0">
+    </div>
+  </div>
+
+  <div class="section-label">Экран блокировки</div>
+
+  <div class="m3-card">
+    <div class="m3-row">
+      <div class="m3-row-text">
+        <div class="m3-title">Увеличение при блокировке</div>
+        <div class="m3-desc">Насколько крупнее становятся карточки на заблокированном экране</div>
+      </div>
+      <div class="m3-value" id="lockScaleValue">1.15×</div>
+    </div>
+    <div class="m3-slider" data-key="lockScale">
+      <div class="track"></div><div class="fill"></div><div class="thumb"></div>
+      <input type="range" min="1" max="1.5" step="0.05" value="1.15">
+    </div>
+  </div>
+
+  <div class="m3-card">
+    <div class="m3-row">
+      <div class="m3-row-text">
+        <div class="m3-title">Обводка при блокировке</div>
+        <div class="m3-desc">Насколько жирнее становится контур на заблокированном экране</div>
+      </div>
+      <div class="m3-value" id="lockOutlineValue">1.6×</div>
+    </div>
+    <div class="m3-slider" data-key="lockOutline">
+      <div class="track"></div><div class="fill"></div><div class="thumb"></div>
+      <input type="range" min="1" max="3" step="0.1" value="1.6">
+    </div>
+  </div>
+
+  <div class="section-label">Цвет</div>
+
+  <div class="m3-card">
+    <div class="m3-row">
+      <div class="m3-row-text">
+        <div class="m3-title">Цвета по Material You</div>
+        <div class="m3-desc">Использовать акцентную палитру устройства вместо своей</div>
+      </div>
+      <label class="m3-switch">
+        <input type="checkbox" id="materialYou">
+        <span class="track"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="m3-card">
+    <div class="m3-title">Палитра</div>
+    <div class="m3-desc">Применяется, если выключены цвета по Material You</div>
+    <div class="palette-row" id="paletteRow"></div>
+  </div>
+
+  <script>
+    var PALETTES = [
+      { id: 'original', label: 'Поп-арт', colors: ['#74C64A', '#F5B914', '#16202B', '#FFFFFF'] },
+      { id: 'sunset',   label: 'Закат',   colors: ['#FF6B4A', '#FFC24B', '#3A1B3E', '#FFEFE0'] },
+      { id: 'ocean',    label: 'Океан',   colors: ['#2FA6A6', '#8FD9E8', '#0E2A3D', '#F2E8D5'] },
+      { id: 'mono',     label: 'Моно',    colors: ['#E8E8E8', '#9C9C9C', '#1A1A1A', '#FFFFFF'] },
+      { id: 'berry',    label: 'Ягода',   colors: ['#E0479B', '#7A3CC9', '#F2B4D6', '#2B1027'] }
+    ];
+
+    // ---- live Material You theming for this settings screen itself ----
+    function relLuminance(hex) {
+      var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
+      if (!m) return 0.5;
+      var chans = [m[1], m[2], m[3]].map(function (h) {
+        var v = parseInt(h, 16) / 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * chans[0] + 0.7152 * chans[1] + 0.0722 * chans[2];
+    }
+    function onColorFor(hex) { return relLuminance(hex) > 0.5 ? '#141218' : '#FFFFFF'; }
+
+    function applyLiveTheme(metadata) {
+      var ac = metadata && metadata.accentColors;
+      if (!ac) return;
+      var root = document.documentElement.style;
+      if (ac.primary) { root.setProperty('--md-primary', ac.primary); root.setProperty('--md-on-primary', onColorFor(ac.primary)); }
+      if (ac.secondary) { root.setProperty('--md-secondary', ac.secondary); root.setProperty('--md-on-secondary', onColorFor(ac.secondary)); }
+      if (ac.tertiary) root.setProperty('--md-tertiary', ac.tertiary);
+      if (ac.surface) root.setProperty('--md-surface', ac.surface);
+      if (ac.background) root.setProperty('--md-background', ac.background);
+      if (ac.surfaceContainer) root.setProperty('--md-surface-container', ac.surfaceContainer);
+    }
+
+    // ---- custom slider: fill width and thumb position are derived from
+    // the exact same pct value in the exact same coordinate space, so
+    // they can never visually diverge regardless of WebView quirks ----
+    function layoutSlider(wrap) {
+      var input = wrap.querySelector('input[type="range"]');
+      var fill = wrap.querySelector('.fill');
+      var thumb = wrap.querySelector('.thumb');
+      var min = parseFloat(input.min), max = parseFloat(input.max), val = parseFloat(input.value);
+      var pct = max > min ? (val - min) / (max - min) : 0;
+      var trackWidth = wrap.clientWidth - 20; // minus the 10px inset on each side
+      var pos = Math.max(0, trackWidth) * pct;
+      fill.style.width = pos + 'px';
+      thumb.style.left = (10 + pos) + 'px';
+    }
+
+    var settingsAlreadyInitialized = false;
+
+    function initSettings(metadata) {
+      applyLiveTheme(metadata);
+      if (settingsAlreadyInitialized) return;
+      var engine = window.WallpaperEngine;
+      if (!engine) return;
+      settingsAlreadyInitialized = true;
+
+      var ditherEnabled = document.getElementById('ditherEnabled');
+      var materialYou = document.getElementById('materialYou');
+      var paletteRow = document.getElementById('paletteRow');
+
+      var sliderDefs = [
+        { key: 'rotationSpeed', def: '1.0', decimals: 1, suffix: '×' },
+        { key: 'pixelSize', def: '4', decimals: 0, suffix: '' },
+        { key: 'outlineWidth', def: '1.0', decimals: 1, suffix: '×' },
+        { key: 'lockScale', def: '1.15', decimals: 2, suffix: '×' },
+        { key: 'lockOutline', def: '1.6', decimals: 1, suffix: '×' }
+      ];
+
+      sliderDefs.forEach(function (s) {
+        var wrap = document.querySelector('.m3-slider[data-key="' + s.key + '"]');
+        var input = wrap.querySelector('input[type="range"]');
+        var valueLabel = document.getElementById(s.key + 'Value');
+
+        input.value = engine.getSetting(s.key, s.def);
+
+        function refresh() {
+          valueLabel.textContent = parseFloat(input.value).toFixed(s.decimals) + s.suffix;
+          layoutSlider(wrap);
+        }
+        refresh();
+
+        input.addEventListener('input', function () {
+          refresh();
+          engine.saveSetting(s.key, input.value);
+        });
+      });
+
+      // re-layout after fonts/layout settle and on resize/orientation change
+      window.addEventListener('resize', function () {
+        document.querySelectorAll('.m3-slider').forEach(layoutSlider);
+      });
+      setTimeout(function () {
+        document.querySelectorAll('.m3-slider').forEach(layoutSlider);
+      }, 50);
+
+      ditherEnabled.checked = engine.getSetting('ditherEnabled', 'true') === 'true';
+      materialYou.checked = engine.getSetting('materialYou', 'false') === 'true';
+
+      var currentPalette = engine.getSetting('paletteId', 'original');
+      var paletteButtons = [];
+
+      paletteRow.innerHTML = '';
+      PALETTES.forEach(function (p) {
+        var btn = document.createElement('button');
+        btn.className = 'palette-item' + (p.id === currentPalette ? ' active' : '');
+
+        var sw = document.createElement('div');
+        sw.className = 'palette-swatch';
+        p.colors.forEach(function (c) {
+          var cell = document.createElement('div');
+          cell.style.background = c;
+          sw.appendChild(cell);
+        });
+
+        var label = document.createElement('div');
+        label.className = 'palette-label';
+        label.textContent = p.label;
+
+        btn.appendChild(sw);
+        btn.appendChild(label);
+        btn.addEventListener('click', function () {
+          engine.saveSetting('paletteId', p.id);
+          paletteButtons.forEach(function (b) { b.el.classList.toggle('active', b.id === p.id); });
+        });
+
+        paletteRow.appendChild(btn);
+        paletteButtons.push({ el: btn, id: p.id });
+      });
+
+      function syncPaletteRow() {
+        paletteRow.classList.toggle('disabled', materialYou.checked);
+      }
+      syncPaletteRow();
+
+      ditherEnabled.addEventListener('change', function () {
+        engine.saveSetting('ditherEnabled', ditherEnabled.checked ? 'true' : 'false');
+      });
+      materialYou.addEventListener('change', function () {
+        engine.saveSetting('materialYou', materialYou.checked ? 'true' : 'false');
+        syncPaletteRow();
+      });
+    }
+
+    if (window.WallpaperEngine) {
+      initSettings(window.WallpaperEngine.metadata);
+    }
+    window.addEventListener('wallpaperEngineReady', function (e) { initSettings(e.detail); });
+    window.addEventListener('wallpaperUpdate', function (e) { applyLiveTheme(e.detail); });
+  </script>
+</body>
+</html>

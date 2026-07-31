@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-31T10:06:49Z",
+  "updatedAt": "2026-07-31T15:24:47Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -176,7 +176,7 @@
       "id": "DVD-Bouncers",
       "name": "DVD-Bouncers",
       "author": "Artho",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "description": "Плавающие фигуры в палитре системы с анимацией тапов и блокировки экрана",
       "path": "wallpapers/DVD-Bouncers",
       "main": "index.html",
@@ -195,14 +195,14 @@
         "figures"
       ],
       "createdAt": "2026-07-30T08:51:19Z",
-      "updatedAt": "2026-07-30T10:02:21Z",
+      "updatedAt": "2026-07-31T15:24:47Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/DVD-Bouncers.zip"
     },
     {
       "id": "Battery-fill",
       "name": "Battery Fill",
       "author": "Artho",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "description": "Заполнение экрана в зависимости от заряда батареи",
       "path": "wallpapers/Battery-fill",
       "main": "index.html",
@@ -217,7 +217,7 @@
         "percentage"
       ],
       "createdAt": "2026-07-30T21:41:35Z",
-      "updatedAt": "2026-07-31T10:06:49Z",
+      "updatedAt": "2026-07-31T15:24:47Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/Battery-fill.zip"
     },
     {

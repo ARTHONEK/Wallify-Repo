@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-31T09:18:49Z",
+  "updatedAt": "2026-07-31T10:06:49Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -207,7 +207,7 @@
       "path": "wallpapers/Battery-fill",
       "main": "index.html",
       "useGyroscope": false,
-      "isLite": false,
+      "isLite": true,
       "cover": "cover.jpg",
       "icon": "icon.png",
       "supportsMonet": true,
@@ -217,7 +217,7 @@
         "percentage"
       ],
       "createdAt": "2026-07-30T21:41:35Z",
-      "updatedAt": "2026-07-30T21:41:35Z",
+      "updatedAt": "2026-07-31T10:06:49Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/Battery-fill.zip"
     },
     {

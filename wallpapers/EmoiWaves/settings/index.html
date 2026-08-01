@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>エモい — настройки</title>
+
+<!--
+  Нужны только для тестирования страницы в обычном браузере.
+  В Wallify UI Kit подключается автоматически.
+-->
+<link rel="stylesheet" href="wallify-m3.css">
+
+<style>
+  body {
+    margin: 0;
+    padding: 20px 16px 48px;
+    background: var(--wallify-m3-background, #14160F);
+    color: var(--wallify-m3-on-surface, #E4E3D8);
+    font-family: "Roboto", system-ui, -apple-system, sans-serif;
+  }
+
+  h1 {
+    margin: 4px 0 2px;
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 500;
+  }
+
+  .sub {
+    margin: 0 0 24px;
+    font-size: 13px;
+    color: var(--wallify-m3-on-surface-variant, #C4C7B8);
+  }
+
+  .section-title {
+    margin: 24px 4px 8px;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--wallify-m3-primary, #56794C);
+  }
+
+  .section-title.first { margin-top: 0; }
+
+  .value-pill {
+    float: right;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--wallify-m3-primary, #56794C);
+  }
+
+  .slider-content { gap: 8px; }
+
+  .hint {
+    margin: 8px 4px 0;
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--wallify-m3-on-surface-variant, #C4C7B8);
+  }
+
+  .dim {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+  <h1>エモい</h1>
+  <p class="sub">Настройки живых обоев</p>
+
+  <!-- Оформление -->
+
+  <p class="section-title first">Оформление</p>
+
+  <div data-wallify-m3="card-group">
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">Monet</div>
+          <div class="row-desc">Брать цвета из динамической палитры системы вместо готовой темы</div>
+        </div>
+        <label class="m3-switch">
+          <input id="useMonet" type="checkbox" data-wallify-m3="switch">
+          <span class="m3-switch-track"></span>
+          <span class="m3-switch-thumb"></span>
+        </label>
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">Тёмная версия</div>
+          <div class="row-desc">Затемнённый вариант выбранной темы</div>
+        </div>
+        <label class="m3-switch">
+          <input id="darkMode" type="checkbox" data-wallify-m3="switch">
+          <span class="m3-switch-track"></span>
+          <span class="m3-switch-thumb"></span>
+        </label>
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row-content" id="paletteWrap">
+        <div class="row-title" style="margin-bottom: 12px;">Тема</div>
+        <div class="swatch-grid" id="paletteGrid">
+          <button class="swatch" data-id="tea">
+            <span class="swatch-dots">
+              <span style="background:#F3EFDD"></span>
+              <span style="background:#A7C28C"></span>
+              <span style="background:#56794C"></span>
+            </span>
+            <span class="swatch-label">Чайный сад</span>
+          </button>
+          <button class="swatch" data-id="sakura">
+            <span class="swatch-dots">
+              <span style="background:#FBEFF0"></span>
+              <span style="background:#F3B8C6"></span>
+              <span style="background:#C46B84"></span>
+            </span>
+            <span class="swatch-label">Сакура</span>
+          </button>
+          <button class="swatch" data-id="ocean">
+            <span class="swatch-dots">
+              <span style="background:#EAF3F5"></span>
+              <span style="background:#8FC5D6"></span>
+              <span style="background:#3E7C93"></span>
+            </span>
+            <span class="swatch-label">Океан</span>
+          </button>
+          <button class="swatch" data-id="sunset">
+            <span class="swatch-dots">
+              <span style="background:#FDF1E2"></span>
+              <span style="background:#F2B66B"></span>
+              <span style="background:#C2703A"></span>
+            </span>
+            <span class="swatch-label">Закат</span>
+          </button>
+          <button class="swatch" data-id="ink">
+            <span class="swatch-dots">
+              <span style="background:#EDEDED"></span>
+              <span style="background:#B9B9B9"></span>
+              <span style="background:#5A5A5A"></span>
+            </span>
+            <span class="swatch-label">Тушь</span>
+          </button>
+        </div>
+        <p class="hint" id="paletteHint">Недоступно, пока включён Monet</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Волна -->
+
+  <p class="section-title">Волна фона</p>
+
+  <div data-wallify-m3="card-group">
+
+    <section data-wallify-m3="card">
+      <div class="row-content slider-content">
+        <div class="row-title">
+          Скорость волны
+          <span id="waveSpeedValue" class="value-pill">1.0×</span>
+        </div>
+        <input id="waveSpeed" type="range" min="0.2" max="2.5" step="0.1" value="1.0" data-wallify-m3="slider">
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Формы -->
+
+  <p class="section-title">Фигуры</p>
+
+  <div data-wallify-m3="card-group">
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">Показывать фигуры</div>
+          <div class="row-desc">Плавающие фигуры рядом со знаками</div>
+        </div>
+        <label class="m3-switch">
+          <input id="shapesEnabled" type="checkbox" data-wallify-m3="switch">
+          <span class="m3-switch-track"></span>
+          <span class="m3-switch-thumb"></span>
+        </label>
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row-content" id="shapeWrap">
+        <div class="segmented" id="shapeSegmented">
+          <button data-shape="leaf">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 12c3-5 9-7 18-7-1 9-6 14-14 14-1.6-3.2-3-5-4-7z"/></svg>
+            Лист
+          </button>
+          <button data-shape="star">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            Звезда
+          </button>
+          <button data-shape="triangle">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 3.5c.6 0 1.1.3 1.4.9l7 13c.6 1.1-.2 2.6-1.6 2.6H5.2c-1.4 0-2.2-1.5-1.6-2.6l7-13c.3-.6.8-.9 1.4-.9z"/></svg>
+            Треугольник
+          </button>
+          <button data-shape="cube">
+            <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5" fill="currentColor"/></svg>
+            Квадрат
+          </button>
+          <button data-shape="star4">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2c.7 3.4 1.6 5.5 2.9 6.9C16.3 10.2 18.4 11 21.8 12c-3.4.7-5.5 1.6-6.9 2.9C13.6 16.3 12.7 18.4 12 21.8c-.7-3.4-1.6-5.5-2.9-6.9C7.7 13.6 5.6 12.7 2.2 12c3.4-.7 5.5-1.6 6.9-2.9C10.4 7.7 11.3 5.6 12 2z"/></svg>
+            Искра
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Реакции -->
+
+  <p class="section-title">Реакции</p>
+
+  <div data-wallify-m3="card-group">
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">Покачивание символов</div>
+          <div class="row-desc">Медленное движение エ・モ・い вверх-вниз и едва заметно влево-вправо</div>
+        </div>
+        <label class="m3-switch">
+          <input id="swayEnabled" type="checkbox" data-wallify-m3="switch">
+          <span class="m3-switch-track"></span>
+          <span class="m3-switch-thumb"></span>
+        </label>
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">Волна при разблокировке</div>
+          <div class="row-desc">От центра расходится волна контраста</div>
+        </div>
+        <label class="m3-switch">
+          <input id="reactUnlock" type="checkbox" data-wallify-m3="switch">
+          <span class="m3-switch-track"></span>
+          <span class="m3-switch-thumb"></span>
+        </label>
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">Подбрасывание при зарядке</div>
+          <div class="row-desc">Знаки и фигуры слегка подпрыгивают, когда начинается зарядка</div>
+        </div>
+        <label class="m3-switch">
+          <input id="reactCharging" type="checkbox" data-wallify-m3="switch">
+          <span class="m3-switch-track"></span>
+          <span class="m3-switch-thumb"></span>
+        </label>
+      </div>
+    </section>
+
+  </div>
+
+  <!--
+    Нужны только для тестирования в обычном браузере.
+    В Wallify подключаются автоматически.
+  -->
+  <script src="../colorUtils.js"></script>
+  <script src="wallify-m3.js"></script>
+
+  <script>
+    (function () {
+
+      var CU = window.ColorUtils;
+
+      var useMonet = document.getElementById("useMonet");
+      var darkMode = document.getElementById("darkMode");
+      var paletteGrid = document.getElementById("paletteGrid");
+      var paletteHint = document.getElementById("paletteHint");
+      var waveSpeed = document.getElementById("waveSpeed");
+      var waveSpeedValue = document.getElementById("waveSpeedValue");
+      var shapesEnabled = document.getElementById("shapesEnabled");
+      var shapeWrap = document.getElementById("shapeWrap");
+      var shapeSegmented = document.getElementById("shapeSegmented");
+      var swayEnabled = document.getElementById("swayEnabled");
+      var reactUnlock = document.getElementById("reactUnlock");
+      var reactCharging = document.getElementById("reactCharging");
+
+      /* Полный вывод M3-токенов из accentColors, чтобы в интерфейсе
+         не оставалось "всегда зелёных" элементов — раньше часть токенов
+         (surface-container-high, outline, on-*) не пересчитывалась. */
+      function applyAccentColors(accent) {
+        if (!accent) return;
+        var root = document.documentElement.style;
+
+        var background = accent.background || "#14160F";
+        var surface = accent.surface || background;
+        var surfaceContainer = accent.surfaceContainer || CU.lighten(background, 0.08);
+        var primary = accent.primary || "#56794C";
+        var secondary = accent.secondary || "#A7C28C";
+
+        var surfaceContainerHigh = CU.lighten(surfaceContainer, 0.06);
+        var surfaceContainerHighest = CU.lighten(surfaceContainer, 0.12);
+        var outline = CU.mix(surfaceContainer, CU.contrastOn(surfaceContainer), 0.42);
+        var onPrimary = CU.contrastOn(primary);
+        var onSurface = CU.contrastOn(background);
+        var onSurfaceVariant = CU.mix(onSurface, background, 0.35);
+
+        root.setProperty("--wallify-m3-background", background);
+        root.setProperty("--wallify-m3-surface", surface);
+        root.setProperty("--wallify-m3-surface-container", surfaceContainer);
+        root.setProperty("--wallify-m3-surface-container-high", surfaceContainerHigh);
+        root.setProperty("--wallify-m3-surface-container-highest", surfaceContainerHighest);
+        root.setProperty("--wallify-m3-outline", outline);
+        root.setProperty("--wallify-m3-primary", primary);
+        root.setProperty("--wallify-m3-primary-rgb", CU.hexToRgb(primary).join(", "));
+        root.setProperty("--wallify-m3-secondary", secondary);
+        root.setProperty("--wallify-m3-on-primary", onPrimary);
+        root.setProperty("--wallify-m3-on-surface", onSurface);
+        root.setProperty("--wallify-m3-on-surface-variant", onSurfaceVariant);
+      }
+
+      function setPaletteSelection(id) {
+        var buttons = paletteGrid.querySelectorAll(".swatch");
+        for (var i = 0; i < buttons.length; i++) {
+          buttons[i].classList.toggle("selected", buttons[i].getAttribute("data-id") === id);
+        }
+      }
+
+      function setShapeSelection(shape) {
+        var buttons = shapeSegmented.querySelectorAll("button");
+        for (var i = 0; i < buttons.length; i++) {
+          buttons[i].classList.toggle("selected", buttons[i].getAttribute("data-shape") === shape);
+        }
+      }
+
+      function updateMonetLock(isMonet) {
+        var buttons = paletteGrid.querySelectorAll(".swatch");
+        for (var i = 0; i < buttons.length; i++) buttons[i].disabled = isMonet;
+        paletteHint.style.display = isMonet ? "block" : "none";
+        darkMode.disabled = isMonet;
+      }
+
+      function updateShapesLock(enabled) {
+        shapeWrap.classList.toggle("dim", !enabled);
+      }
+
+      function init(engine) {
+
+        applyAccentColors(engine.metadata && engine.metadata.accentColors);
+        window.addEventListener("wallpaperUpdate", function (e) {
+          applyAccentColors(e.detail && e.detail.accentColors);
+        });
+
+        // Monet
+        useMonet.checked = engine.getSetting("useMonet", "false") === "true";
+        useMonet.dispatchEvent(new Event("change"));
+        updateMonetLock(useMonet.checked);
+        useMonet.addEventListener("change", function () {
+          engine.saveSetting("useMonet", useMonet.checked ? "true" : "false");
+          updateMonetLock(useMonet.checked);
+        });
+
+        // Тёмная версия
+        darkMode.checked = engine.getSetting("darkMode", "false") === "true";
+        darkMode.dispatchEvent(new Event("change"));
+        darkMode.addEventListener("change", function () {
+          engine.saveSetting("darkMode", darkMode.checked ? "true" : "false");
+        });
+
+        // Палитра
+        var paletteId = engine.getSetting("paletteId", "tea");
+        setPaletteSelection(paletteId);
+        paletteGrid.addEventListener("click", function (e) {
+          var btn = e.target.closest(".swatch");
+          if (!btn || btn.disabled) return;
+          var id = btn.getAttribute("data-id");
+          setPaletteSelection(id);
+          engine.saveSetting("paletteId", id);
+        });
+
+        // Скорость волны
+        waveSpeed.value = engine.getSetting("waveSpeed", "1.0");
+        waveSpeedValue.textContent = parseFloat(waveSpeed.value).toFixed(1) + "×";
+        waveSpeed.dispatchEvent(new Event("input"));
+        waveSpeed.addEventListener("input", function () {
+          waveSpeedValue.textContent = parseFloat(waveSpeed.value).toFixed(1) + "×";
+          engine.saveSetting("waveSpeed", waveSpeed.value);
+        });
+
+        // Показывать фигуры
+        shapesEnabled.checked = engine.getSetting("shapesEnabled", "true") === "true";
+        shapesEnabled.dispatchEvent(new Event("change"));
+        updateShapesLock(shapesEnabled.checked);
+        shapesEnabled.addEventListener("change", function () {
+          engine.saveSetting("shapesEnabled", shapesEnabled.checked ? "true" : "false");
+          updateShapesLock(shapesEnabled.checked);
+        });
+
+        // Форма фигур
+        var petalShape = engine.getSetting("petalShape", "leaf");
+        setShapeSelection(petalShape);
+        shapeSegmented.addEventListener("click", function (e) {
+          var btn = e.target.closest("button");
+          if (!btn) return;
+          var shape = btn.getAttribute("data-shape");
+          setShapeSelection(shape);
+          engine.saveSetting("petalShape", shape);
+        });
+
+        // Переключатели
+        function wireSwitch(element, key, defaultValue) {
+          element.checked = engine.getSetting(key, defaultValue ? "true" : "false") === "true";
+          element.dispatchEvent(new Event("change"));
+          element.addEventListener("change", function () {
+            engine.saveSetting(key, element.checked ? "true" : "false");
+          });
+        }
+
+        wireSwitch(swayEnabled, "swayEnabled", true);
+        wireSwitch(reactUnlock, "reactUnlock", true);
+        wireSwitch(reactCharging, "reactCharging", true);
+      }
+
+      window.addEventListener("wallpaperEngineReady", function () {
+        if (window.WallpaperEngine) init(window.WallpaperEngine);
+      }, { once: true });
+
+    })();
+  </script>
+
+</body>
+</html>

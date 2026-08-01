@@ -1,0 +1,19 @@
+{
+  "name": "Emoi Waves",
+  "description": "Три знака エモい покачиваются над волнистыми чайными полосами. WebGL, палитры, Monet, тёмная тема, реакция на разблокировку и зарядку.",
+  "author": "Jardaken",
+  "version": "1.5.0",
+  "minAppVersion": ">=1.0.0",
+  "cover": "cover.jpg",
+  "icon": "cover.jpg",
+  "main": "index.html",
+  "settingsPath": "settings/index.html",
+  "useGyroscope": false,
+  "isLite": false,
+  "supportsMonet": true,
+  "animationDuration": 3.0,
+  "animationDurationUnlock": 1.4,
+  "animationDurationScreenOn": 1.0,
+  "animationDurationScreenOff": 0.4,
+  "animateOn": "both"
+}

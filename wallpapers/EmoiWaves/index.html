@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Emoi Waves</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #F3EFDD;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  #gl {
+    position: fixed;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+  }
+  #fallback {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-family: system-ui, sans-serif;
+    color: #56794C;
+    text-align: center;
+    padding: 24px;
+    box-sizing: border-box;
+    background: linear-gradient(180deg, #F3EFDD 0%, #A7C28C 55%, #56794C 100%);
+  }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="fallback">WebGL недоступен на этом устройстве</div>
+
+<script src="colorUtils.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var CU = window.ColorUtils;
+
+  /* =========================================================
+     0. Палитры (светлые и тёмные) и состояние настроек
+     ========================================================= */
+
+  function hx(hex) {
+    var rgb = CU.hexToRgb(hex);
+    return [rgb[0] / 255, rgb[1] / 255, rgb[2] / 255];
+  }
+
+  var PALETTES = {
+    tea: {
+      bg: hx("#F3EFDD"), bandLight: hx("#A7C28C"), bandDark: hx("#56794C"),
+      chars: [hx("#7FA06B"), hx("#3E5F3B"), hx("#F3EFDD")], petal: hx("#3E5F3B")
+    },
+    sakura: {
+      bg: hx("#FBEFF0"), bandLight: hx("#F3B8C6"), bandDark: hx("#C46B84"),
+      chars: [hx("#E08FA0"), hx("#6E2F44"), hx("#FBEFF0")], petal: hx("#6E2F44")
+    },
+    ocean: {
+      bg: hx("#EAF3F5"), bandLight: hx("#8FC5D6"), bandDark: hx("#3E7C93"),
+      chars: [hx("#66A5BA"), hx("#1E4C5C"), hx("#EAF3F5")], petal: hx("#1E4C5C")
+    },
+    sunset: {
+      bg: hx("#FDF1E2"), bandLight: hx("#F2B66B"), bandDark: hx("#C2703A"),
+      chars: [hx("#E59C51"), hx("#6B3419"), hx("#FDF1E2")], petal: hx("#6B3419")
+    },
+    ink: {
+      bg: hx("#EDEDED"), bandLight: hx("#B9B9B9"), bandDark: hx("#5A5A5A"),
+      chars: [hx("#999999"), hx("#232323"), hx("#EDEDED")], petal: hx("#232323")
+    }
+  };
+
+  var DARK_PALETTES = {
+    tea: {
+      bg: hx("#171B13"), bandLight: hx("#374431"), bandDark: hx("#0F130D"),
+      chars: [hx("#7FA06B"), hx("#B9D1A0"), hx("#DCEBD0")], petal: hx("#B9D1A0")
+    },
+    sakura: {
+      bg: hx("#1E1417"), bandLight: hx("#4A2A34"), bandDark: hx("#120A0D"),
+      chars: [hx("#C46B84"), hx("#F0C3CE"), hx("#FBDEE4")], petal: hx("#F0C3CE")
+    },
+    ocean: {
+      bg: hx("#101A1D"), bandLight: hx("#264A55"), bandDark: hx("#080F11"),
+      chars: [hx("#3E7C93"), hx("#AEE3F2"), hx("#D8F1F8")], petal: hx("#AEE3F2")
+    },
+    sunset: {
+      bg: hx("#1E140C"), bandLight: hx("#4A2E14"), bandDark: hx("#120B06"),
+      chars: [hx("#C2703A"), hx("#F2C48D"), hx("#FBE4C9")], petal: hx("#F2C48D")
+    },
+    ink: {
+      bg: hx("#141414"), bandLight: hx("#3A3A3A"), bandDark: hx("#0A0A0A"),
+      chars: [hx("#8C8C8C"), hx("#D8D8D8"), hx("#F2F2F2")], petal: hx("#D8D8D8")
+    }
+  };
+
+  var SHAPE_CELLS = { leaf: 0, star: 1, triangle: 2, cube: 3, star4: 4 };
+
+  var settings = {
+    paletteId: "tea",
+    useMonet: false,
+    darkMode: false,
+    waveSpeed: 1.0,
+    petalShape: "leaf",
+    shapesEnabled: true,
+    reactUnlock: true,
+    reactCharging: true,
+    swayEnabled: true
+  };
+
+  var monetPalette = null;
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  function currentPalette() {
+    if (settings.useMonet && monetPalette) return monetPalette;
+    var table = settings.darkMode ? DARK_PALETTES : PALETTES;
+    return table[settings.paletteId] || table.tea;
+  }
+
+  /* Строит мягкую Monet-палитру: верх всегда светлый и спокойный,
+     контраст между зонами сглажен, а не взят "как есть" из системных
+     токенов (которые в тёмной теме могут быть почти чёрными). */
+  function buildMonetPalette(accent) {
+    if (!accent) return null;
+    var bgHex = accent.background || "#F3EFDD";
+    var secHex = accent.secondary || "#A7C28C";
+    var priHex = accent.primary || "#56794C";
+    var terHex = accent.tertiary || priHex;
+    var surfHex = accent.surfaceContainer || CU.darken(secHex, 0.45);
+
+    var bg = CU.clampLuminance(bgHex, 0.85, 0.97);
+    var bandLight = CU.clampLuminance(secHex, 0.55, 0.78);
+    var bandDark = CU.clampLuminance(priHex, 0.30, 0.48);
+    var charMid = CU.clampLuminance(terHex, 0.42, 0.64);
+    var charDark = CU.clampLuminance(surfHex, 0.18, 0.36);
+
+    return {
+      bg: hx(bg), bandLight: hx(bandLight), bandDark: hx(bandDark),
+      chars: [hx(charMid), hx(charDark), hx(bg)],
+      petal: hx(charDark)
+    };
+  }
+
+  /* =========================================================
+     1. Canvas / WebGL init
+     ========================================================= */
+
+  var canvas = document.getElementById("gl");
+  var gl = canvas.getContext("webgl2", { antialias: true, alpha: false, premultipliedAlpha: false }) ||
+           canvas.getContext("webgl", { antialias: true, alpha: false, premultipliedAlpha: false });
+
+  if (!gl) {
+    document.getElementById("fallback").style.display = "flex";
+    return;
+  }
+
+  var width = 0, height = 0;
+
+  function resize() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // Используем clientWidth/clientHeight (реальный CSS-размер элемента),
+    // а не innerWidth/innerHeight — так избегаем расхождения в доли пикселя
+    // между разметкой и backing store, которое давало тонкую полоску
+    // фона снизу/справа.
+    var w = canvas.clientWidth || window.innerWidth;
+    var h = canvas.clientHeight || window.innerHeight;
+    width = Math.max(1, Math.round(w * dpr));
+    height = Math.max(1, Math.round(h * dpr));
+    canvas.width = width;
+    canvas.height = height;
+    gl.viewport(0, 0, width, height);
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  function syncBodyBackground() {
+    var pal = currentPalette();
+    var c = pal.bg;
+    document.body.style.background =
+      "rgb(" + Math.round(c[0] * 255) + "," + Math.round(c[1] * 255) + "," + Math.round(c[2] * 255) + ")";
+  }
+
+  /* =========================================================
+     2. Shader helpers
+     ========================================================= */
+
+  function compileShader(type, src) {
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      console.error("Shader error:", gl.getShaderInfoLog(s));
+      gl.deleteShader(s);
+      return null;
+    }
+    return s;
+  }
+
+  function makeProgram(vsSrc, fsSrc) {
+    var vs = compileShader(gl.VERTEX_SHADER, vsSrc);
+    var fs = compileShader(gl.FRAGMENT_SHADER, fsSrc);
+    var p = gl.createProgram();
+    gl.attachShader(p, vs);
+    gl.attachShader(p, fs);
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+      console.error("Program link error:", gl.getProgramInfoLog(p));
+      return null;
+    }
+    return p;
+  }
+
+  /* ---------- background shader ---------- */
+
+  var bgVS = [
+    "attribute vec2 aPos;",
+    "varying vec2 vUv;",
+    "void main(){",
+    "  vUv = aPos * 0.5 + 0.5;",
+    "  gl_Position = vec4(aPos, 0.0, 1.0);",
+    "}"
+  ].join("\n");
+
+  // Precision fix: mediump float loses precision on large uTime values
+  // (that's what caused waves to "jitter" after several minutes of runtime).
+  // Fragment shaders that support highp declare GL_FRAGMENT_PRECISION_HIGH.
+  var bgFS = [
+    "#ifdef GL_FRAGMENT_PRECISION_HIGH",
+    "precision highp float;",
+    "#else",
+    "precision mediump float;",
+    "#endif",
+    "varying vec2 vUv;",
+    "uniform float uTime;",
+    "uniform vec3 uBg;",
+    "uniform vec3 uBandLight;",
+    "uniform vec3 uBandDark;",
+    "uniform vec2 uParallax;",
+    "uniform float uAspect;",
+    "uniform float uRingRadius;",
+    "uniform float uRingThickness;",
+    "float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }",
+    "void main(){",
+    "  vec2 uv = vUv;",
+    "  uv.x += uParallax.x;",
+    "  float x = uv.x;",
+    "  float b1 = 0.66 + 0.05*sin(x*6.2831853*0.9 + uTime*0.35) + 0.02*sin(x*6.2831853*2.3 - uTime*0.6);",
+    "  float b2 = 0.33 + 0.045*sin(x*6.2831853*0.7 - uTime*0.30 + 1.7) + 0.018*sin(x*6.2831853*2.0 + uTime*0.5);",
+    "  float edge = 0.004;",
+    "  vec3 col = uBg;",
+    "  float m1 = smoothstep(b1+edge, b1-edge, uv.y);",
+    "  col = mix(col, uBandLight, m1);",
+    "  float m2 = smoothstep(b2+edge, b2-edge, uv.y);",
+    "  col = mix(col, uBandDark, m2);",
+    "  float g = (hash(floor(vUv*vec2(720.0,1560.0))) - 0.5) * 0.012;",
+    "  col += g;",
+    "  vec2 centered = vec2((uv.x-0.5)*uAspect, uv.y-0.5);",
+    "  float dist = length(centered);",
+    "  float ring = 1.0 - smoothstep(0.0, uRingThickness, abs(dist - uRingRadius));",
+    "  ring = clamp(ring, 0.0, 1.0);",
+    "  float luma = dot(col, vec3(0.299,0.587,0.114));",
+    "  vec3 sat = mix(vec3(luma), col, 1.0 + ring*0.6);",
+    "  col = mix(vec3(0.5), sat, 1.0 + ring*0.35);",
+    "  col = clamp(col, 0.0, 1.0);",
+    "  gl_FragColor = vec4(col, 1.0);",
+    "}"
+  ].join("\n");
+
+  var bgProgram = makeProgram(bgVS, bgFS);
+  var bgAttribs = { aPos: gl.getAttribLocation(bgProgram, "aPos") };
+  var bgUniforms = {
+    uTime: gl.getUniformLocation(bgProgram, "uTime"),
+    uBg: gl.getUniformLocation(bgProgram, "uBg"),
+    uBandLight: gl.getUniformLocation(bgProgram, "uBandLight"),
+    uBandDark: gl.getUniformLocation(bgProgram, "uBandDark"),
+    uParallax: gl.getUniformLocation(bgProgram, "uParallax"),
+    uAspect: gl.getUniformLocation(bgProgram, "uAspect"),
+    uRingRadius: gl.getUniformLocation(bgProgram, "uRingRadius"),
+    uRingThickness: gl.getUniformLocation(bgProgram, "uRingThickness")
+  };
+
+  var bgVBO = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, bgVBO);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+
+  /* ---------- sprite shader ---------- */
+
+  var spVS = [
+    "attribute vec2 aPos;",
+    "attribute vec2 aUv;",
+    "uniform vec2 uCenter;",
+    "uniform vec2 uScale;",
+    "uniform float uRotation;",
+    "uniform float uAspect;",
+    "uniform vec2 uUvOffset;",
+    "uniform vec2 uUvScale;",
+    "varying vec2 vUv;",
+    "void main(){",
+    "  float s = sin(uRotation), c = cos(uRotation);",
+    "  vec2 p = vec2(aPos.x*c - aPos.y*s, aPos.x*s + aPos.y*c);",
+    "  p *= uScale;",
+    "  p.x /= uAspect;",
+    "  p += uCenter;",
+    "  gl_Position = vec4(p, 0.0, 1.0);",
+    "  vUv = aUv * uUvScale + uUvOffset;",
+    "}"
+  ].join("\n");
+
+  var spFS = [
+    "precision mediump float;",
+    "varying vec2 vUv;",
+    "uniform sampler2D uTex;",
+    "uniform vec3 uColor;",
+    "uniform float uAlpha;",
+    "void main(){",
+    "  float a = texture2D(uTex, vUv).a;",
+    "  gl_FragColor = vec4(uColor, a * uAlpha);",
+    "}"
+  ].join("\n");
+
+  var spProgram = makeProgram(spVS, spFS);
+  var spAttribs = {
+    aPos: gl.getAttribLocation(spProgram, "aPos"),
+    aUv: gl.getAttribLocation(spProgram, "aUv")
+  };
+  var spUniforms = {
+    uCenter: gl.getUniformLocation(spProgram, "uCenter"),
+    uScale: gl.getUniformLocation(spProgram, "uScale"),
+    uRotation: gl.getUniformLocation(spProgram, "uRotation"),
+    uAspect: gl.getUniformLocation(spProgram, "uAspect"),
+    uUvOffset: gl.getUniformLocation(spProgram, "uUvOffset"),
+    uUvScale: gl.getUniformLocation(spProgram, "uUvScale"),
+    uTex: gl.getUniformLocation(spProgram, "uTex"),
+    uColor: gl.getUniformLocation(spProgram, "uColor"),
+    uAlpha: gl.getUniformLocation(spProgram, "uAlpha")
+  };
+
+  var quadVBO = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, quadVBO);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+    -0.5, -0.5, 0.0, 0.0,
+     0.5, -0.5, 1.0, 0.0,
+    -0.5,  0.5, 0.0, 1.0,
+    -0.5,  0.5, 0.0, 1.0,
+     0.5, -0.5, 1.0, 0.0,
+     0.5,  0.5, 1.0, 1.0
+  ]), gl.STATIC_DRAW);
+
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+  /* =========================================================
+     3. Атлас текстур: 3 символа + 5 залитых скруглённых фигур.
+     Сетка 4 колонки × 3 строки по 256px, всё в белом (alpha=форма),
+     цвет накладывается в шейдере через uColor.
+     ========================================================= */
+
+  var CELL = 256;
+  var COLS = 4;
+  var ROWS = 3;
+
+  function cellUv(index) {
+    var col = index % COLS;
+    var row = Math.floor(index / COLS);
+    return {
+      offset: [col / COLS, 1.0 - (row + 1) / ROWS],
+      scale: [1 / COLS, 1 / ROWS]
+    };
+  }
+
+  function findCJKFont() {
+    return "'Noto Sans JP','Noto Sans CJK JP','Hiragino Sans','Yu Gothic',sans-serif";
+  }
+
+  function drawBrushGlyph(ctx, cx, cy, size, glyph) {
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "900 " + size + "px " + findCJKFont();
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    var seed = glyph.charCodeAt(0);
+    function rnd(n) { return (Math.sin(seed * 12.9898 + n * 78.233) * 43758.5453) % 1; }
+    for (var i = 0; i < 7; i++) {
+      var jx = (rnd(i) - 0.5) * 6;
+      var jy = (rnd(i + 20) - 0.5) * 6;
+      ctx.fillText(glyph, cx + jx, cy + jy);
+    }
+    ctx.fillStyle = "rgba(255,255,255,1)";
+    ctx.fillText(glyph, cx, cy);
+    ctx.restore();
+  }
+
+  /* rounded polygon fill via arcTo, starting at the midpoint of the
+     closing edge so all corners round symmetrically */
+  function fillRoundedPolygon(ctx, pts, radius) {
+    var n = pts.length;
+    var mid0 = [(pts[0][0] + pts[n - 1][0]) / 2, (pts[0][1] + pts[n - 1][1]) / 2];
+    ctx.beginPath();
+    ctx.moveTo(mid0[0], mid0[1]);
+    for (var i = 0; i < n; i++) {
+      var curr = pts[i];
+      var next = pts[(i + 1) % n];
+      ctx.arcTo(curr[0], curr[1], next[0], next[1], radius);
+    }
+    ctx.closePath();
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+  }
+
+  function drawLeaf(ctx, cx, cy, r) {
+    ctx.save();
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.moveTo(cx - r, cy);
+    ctx.bezierCurveTo(cx - r * 0.5, cy - r * 0.62, cx + r * 0.5, cy - r * 0.62, cx + r, cy);
+    ctx.bezierCurveTo(cx + r * 0.5, cy + r * 0.62, cx - r * 0.5, cy + r * 0.62, cx - r, cy);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawStar(ctx, cx, cy, r) {
+    var spikes = 5, outer = r, inner = r * 0.5;
+    var pts = [];
+    for (var i = 0; i < spikes * 2; i++) {
+      var rad = (i % 2 === 0) ? outer : inner;
+      var ang = (Math.PI / spikes) * i - Math.PI / 2;
+      pts.push([cx + Math.cos(ang) * rad, cy + Math.sin(ang) * rad]);
+    }
+    fillRoundedPolygon(ctx, pts, r * 0.10);
+  }
+
+  function drawTriangle(ctx, cx, cy, r) {
+    var pts = [];
+    for (var i = 0; i < 3; i++) {
+      var ang = (Math.PI * 2 / 3) * i - Math.PI / 2;
+      pts.push([cx + Math.cos(ang) * r, cy + Math.sin(ang) * r]);
+    }
+    fillRoundedPolygon(ctx, pts, r * 0.26);
+  }
+
+  function drawCube(ctx, cx, cy, r) {
+    // "cube" setting -> a friendly filled rounded square (Material-style icon)
+    var s = r * 0.82;
+    var pts = [
+      [cx - s, cy - s], [cx + s, cy - s], [cx + s, cy + s], [cx - s, cy + s]
+    ];
+    fillRoundedPolygon(ctx, pts, r * 0.30);
+  }
+
+  function drawStar4(ctx, cx, cy, r) {
+    var pts = [];
+    var outer = r, inner = r * 0.34;
+    for (var i = 0; i < 8; i++) {
+      var rad = (i % 2 === 0) ? outer : inner;
+      var ang = (Math.PI / 4) * i - Math.PI / 2;
+      pts.push([cx + Math.cos(ang) * rad, cy + Math.sin(ang) * rad]);
+    }
+    fillRoundedPolygon(ctx, pts, r * 0.08);
+  }
+
+  function buildAtlas() {
+    var c = document.createElement("canvas");
+    c.width = COLS * CELL;
+    c.height = ROWS * CELL;
+    var ctx = c.getContext("2d");
+    ctx.clearRect(0, 0, c.width, c.height);
+
+    var glyphs = ["\u30A8", "\u30E2", "\u3044"]; // エ モ い
+    for (var i = 0; i < glyphs.length; i++) {
+      drawBrushGlyph(ctx, i * CELL + CELL / 2, CELL / 2, CELL * 0.72, glyphs[i]);
+    }
+
+    ctx.save();
+    ctx.translate(0, CELL);
+    drawLeaf(ctx, CELL / 2, CELL / 2, CELL * 0.34);
+    drawStar(ctx, CELL * 1.5, CELL / 2, CELL * 0.32);
+    drawTriangle(ctx, CELL * 2.5, CELL / 2, CELL * 0.34);
+    drawCube(ctx, CELL * 3.5, CELL / 2, CELL * 0.34);
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(0, CELL * 2);
+    drawStar4(ctx, CELL / 2, CELL / 2, CELL * 0.36);
+    ctx.restore();
+
+    var tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return tex;
+  }
+
+  var atlasTex = buildAtlas();
+
+  /* =========================================================
+     4. Спрайты: 3 знака + лепестки/фигуры
+     ========================================================= */
+
+  function seededRandom(seed) {
+    var s = seed;
+    return function () {
+      s = (s * 9301 + 49297) % 233280;
+      return s / 233280;
+    };
+  }
+  var rnd = seededRandom(42);
+
+  var chars = [
+    { cell: 0, x: 0.66, y: 0.82, scale: 0.50, colorIdx: 0, phase: 0.0, bounceOffset: 0, bounceVel: 0 },
+    { cell: 1, x: 0.30, y: 0.50, scale: 0.50, colorIdx: 1, phase: 2.1, bounceOffset: 0, bounceVel: 0 },
+    { cell: 2, x: 0.62, y: 0.16, scale: 0.50, colorIdx: 2, phase: 4.2, bounceOffset: 0, bounceVel: 0 }
+  ];
+
+  var petals = [];
+  (function buildPetals() {
+    var anchors = [
+      [0.86, 0.90], [0.52, 0.72], [0.40, 0.60], [0.16, 0.46],
+      [0.80, 0.30], [0.24, 0.20], [0.70, 0.06], [0.86, 0.60]
+    ];
+    for (var i = 0; i < anchors.length; i++) {
+      petals.push({
+        x: anchors[i][0] + (rnd() - 0.5) * 0.03,
+        y: anchors[i][1] + (rnd() - 0.5) * 0.03,
+        scale: 0.09 + rnd() * 0.07,
+        rotBase: rnd() * Math.PI,
+        phase: rnd() * Math.PI * 2,
+        driftSpeed: 0.4 + rnd() * 0.3,
+        bounceOffset: 0,
+        bounceVel: 0
+      });
+    }
+  })();
+
+  /* =========================================================
+     5. Wallify bridge integration
+     ========================================================= */
+
+  var metadata = null;
+
+  function refreshSettingsFromEngine() {
+    if (!window.WallpaperEngine) return;
+    var eng = window.WallpaperEngine;
+    var all = eng.getAllSettings ? eng.getAllSettings() : {};
+    settings.paletteId = all.paletteId || settings.paletteId;
+    settings.useMonet = (all.useMonet !== undefined) ? (all.useMonet === "true") : settings.useMonet;
+    settings.darkMode = (all.darkMode !== undefined) ? (all.darkMode === "true") : settings.darkMode;
+    var ws = parseFloat(all.waveSpeed);
+    settings.waveSpeed = isNaN(ws) ? settings.waveSpeed : clamp(ws, 0.2, 2.5);
+    settings.petalShape = all.petalShape || settings.petalShape;
+    settings.shapesEnabled = (all.shapesEnabled !== undefined) ? (all.shapesEnabled === "true") : settings.shapesEnabled;
+    settings.reactUnlock = (all.reactUnlock !== undefined) ? (all.reactUnlock === "true") : settings.reactUnlock;
+    settings.reactCharging = (all.reactCharging !== undefined) ? (all.reactCharging === "true") : settings.reactCharging;
+    settings.swayEnabled = (all.swayEnabled !== undefined) ? (all.swayEnabled === "true") : settings.swayEnabled;
+    syncBodyBackground();
+  }
+
+  function applyMetadata(detail) {
+    metadata = detail;
+    if (detail && detail.accentColors) {
+      monetPalette = buildMonetPalette(detail.accentColors);
+    }
+  }
+
+  window.addEventListener("wallpaperEngineReady", function (e) {
+    applyMetadata(e.detail);
+    refreshSettingsFromEngine();
+  });
+
+  window.addEventListener("wallpaperUpdate", function (e) {
+    applyMetadata(e.detail);
+    refreshSettingsFromEngine();
+  });
+
+  /* ---- unlock: expanding ring from the centre ---- */
+  var unlockActive = false;
+  var unlockElapsed = 0;
+  var unlockThickness = 0.16;
+  var unlockSpeed = 1.0;
+
+  window.addEventListener("wallpaperUnlock", function () {
+    if (!settings.reactUnlock) return;
+    unlockActive = true;
+    unlockElapsed = 0;
+    var aspect = width / height;
+    var maxR = Math.sqrt(Math.pow(0.5 * aspect, 2) + Math.pow(0.5, 2)) + unlockThickness;
+    var duration = (metadata && metadata.animationDurationUnlock) || 1.4;
+    unlockSpeed = maxR / duration;
+  });
+
+  var offsetX = 0.5;
+  window.addEventListener("wallpaperOffset", function (e) {
+    if (e.detail && typeof e.detail.xOffset === "number") offsetX = e.detail.xOffset;
+  });
+
+  /* pause / resume */
+  var paused = false;
+  window.addEventListener("wallpaperPause", function () { paused = true; });
+  window.addEventListener("wallpaperResume", function () {
+    if (paused) { paused = false; last = 0; requestAnimationFrame(frame); }
+  });
+  window.addEventListener("wallpaperScreenOff", function () { paused = true; });
+  window.addEventListener("wallpaperScreenOn", function () {
+    if (paused) { paused = false; last = 0; requestAnimationFrame(frame); }
+  });
+
+  /* charging reaction — best-effort via the Battery Status API.
+     Not all WebViews expose navigator.getBattery(); if it's missing
+     we simply never trigger this effect (no crash, silent no-op). */
+  function triggerChargeBounce() {
+    if (!settings.reactCharging) return;
+    for (var i = 0; i < petals.length; i++) {
+      petals[i].bounceVel += 1.6 + rnd() * 0.6;
+    }
+    for (var j = 0; j < chars.length; j++) {
+      chars[j].bounceVel += 1.1 + rnd() * 0.4;
+    }
+  }
+  if (navigator.getBattery) {
+    navigator.getBattery().then(function (battery) {
+      var wasCharging = battery.charging;
+      battery.addEventListener("chargingchange", function () {
+        if (battery.charging && !wasCharging) triggerChargeBounce();
+        wasCharging = battery.charging;
+      });
+    }).catch(function () {});
+  }
+
+  /* =========================================================
+     6. Render loop
+     ========================================================= */
+
+  var t = 0;
+  var last = 0;
+
+  function drawBackground() {
+    gl.useProgram(bgProgram);
+    gl.bindBuffer(gl.ARRAY_BUFFER, bgVBO);
+    gl.enableVertexAttribArray(bgAttribs.aPos);
+    gl.vertexAttribPointer(bgAttribs.aPos, 2, gl.FLOAT, false, 0, 0);
+
+    var pal = currentPalette();
+    gl.uniform1f(bgUniforms.uTime, t);
+    gl.uniform3fv(bgUniforms.uBg, pal.bg);
+    gl.uniform3fv(bgUniforms.uBandLight, pal.bandLight);
+    gl.uniform3fv(bgUniforms.uBandDark, pal.bandDark);
+    gl.uniform2f(bgUniforms.uParallax, (offsetX - 0.5) * 0.08, 0.0);
+    gl.uniform1f(bgUniforms.uAspect, width / height);
+    gl.uniform1f(bgUniforms.uRingRadius, unlockActive ? unlockElapsed * unlockSpeed : -10.0);
+    gl.uniform1f(bgUniforms.uRingThickness, unlockThickness);
+
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+
+  function drawSprite(cellIndex, cx, cy, scaleX, scaleY, rotation, color, alpha) {
+    gl.useProgram(spProgram);
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadVBO);
+    var stride = 4 * 4;
+    gl.enableVertexAttribArray(spAttribs.aPos);
+    gl.vertexAttribPointer(spAttribs.aPos, 2, gl.FLOAT, false, stride, 0);
+    gl.enableVertexAttribArray(spAttribs.aUv);
+    gl.vertexAttribPointer(spAttribs.aUv, 2, gl.FLOAT, false, stride, 2 * 4);
+
+    var uv = cellUv(cellIndex);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, atlasTex);
+    gl.uniform1i(spUniforms.uTex, 0);
+    gl.uniform2f(spUniforms.uCenter, cx * 2 - 1, cy * 2 - 1);
+    gl.uniform2f(spUniforms.uScale, scaleX, scaleY);
+    gl.uniform1f(spUniforms.uRotation, rotation);
+    gl.uniform1f(spUniforms.uAspect, width / height);
+    gl.uniform2fv(spUniforms.uUvOffset, uv.offset);
+    gl.uniform2fv(spUniforms.uUvScale, uv.scale);
+    gl.uniform3fv(spUniforms.uColor, color);
+    gl.uniform1f(spUniforms.uAlpha, alpha);
+
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+
+  function updateBounceSpring(obj, dt) {
+    var k = 26.0, damping = 6.0;
+    var force = -k * obj.bounceOffset - damping * obj.bounceVel;
+    obj.bounceVel += force * dt;
+    obj.bounceOffset += obj.bounceVel * dt;
+  }
+
+  function drawChars(dt) {
+    var pal = currentPalette();
+    var waveFreq = 0.35;
+    var aspect = width / height;
+    var ringR = unlockActive ? unlockElapsed * unlockSpeed : -10.0;
+
+    for (var i = 0; i < chars.length; i++) {
+      var ch = chars[i];
+      updateBounceSpring(ch, dt);
+
+      var bob = 0, sway = 0, swayX = 0;
+      if (settings.swayEnabled) {
+        bob = Math.sin(t * waveFreq + ch.phase) * 0.018;
+        sway = Math.sin(t * 0.11 + ch.phase * 1.3) * 0.035;
+        swayX = Math.sin(t * 0.09 + ch.phase) * 0.006;
+      }
+
+      var dx = (ch.x - 0.5) * aspect, dy = ch.y - 0.5;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      var ringBoost = unlockActive
+        ? Math.max(0, 1 - Math.abs(dist - ringR) / unlockThickness)
+        : 0;
+
+      var pulseScale = 1.0 + ringBoost * 0.16;
+      var color = pal.chars[ch.colorIdx] || pal.chars[0];
+      drawSprite(
+        ch.cell,
+        ch.x + swayX,
+        ch.y + bob + ch.bounceOffset * 0.045,
+        ch.scale * pulseScale,
+        ch.scale * pulseScale,
+        sway,
+        color,
+        1.0
+      );
+    }
+  }
+
+  function drawPetals(dt) {
+    if (!settings.shapesEnabled) return;
+    var pal = currentPalette();
+    var cell = SHAPE_CELLS[settings.petalShape] !== undefined
+      ? SHAPE_CELLS[settings.petalShape]
+      : SHAPE_CELLS.leaf;
+    // shapes live in rows 1-2 of the atlas (chars occupy row 0)
+    cell += COLS;
+
+    for (var i = 0; i < petals.length; i++) {
+      var p = petals[i];
+      updateBounceSpring(p, dt);
+
+      var drift = Math.sin(t * p.driftSpeed * 0.25 + p.phase) * 0.014;
+      var rot = p.rotBase + Math.sin(t * 0.08 + p.phase) * 0.25;
+      var y = p.y + drift + p.bounceOffset * 0.05;
+      drawSprite(cell, p.x, y, p.scale, p.scale, rot, pal.petal, 0.85);
+    }
+  }
+
+  function frame(now) {
+    if (paused) return;
+    if (!last) last = now;
+    var dt = Math.min((now - last) / 1000, 0.1);
+    last = now;
+    t += dt * settings.waveSpeed;
+
+    if (unlockActive) {
+      unlockElapsed += dt;
+      var aspect = width / height;
+      var maxR = Math.sqrt(Math.pow(0.5 * aspect, 2) + Math.pow(0.5, 2)) + unlockThickness;
+      if (unlockElapsed * unlockSpeed > maxR) unlockActive = false;
+    }
+
+    gl.clearColor(0, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    drawBackground();
+    drawPetals(dt);
+    drawChars(dt);
+
+    requestAnimationFrame(frame);
+  }
+
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

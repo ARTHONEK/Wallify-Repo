@@ -64,8 +64,4 @@
 
 ## Автор
 
-**Artho**
-
-## Версия
-
-**1.0.0**
+**[Artho](https://artho-bio.vercel.app)**

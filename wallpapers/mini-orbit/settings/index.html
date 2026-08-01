@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
+>
+
+<title>Mini Orbit — настройки</title>
+
+<link
+  rel="stylesheet"
+  href="/wallify-m3.css"
+>
+
+<style>
+
+body {
+
+  margin: 0;
+
+  padding:
+    20px
+    16px
+    48px;
+
+  background:
+
+    var(
+      --wallify-m3-background,
+      #141218
+    );
+
+  color:
+
+    var(
+      --wallify-m3-on-surface,
+      #E6E1E5
+    );
+
+  font-family:
+
+    "Roboto",
+    system-ui,
+    sans-serif;
+
+}
+
+
+h1 {
+
+  margin:
+    4px
+    0
+    2px;
+
+  font-size:
+    22px;
+
+  line-height:
+    28px;
+
+  font-weight:
+    500;
+
+}
+
+
+.sub {
+
+  margin:
+    0
+    0
+    24px;
+
+  font-size:
+    13px;
+
+  color:
+
+    var(
+      --wallify-m3-on-surface-variant,
+      #CAC4D0
+    );
+
+}
+
+
+.section-title {
+
+  margin:
+    24px
+    4px
+    8px;
+
+  font-size:
+    12px;
+
+  line-height:
+    16px;
+
+  letter-spacing:
+    0.08em;
+
+  text-transform:
+    uppercase;
+
+  color:
+
+    var(
+      --wallify-m3-primary,
+      #D0BCFF
+    );
+
+}
+
+
+.section-title.first {
+
+  margin-top:
+    0;
+
+}
+
+
+.value {
+
+  float:
+    right;
+
+  font-size:
+    14px;
+
+  color:
+
+    var(
+      --wallify-m3-primary,
+      #D0BCFF
+    );
+
+}
+
+
+.segmented {
+
+  display:
+    flex;
+
+  gap:
+    4px;
+
+  width:
+    100%;
+
+  padding:
+    4px;
+
+  margin-top:
+    12px;
+
+  border-radius:
+    999px;
+
+  background:
+
+    color-mix(
+
+      in srgb,
+
+      var(
+        --wallify-m3-on-surface,
+        #E6E1E5
+      )
+
+      8%,
+
+      transparent
+
+    );
+
+}
+
+
+.segmented button {
+
+  flex:
+    1;
+
+  min-width:
+    0;
+
+  border:
+    none;
+
+  border-radius:
+    999px;
+
+  padding:
+    8px
+    4px;
+
+  background:
+    transparent;
+
+  color:
+
+    var(
+      --wallify-m3-on-surface-variant,
+      #CAC4D0
+    );
+
+  font:
+
+    inherit;
+
+  font-size:
+    11px;
+
+  font-weight:
+    500;
+
+}
+
+
+.segmented button.active {
+
+  background:
+
+    var(
+      --wallify-m3-primary,
+      #D0BCFF
+    );
+
+  color:
+
+    var(
+      --wallify-m3-on-primary,
+      #381E72
+    );
+
+}
+
+
+.palette-card.disabled {
+
+  opacity:
+    0.45;
+
+  pointer-events:
+    none;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>
+  Mini Orbit
+</h1>
+
+<p class="sub">
+  Минималистичная
+  космическая система
+</p>
+
+<p class="section-title first">
+  Цвета
+</p>
+
+<div
+  data-wallify-m3="card-group"
+>
+
+<section
+  data-wallify-m3="card"
+>
+
+<div class="row">
+
+<div class="row-content">
+
+<div class="row-title">
+  Material You
+</div>
+
+<div class="row-desc">
+  Использовать системную
+  палитру Monet
+</div>
+
+</div>
+
+<input
+id="useMonet"
+type="checkbox"
+data-wallify-m3="switch"
+
+>
+
+</div>
+
+</section>
+
+<section
+  id="paletteCard"
+  class="palette-card"
+  data-wallify-m3="card"
+>
+
+<div class="row-content">
+
+<div class="row-title">
+  Цветовая палитра
+</div>
+
+<div
+  id="palette"
+  class="segmented"
+>
+
+<button
+type="button"
+data-value="violet"
+
+>
+
+Фиолет </button>
+
+<button
+type="button"
+data-value="ocean"
+
+>
+
+Океан </button>
+
+<button
+type="button"
+data-value="sunset"
+
+>
+
+Закат </button>
+
+<button
+type="button"
+data-value="forest"
+
+>
+
+Лес </button>
+
+</div>
+
+</div>
+
+</section>
+
+</div>
+
+<p class="section-title">
+  Планета
+</p>
+
+<div
+  data-wallify-m3="card-group"
+>
+
+<section
+  data-wallify-m3="card"
+>
+
+<div class="row-content">
+
+<div class="row-title">
+
+Количество лун
+
+<span
+id="moonValue"
+class="value"
+
+>
+
+2 </span>
+
+</div>
+
+<input
+id="moonCount"
+type="range"
+min="1"
+max="3"
+step="1"
+value="2"
+data-wallify-m3="slider"
+
+>
+
+</div>
+
+</section>
+
+<section
+  data-wallify-m3="card"
+>
+
+<div class="row-content">
+
+<div class="row-title">
+  Количество колец
+</div>
+
+<div
+  id="rings"
+  class="segmented"
+>
+
+<button
+type="button"
+data-value="0"
+
+>
+
+Нет </button>
+
+<button
+type="button"
+data-value="1"
+
+>
+
+1 </button>
+
+<button
+type="button"
+data-value="2"
+
+>
+
+2 </button>
+
+<button
+type="button"
+data-value="3"
+
+>
+
+3 </button>
+
+</div>
+
+</div>
+
+</section>
+
+<section
+  data-wallify-m3="card"
+>
+
+<div class="row-content">
+
+<div class="row-title">
+
+Скорость вращения
+
+<span
+id="speedValue"
+class="value"
+
+>
+
+1× </span>
+
+</div>
+
+<input
+id="orbitSpeed"
+type="range"
+min="0.2"
+max="2"
+step="0.1"
+value="1"
+data-wallify-m3="slider"
+
+>
+
+</div>
+
+</section>
+
+</div>
+
+<p class="section-title">
+  Детали
+</p>
+
+<div
+  data-wallify-m3="card-group"
+>
+
+<section
+  data-wallify-m3="card"
+>
+
+<div class="row">
+
+<div class="row-content">
+
+<div class="row-title">
+  Звёзды
+</div>
+
+<div class="row-desc">
+  Показывать звёздный фон
+</div>
+
+</div>
+
+<input
+id="showStars"
+type="checkbox"
+data-wallify-m3="switch"
+
+>
+
+</div>
+
+</section>
+
+</div>
+
+<script>
+
+(() => {
+
+
+function getEngine() {
+
+  return (
+    window.WallpaperEngine
+    ||
+    null
+  );
+
+}
+
+
+function getSetting(
+  key,
+  fallback
+) {
+
+  const engine =
+    getEngine();
+
+
+  if (
+    engine
+  ) {
+
+    return engine.getSetting(
+
+      key,
+
+      String(
+        fallback
+      )
+
+    );
+
+  }
+
+
+  return (
+
+    localStorage.getItem(
+      key
+    )
+
+    ||
+
+    String(
+      fallback
+    )
+
+  );
+
+}
+
+
+function saveSetting(
+  key,
+  value
+) {
+
+  const engine =
+    getEngine();
+
+
+  if (
+    engine
+  ) {
+
+    engine.saveSetting(
+
+      key,
+
+      String(
+        value
+      )
+
+    );
+
+  }
+
+  else {
+
+    localStorage.setItem(
+
+      key,
+
+      String(
+        value
+      )
+
+    );
+
+  }
+
+}
+
+
+function init() {
+
+
+const useMonet =
+
+  document.getElementById(
+    "useMonet"
+  );
+
+
+const palette =
+
+  document.getElementById(
+    "palette"
+  );
+
+
+const paletteCard =
+
+  document.getElementById(
+    "paletteCard"
+  );
+
+
+const moonCount =
+
+  document.getElementById(
+    "moonCount"
+  );
+
+
+const moonValue =
+
+  document.getElementById(
+    "moonValue"
+  );
+
+
+const rings =
+
+  document.getElementById(
+    "rings"
+  );
+
+
+const orbitSpeed =
+
+  document.getElementById(
+    "orbitSpeed"
+  );
+
+
+const speedValue =
+
+  document.getElementById(
+    "speedValue"
+  );
+
+
+const showStars =
+
+  document.getElementById(
+    "showStars"
+  );
+
+
+useMonet.checked =
+
+  getSetting(
+
+    "useMonet",
+
+    false
+
+  )
+
+  ===
+
+  "true";
+
+
+function updatePaletteState() {
+
+  paletteCard
+    .classList
+    .toggle(
+
+      "disabled",
+
+      useMonet.checked
+
+    );
+
+}
+
+
+updatePaletteState();
+
+
+useMonet.addEventListener(
+
+  "change",
+
+  () => {
+
+    saveSetting(
+
+      "useMonet",
+
+      useMonet.checked
+
+    );
+
+
+    updatePaletteState();
+
+  }
+
+);
+
+
+const savedPalette =
+
+  getSetting(
+
+    "palette",
+
+    "violet"
+
+  );
+
+
+[...palette.children]
+
+.forEach(
+
+  button => {
+
+    button.classList.toggle(
+
+      "active",
+
+      button.dataset.value
+
+      ===
+
+      savedPalette
+
+    );
+
+
+    button.addEventListener(
+
+      "click",
+
+      () => {
+
+        saveSetting(
+
+          "palette",
+
+          button.dataset.value
+
+        );
+
+
+        [...palette.children]
+
+        .forEach(
+
+          item => {
+
+            item.classList.remove(
+              "active"
+            );
+
+          }
+
+        );
+
+
+        button.classList.add(
+          "active"
+        );
+
+      }
+
+    );
+
+  }
+
+);
+
+
+moonCount.value =
+
+  getSetting(
+
+    "moonCount",
+
+    2
+
+  );
+
+
+moonValue.textContent =
+
+  moonCount.value;
+
+
+moonCount.dispatchEvent(
+
+  new Event(
+    "input"
+  )
+
+);
+
+
+moonCount.addEventListener(
+
+  "input",
+
+  () => {
+
+    moonValue.textContent =
+
+      moonCount.value;
+
+
+    saveSetting(
+
+      "moonCount",
+
+      moonCount.value
+
+    );
+
+  }
+
+);
+
+
+const savedRings =
+
+  getSetting(
+
+    "ringCount",
+
+    1
+
+  );
+
+
+[...rings.children]
+
+.forEach(
+
+  button => {
+
+    button.classList.toggle(
+
+      "active",
+
+      button.dataset.value
+
+      ===
+
+      savedRings
+
+    );
+
+
+    button.addEventListener(
+
+      "click",
+
+      () => {
+
+        saveSetting(
+
+          "ringCount",
+
+          button.dataset.value
+
+        );
+
+
+        [...rings.children]
+
+        .forEach(
+
+          item => {
+
+            item.classList.remove(
+              "active"
+            );
+
+          }
+
+        );
+
+
+        button.classList.add(
+          "active"
+        );
+
+      }
+
+    );
+
+  }
+
+);
+
+
+orbitSpeed.value =
+
+  getSetting(
+
+    "orbitSpeed",
+
+    1
+
+  );
+
+
+speedValue.textContent =
+
+  orbitSpeed.value
+
+  +
+
+  "×";
+
+
+orbitSpeed.dispatchEvent(
+
+  new Event(
+    "input"
+  )
+
+);
+
+
+orbitSpeed.addEventListener(
+
+  "input",
+
+  () => {
+
+    speedValue.textContent =
+
+      orbitSpeed.value
+
+      +
+
+      "×";
+
+
+    saveSetting(
+
+      "orbitSpeed",
+
+      orbitSpeed.value
+
+    );
+
+  }
+
+);
+
+
+showStars.checked =
+
+  getSetting(
+
+    "showStars",
+
+    true
+
+  )
+
+  ===
+
+  "true";
+
+
+showStars.addEventListener(
+
+  "change",
+
+  () => {
+
+    saveSetting(
+
+      "showStars",
+
+      showStars.checked
+
+    );
+
+  }
+
+);
+
+
+}
+
+
+window.addEventListener(
+
+  "wallpaperEngineReady",
+
+  () => {
+
+    init();
+
+  },
+
+  {
+    once: true
+  }
+
+);
+
+
+if (
+  !window.WallpaperEngine
+) {
+
+  document.addEventListener(
+
+    "DOMContentLoaded",
+
+    init,
+
+    {
+      once: true
+    }
+
+  );
+
+}
+
+
+})();
+
+</script>
+
+</body>
+</html>

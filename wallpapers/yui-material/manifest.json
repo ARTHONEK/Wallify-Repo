@@ -8,7 +8,6 @@
   "cover": "cover.png",
   "main": "index.html",
   "settingsPath": "settings/index.html",
-  "orientations": ["portrait"],
   "themeSupport": ["light", "dark"],
   "supportsMonet": true,
   "tags": ["material", "dynamic"],

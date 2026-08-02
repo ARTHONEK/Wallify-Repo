@@ -55,7 +55,6 @@
         margin:2px 0 18px; line-height:1.4;
     }
 
-    /* ===== Material 3 Standard slider ===== */
     .slider{
         position:relative;
         height:28px;
@@ -187,9 +186,6 @@
         if(e) e.saveSetting(key, value);
     }
 
-    // ============================================================
-    // Тема Material You — читаем ту же палитру, что и сами обои
-    // ============================================================
     function applyTheme(meta){
         if(!meta || !meta.accentColors) return;
         const c = meta.accentColors;
@@ -202,13 +198,9 @@
         root.setProperty('--on-surface', light ? '#1D1B20' : '#E6E1E5');
         root.setProperty('--on-surface-variant', light ? '#49454F' : '#CAC4D0');
         root.setProperty('--outline', light ? '#79747E' : '#938F99');
-        // приподнятая поверхность повыше surfaceContainer — для неактивного трека/hover
         root.setProperty('--surface-container-high', light ? '#ECE6F0' : '#2B2930');
     }
 
-    // ============================================================
-    // Material 3 Standard slider (кастомный, div-based)
-    // ============================================================
     const THUMB_W = 4, GAP = 8;
 
     function createSlider(id, {min, max, step, def, decimals, suffix, storageKey, onChange}){
@@ -292,9 +284,6 @@
         };
     }
 
-    // ============================================================
-    // Инициализация всех слайдеров
-    // ============================================================
     let sliders = {};
 
     function init(){
@@ -354,7 +343,6 @@
         init();
     });
 
-    // запасной вариант для превью в обычном браузере (без window.WallpaperEngine)
     window.addEventListener('load', () => {
         setTimeout(() => { if(!sliders.yuiZoom) init(); }, 150);
     });

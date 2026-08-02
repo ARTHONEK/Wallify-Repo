@@ -9,17 +9,19 @@
 <meta
 name="viewport"
 content="width=device-width, initial-scale=1.0"
-
 >
 
 <title>Mini Orbit — настройки</title>
 
+
 <link
-  rel="stylesheet"
-  href="/wallify-m3.css"
+rel="stylesheet"
+href="wallify-m3.css"
 >
 
+
 <style>
+
 
 body {
 
@@ -30,6 +32,7 @@ body {
     16px
     48px;
 
+
   background:
 
     var(
@@ -37,12 +40,14 @@ body {
       #141218
     );
 
+
   color:
 
     var(
       --wallify-m3-on-surface,
       #E6E1E5
     );
+
 
   font-family:
 
@@ -53,6 +58,7 @@ body {
 }
 
 
+
 h1 {
 
   margin:
@@ -60,16 +66,20 @@ h1 {
     0
     2px;
 
+
   font-size:
     22px;
 
+
   line-height:
     28px;
+
 
   font-weight:
     500;
 
 }
+
 
 
 .sub {
@@ -79,8 +89,10 @@ h1 {
     0
     24px;
 
+
   font-size:
     13px;
+
 
   color:
 
@@ -92,24 +104,15 @@ h1 {
 }
 
 
+
 .section-title {
 
   margin:
+
     24px
     4px
     8px;
 
-  font-size:
-    12px;
-
-  line-height:
-    16px;
-
-  letter-spacing:
-    0.08em;
-
-  text-transform:
-    uppercase;
 
   color:
 
@@ -118,10 +121,27 @@ h1 {
       #D0BCFF
     );
 
+
+  font-size:
+    12px;
+
+
+  line-height:
+    16px;
+
+
+  letter-spacing:
+    0.08em;
+
+
+  text-transform:
+    uppercase;
+
 }
 
 
-.section-title.first {
+
+.section-title:first-of-type {
 
   margin-top:
     0;
@@ -129,13 +149,208 @@ h1 {
 }
 
 
-.value {
+
+/*
+  Палитра
+*/
+
+
+.palette-grid {
+
+  display:
+    grid;
+
+
+  grid-template-columns:
+
+    repeat(
+      2,
+      minmax(
+        0,
+        1fr
+      )
+    );
+
+
+  gap:
+    10px;
+
+
+  margin-top:
+    12px;
+
+}
+
+
+
+.palette-option {
+
+  display:
+    flex;
+
+
+  align-items:
+    center;
+
+
+  gap:
+    10px;
+
+
+  min-width:
+    0;
+
+
+  padding:
+    10px;
+
+
+  border:
+
+    1px solid
+
+    color-mix(
+
+      in srgb,
+
+      var(
+        --wallify-m3-outline,
+        #938F99
+      )
+
+      30%,
+
+      transparent
+
+    );
+
+
+  border-radius:
+    16px;
+
+
+  background:
+    transparent;
+
+
+  color:
+
+    var(
+      --wallify-m3-on-surface,
+      #E6E1E5
+    );
+
+}
+
+
+
+.palette-option.active {
+
+  border-color:
+
+    var(
+      --wallify-m3-primary,
+      #D0BCFF
+    );
+
+
+  background:
+
+    color-mix(
+
+      in srgb,
+
+      var(
+        --wallify-m3-primary,
+        #D0BCFF
+      )
+
+      14%,
+
+      transparent
+
+    );
+
+}
+
+
+
+.palette-preview {
+
+  display:
+    grid;
+
+
+  grid-template-columns:
+
+    repeat(
+      2,
+      1fr
+    );
+
+
+  width:
+    42px;
+
+
+  height:
+    42px;
+
+
+  overflow:
+    hidden;
+
+
+  border-radius:
+    11px;
+
+}
+
+
+
+.palette-name {
+
+  overflow:
+    hidden;
+
+
+  text-overflow:
+    ellipsis;
+
+
+  white-space:
+    nowrap;
+
+
+  font-size:
+    13px;
+
+
+  font-weight:
+    500;
+
+}
+
+
+
+/*
+  Слайдер Wallify M3
+*/
+
+
+.value-pill {
 
   float:
     right;
 
+
   font-size:
     14px;
+
+
+  font-weight:
+    500;
+
 
   color:
 
@@ -146,6 +361,27 @@ h1 {
 
 }
 
+
+
+.slider-content {
+
+  gap:
+    8px;
+
+}
+
+
+
+.disabled {
+
+  opacity:
+    0.45;
+
+
+  pointer-events:
+    none;
+
+}
 
 .segmented {
 
@@ -158,11 +394,11 @@ h1 {
   width:
     100%;
 
-  padding:
-    4px;
-
   margin-top:
     12px;
+
+  padding:
+    4px;
 
   border-radius:
     999px;
@@ -187,6 +423,7 @@ h1 {
 }
 
 
+
 .segmented button {
 
   flex:
@@ -195,18 +432,22 @@ h1 {
   min-width:
     0;
 
+
+  padding:
+    8px;
+
+
   border:
     none;
+
 
   border-radius:
     999px;
 
-  padding:
-    8px
-    4px;
 
   background:
     transparent;
+
 
   color:
 
@@ -215,20 +456,25 @@ h1 {
       #CAC4D0
     );
 
-  font:
 
+  font:
     inherit;
 
+
   font-size:
-    11px;
+    12px;
+
 
   font-weight:
     500;
 
+
 }
 
 
+
 .segmented button.active {
+
 
   background:
 
@@ -237,6 +483,8 @@ h1 {
       #D0BCFF
     );
 
+
+
   color:
 
     var(
@@ -244,16 +492,6 @@ h1 {
       #381E72
     );
 
-}
-
-
-.palette-card.disabled {
-
-  opacity:
-    0.45;
-
-  pointer-events:
-    none;
 
 }
 
@@ -261,834 +499,1388 @@ h1 {
 
 </head>
 
+
 <body>
 
+
 <h1>
-  Mini Orbit
+Mini Orbit
 </h1>
 
+
 <p class="sub">
-  Минималистичная
-  космическая система
+Настройки космических живых обоев
 </p>
 
-<p class="section-title first">
-  Цвета
+
+
+<p class="section-title">
+Цвета
 </p>
 
-<div
-  data-wallify-m3="card-group"
->
 
-<section
-  data-wallify-m3="card"
->
+<div data-wallify-m3="card-group">
+
+
+
+<section data-wallify-m3="card">
+
 
 <div class="row">
 
+
 <div class="row-content">
 
+
 <div class="row-title">
-  Material You
+Material You
 </div>
+
 
 <div class="row-desc">
-  Использовать системную
-  палитру Monet
+Использовать системные цвета Android
 </div>
 
+
 </div>
+
 
 <input
 id="useMonet"
 type="checkbox"
 data-wallify-m3="switch"
-
 >
 
+
 </div>
+
 
 </section>
 
-<section
-  id="paletteCard"
-  class="palette-card"
-  data-wallify-m3="card"
->
 
-<div class="row-content">
 
-<div class="row-title">
-  Цветовая палитра
-</div>
+
+
+<section data-wallify-m3="card">
+
 
 <div
-  id="palette"
-  class="segmented"
+id="paletteCard"
+class="row-content"
 >
 
+
+<div class="row-title">
+Цветовая палитра
+</div>
+
+
+
+<div
+id="palette"
+class="palette-grid"
+>
+
+
+
 <button
-type="button"
+class="palette-option"
 data-value="violet"
-
+type="button"
 >
 
-Фиолет </button>
+<span class="palette-preview">
+
+<span style="background:#090812"></span>
+<span style="background:#E8C5FF"></span>
+<span style="background:#8E79C8"></span>
+<span style="background:#CDB7E9"></span>
+
+</span>
+
+
+<span class="palette-name">
+Фиолет
+</span>
+
+
+</button>
+
+
+
 
 <button
-type="button"
+class="palette-option"
 data-value="ocean"
-
+type="button"
 >
 
-Океан </button>
+
+<span class="palette-preview">
+
+<span style="background:#061018"></span>
+<span style="background:#8ED8FF"></span>
+<span style="background:#347FA8"></span>
+<span style="background:#86CDEB"></span>
+
+</span>
+
+
+<span class="palette-name">
+Океан
+</span>
+
+
+</button>
+
+
+
+
 
 <button
-type="button"
+class="palette-option"
 data-value="sunset"
-
+type="button"
 >
 
-Закат </button>
+
+<span class="palette-preview">
+
+<span style="background:#16090B"></span>
+<span style="background:#FFB07A"></span>
+<span style="background:#C85C65"></span>
+<span style="background:#F2A07D"></span>
+
+</span>
+
+
+<span class="palette-name">
+Закат
+</span>
+
+
+</button>
+
+
+
+
 
 <button
-type="button"
+class="palette-option"
 data-value="forest"
-
+type="button"
 >
 
-Лес </button>
+
+<span class="palette-preview">
+
+<span style="background:#07100D"></span>
+<span style="background:#A9D5A5"></span>
+<span style="background:#4E8B6C"></span>
+<span style="background:#92C69B"></span>
+
+</span>
+
+
+<span class="palette-name">
+Лес
+</span>
+
+
+</button>
+
+
+
+
+
+<button
+class="palette-option"
+data-value="lavender"
+type="button"
+>
+
+
+<span class="palette-preview">
+
+<span style="background:#100D1A"></span>
+<span style="background:#D8C7FF"></span>
+<span style="background:#8F7BC4"></span>
+<span style="background:#B9A4E6"></span>
+
+</span>
+
+
+<span class="palette-name">
+Лаванда
+</span>
+
+
+</button>
+
+
+
+
+
+<button
+class="palette-option"
+data-value="ruby"
+type="button"
+>
+
+
+<span class="palette-preview">
+
+<span style="background:#16070B"></span>
+<span style="background:#FF9AA9"></span>
+<span style="background:#A93E55"></span>
+<span style="background:#E87084"></span>
+
+</span>
+
+
+<span class="palette-name">
+Рубин
+</span>
+
+
+</button>
+
+
+
+
+
+<button
+class="palette-option"
+data-value="gold"
+type="button"
+>
+
+
+<span class="palette-preview">
+
+<span style="background:#151006"></span>
+<span style="background:#FFE08A"></span>
+<span style="background:#B58A32"></span>
+<span style="background:#D6B55A"></span>
+
+</span>
+
+
+<span class="palette-name">
+Золото
+</span>
+
+
+</button>
+
+
+
+
+
+<button
+class="palette-option"
+data-value="arctic"
+type="button"
+>
+
+
+<span class="palette-preview">
+
+<span style="background:#061116"></span>
+<span style="background:#B8F0FF"></span>
+<span style="background:#4C9DB3"></span>
+<span style="background:#8ED3E5"></span>
+
+</span>
+
+
+<span class="palette-name">
+Арктика
+</span>
+
+
+</button>
+
+
 
 </div>
 
+
 </div>
+
 
 </section>
 
+
+
 </div>
 
+
+
+
 <p class="section-title">
-  Планета
+Планета
 </p>
 
-<div
-  data-wallify-m3="card-group"
->
 
-<section
-  data-wallify-m3="card"
->
+<div data-wallify-m3="card-group">
+
+
+<section data-wallify-m3="card">
+
 
 <div class="row-content">
 
-<div class="row-title">
 
+<div class="row-title">
 Количество лун
-
-<span
-id="moonValue"
-class="value"
-
->
-
-2 </span>
-
 </div>
 
-<input
-id="moonCount"
-type="range"
-min="1"
-max="3"
-step="1"
-value="2"
-data-wallify-m3="slider"
-
->
-
-</div>
-
-</section>
-
-<section
-  data-wallify-m3="card"
->
-
-<div class="row-content">
-
-<div class="row-title">
-  Количество колец
-</div>
 
 <div
-  id="rings"
-  class="segmented"
+id="moonCount"
+class="segmented"
 >
 
-<button
-type="button"
-data-value="0"
 
->
+<button data-value="1">
+1
+</button>
 
-Нет </button>
 
-<button
-type="button"
-data-value="1"
+<button data-value="2">
+2
+</button>
 
->
 
-1 </button>
+<button data-value="3">
+3
+</button>
 
-<button
-type="button"
-data-value="2"
-
->
-
-2 </button>
-
-<button
-type="button"
-data-value="3"
-
->
-
-3 </button>
 
 </div>
 
+
 </div>
+
 
 </section>
 
-<section
-  data-wallify-m3="card"
->
+
+
+
+
+<section data-wallify-m3="card">
+
 
 <div class="row-content">
 
+
 <div class="row-title">
+Количество колец
+</div>
 
-Скорость вращения
 
-<span
-id="speedValue"
-class="value"
-
+<div
+id="ringCount"
+class="segmented"
 >
 
-1× </span>
+
+<button data-value="0">
+Нет
+</button>
+
+
+<button data-value="1">
+1
+</button>
+
+
+<button data-value="2">
+2
+</button>
+
+
+<button data-value="3">
+3
+</button>
+
 
 </div>
 
-<input
-id="orbitSpeed"
-type="range"
-min="0.2"
-max="2"
-step="0.1"
-value="1"
-data-wallify-m3="slider"
-
->
 
 </div>
+
 
 </section>
+
+
+
+
+
+<section data-wallify-m3="card">
+
+
+<div class="row-content">
+
+
+<div class="row-title">
+Скорость вращения
+</div>
+
+
+<div
+id="orbitSpeed"
+class="segmented"
+>
+
+
+<button data-value="0.6">
+Медленно
+</button>
+
+
+<button data-value="1">
+Обычно
+</button>
+
+
+<button data-value="1.6">
+Быстро
+</button>
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
 
 </div>
 
 <p class="section-title">
-  Детали
+Звёзды
 </p>
 
-<div
-  data-wallify-m3="card-group"
->
 
-<section
-  data-wallify-m3="card"
->
+<div data-wallify-m3="card-group">
+
+
+
+<section data-wallify-m3="card">
+
 
 <div class="row">
 
+
 <div class="row-content">
 
+
 <div class="row-title">
-  Звёзды
+Обычные звёзды
 </div>
+
 
 <div class="row-desc">
-  Показывать звёздный фон
+Мерцающие звёзды на фоне
 </div>
 
+
 </div>
+
 
 <input
 id="showStars"
 type="checkbox"
 data-wallify-m3="switch"
-
 >
 
+
 </div>
+
 
 </section>
 
+
+
+
+
+<section data-wallify-m3="card">
+
+
+<div class="row">
+
+
+<div class="row-content">
+
+
+<div class="row-title">
+Падающие звёзды
 </div>
 
+
+<div class="row-desc">
+Световые следы на фоне
+</div>
+
+
+</div>
+
+
+<input
+id="shootingStars"
+type="checkbox"
+data-wallify-m3="switch"
+>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+<section
+id="shootingOptions"
+data-wallify-m3="card"
+>
+
+
+<div class="row-content">
+
+
+<div class="row-title">
+Частота появления
+</div>
+
+
+<div
+id="shootingStarFrequency"
+class="segmented"
+>
+
+
+<button data-value="rare">
+Редко
+</button>
+
+
+<button data-value="normal">
+Обычно
+</button>
+
+
+<button data-value="frequent">
+Часто
+</button>
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+<section
+id="shootingCountCard"
+data-wallify-m3="card"
+>
+
+
+<div
+class="
+row-content
+slider-content
+"
+>
+
+
+<div class="row-title">
+
+
+Максимум одновременно
+
+
+<span
+id="shootingStarCountValue"
+class="value-pill"
+>
+1
+</span>
+
+
+</div>
+
+
+
+<input
+id="shootingStarCount"
+
+type="range"
+
+min="1"
+
+max="7"
+
+step="1"
+
+value="1"
+
+data-wallify-m3="slider"
+
+>
+
+
+
+<div class="row-desc">
+
+Максимальное количество
+падающих звёзд на экране
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+</div>
+
+
+
+
+
+<script src="wallify-m3.js"></script>
+
+
+
 <script>
+
 
 (() => {
 
 
-function getEngine() {
 
-  return (
-    window.WallpaperEngine
-    ||
-    null
-  );
+function engine() {
+
+return (
+
+window.WallpaperEngine
+
+||
+null
+
+);
 
 }
+
+
+
 
 
 function getSetting(
-  key,
-  fallback
+key,
+fallback
 ) {
 
-  const engine =
-    getEngine();
+
+if(engine()) {
 
 
-  if (
-    engine
-  ) {
+return engine()
 
-    return engine.getSetting(
+.getSetting(
 
-      key,
+key,
 
-      String(
-        fallback
-      )
+String(
+fallback
+)
 
-    );
+);
 
-  }
-
-
-  return (
-
-    localStorage.getItem(
-      key
-    )
-
-    ||
-
-    String(
-      fallback
-    )
-
-  );
 
 }
+
+
+return (
+
+localStorage.getItem(
+key
+)
+
+||
+
+String(
+fallback
+)
+
+);
+
+
+}
+
+
+
 
 
 function saveSetting(
-  key,
-  value
+key,
+value
 ) {
 
-  const engine =
-    getEngine();
+
+if(engine()) {
 
 
-  if (
-    engine
-  ) {
+engine()
 
-    engine.saveSetting(
+.saveSetting(
 
-      key,
+key,
 
-      String(
-        value
-      )
+String(
+value
+)
 
-    );
+);
 
-  }
-
-  else {
-
-    localStorage.setItem(
-
-      key,
-
-      String(
-        value
-      )
-
-    );
-
-  }
 
 }
+
+else {
+
+
+localStorage.setItem(
+
+key,
+
+String(
+value
+
+)
+
+);
+
+
+}
+
+
+}
+
+
+
+
+
+function setActive(
+container,
+value
+) {
+
+
+[
+
+...container.children
+
+]
+
+.forEach(
+
+button => {
+
+
+button.classList.toggle(
+
+"active",
+
+button.dataset.value
+
+===
+
+String(
+value
+)
+
+);
+
+
+}
+
+);
+
+
+}
+
+
+
+
+
+function wireSegment(
+id,
+key,
+fallback
+) {
+
+
+const container =
+
+document.getElementById(
+id
+);
+
+
+
+const value =
+
+getSetting(
+key,
+fallback
+);
+
+
+
+setActive(
+
+container,
+
+value
+
+);
+
+
+
+
+[
+
+...container.children
+
+]
+
+.forEach(
+
+button => {
+
+
+button.addEventListener(
+
+"click",
+
+() => {
+
+
+saveSetting(
+
+key,
+
+button.dataset.value
+
+);
+
+
+
+setActive(
+
+container,
+
+button.dataset.value
+
+);
+
+
+}
+
+);
+
+
+}
+
+);
+
+
+}
+
+
+
+
+
+
+function wireSwitch(
+element,
+key,
+defaultValue
+) {
+
+
+element.checked =
+
+
+getSetting(
+
+key,
+
+defaultValue
+
+)
+
+===
+
+"true";
+
+
+
+
+
+element.addEventListener(
+
+"change",
+
+() => {
+
+
+saveSetting(
+
+key,
+
+element.checked
+
+);
+
+
+}
+
+);
+
+
+
+}
+
+
+
 
 
 function init() {
 
 
+
 const useMonet =
 
-  document.getElementById(
-    "useMonet"
-  );
+document.getElementById(
+"useMonet"
+);
 
-
-const palette =
-
-  document.getElementById(
-    "palette"
-  );
 
 
 const paletteCard =
 
-  document.getElementById(
-    "paletteCard"
-  );
+document.getElementById(
+"paletteCard"
+);
 
 
-const moonCount =
-
-  document.getElementById(
-    "moonCount"
-  );
-
-
-const moonValue =
-
-  document.getElementById(
-    "moonValue"
-  );
-
-
-const rings =
-
-  document.getElementById(
-    "rings"
-  );
-
-
-const orbitSpeed =
-
-  document.getElementById(
-    "orbitSpeed"
-  );
-
-
-const speedValue =
-
-  document.getElementById(
-    "speedValue"
-  );
-
-
-const showStars =
-
-  document.getElementById(
-    "showStars"
-  );
 
 
 useMonet.checked =
 
-  getSetting(
 
-    "useMonet",
+getSetting(
 
-    false
+"useMonet",
 
-  )
+false
 
-  ===
+)
 
-  "true";
+===
+
+"true";
+
+
+
 
 
 function updatePaletteState() {
 
-  paletteCard
-    .classList
-    .toggle(
 
-      "disabled",
+paletteCard.classList.toggle(
 
-      useMonet.checked
+"disabled",
 
-    );
+useMonet.checked
+
+);
+
 
 }
+
+
 
 
 updatePaletteState();
 
 
+
+
+
 useMonet.addEventListener(
 
-  "change",
+"change",
 
-  () => {
-
-    saveSetting(
-
-      "useMonet",
-
-      useMonet.checked
-
-    );
+() => {
 
 
-    updatePaletteState();
+saveSetting(
 
-  }
+"useMonet",
+
+useMonet.checked
 
 );
 
 
-const savedPalette =
 
-  getSetting(
-
-    "palette",
-
-    "violet"
-
-  );
-
-
-[...palette.children]
-
-.forEach(
-
-  button => {
-
-    button.classList.toggle(
-
-      "active",
-
-      button.dataset.value
-
-      ===
-
-      savedPalette
-
-    );
-
-
-    button.addEventListener(
-
-      "click",
-
-      () => {
-
-        saveSetting(
-
-          "palette",
-
-          button.dataset.value
-
-        );
-
-
-        [...palette.children]
-
-        .forEach(
-
-          item => {
-
-            item.classList.remove(
-              "active"
-            );
-
-          }
-
-        );
-
-
-        button.classList.add(
-          "active"
-        );
-
-      }
-
-    );
-
-  }
-
-);
-
-
-moonCount.value =
-
-  getSetting(
-
-    "moonCount",
-
-    2
-
-  );
-
-
-moonValue.textContent =
-
-  moonCount.value;
-
-
-moonCount.dispatchEvent(
-
-  new Event(
-    "input"
-  )
-
-);
-
-
-moonCount.addEventListener(
-
-  "input",
-
-  () => {
-
-    moonValue.textContent =
-
-      moonCount.value;
-
-
-    saveSetting(
-
-      "moonCount",
-
-      moonCount.value
-
-    );
-
-  }
-
-);
-
-
-const savedRings =
-
-  getSetting(
-
-    "ringCount",
-
-    1
-
-  );
-
-
-[...rings.children]
-
-.forEach(
-
-  button => {
-
-    button.classList.toggle(
-
-      "active",
-
-      button.dataset.value
-
-      ===
-
-      savedRings
-
-    );
-
-
-    button.addEventListener(
-
-      "click",
-
-      () => {
-
-        saveSetting(
-
-          "ringCount",
-
-          button.dataset.value
-
-        );
-
-
-        [...rings.children]
-
-        .forEach(
-
-          item => {
-
-            item.classList.remove(
-              "active"
-            );
-
-          }
-
-        );
-
-
-        button.classList.add(
-          "active"
-        );
-
-      }
-
-    );
-
-  }
-
-);
-
-
-orbitSpeed.value =
-
-  getSetting(
-
-    "orbitSpeed",
-
-    1
-
-  );
-
-
-speedValue.textContent =
-
-  orbitSpeed.value
-
-  +
-
-  "×";
-
-
-orbitSpeed.dispatchEvent(
-
-  new Event(
-    "input"
-  )
-
-);
-
-
-orbitSpeed.addEventListener(
-
-  "input",
-
-  () => {
-
-    speedValue.textContent =
-
-      orbitSpeed.value
-
-      +
-
-      "×";
-
-
-    saveSetting(
-
-      "orbitSpeed",
-
-      orbitSpeed.value
-
-    );
-
-  }
-
-);
-
-
-showStars.checked =
-
-  getSetting(
-
-    "showStars",
-
-    true
-
-  )
-
-  ===
-
-  "true";
-
-
-showStars.addEventListener(
-
-  "change",
-
-  () => {
-
-    saveSetting(
-
-      "showStars",
-
-      showStars.checked
-
-    );
-
-  }
-
-);
+updatePaletteState();
 
 
 }
+
+);
+
+
+
+
+
+
+
+wireSegment(
+
+"palette",
+
+"palette",
+
+"violet"
+
+);
+
+
+
+wireSegment(
+
+"moonCount",
+
+"moonCount",
+
+"2"
+
+);
+
+
+
+wireSegment(
+
+"ringCount",
+
+"ringCount",
+
+"1"
+
+);
+
+
+
+wireSegment(
+
+"orbitSpeed",
+
+"orbitSpeed",
+
+"1"
+
+);
+
+
+
+wireSegment(
+
+"shootingStarFrequency",
+
+"shootingStarFrequency",
+
+"rare"
+
+);
+
+
+
+
+
+
+
+
+/*
+  Новый Material 3 Slider
+*/
+
+
+const shootingStarCount =
+
+document.getElementById(
+
+"shootingStarCount"
+
+);
+
+
+
+const shootingStarCountValue =
+
+document.getElementById(
+
+"shootingStarCountValue"
+
+);
+
+
+
+
+
+
+shootingStarCount.value =
+
+
+getSetting(
+
+"shootingStarCount",
+
+"1"
+
+);
+
+
+
+
+shootingStarCountValue.textContent =
+
+shootingStarCount.value;
+
+
+
+
+
+
+shootingStarCount.addEventListener(
+
+"input",
+
+() => {
+
+
+shootingStarCountValue.textContent =
+
+shootingStarCount.value;
+
+
+
+
+saveSetting(
+
+"shootingStarCount",
+
+shootingStarCount.value
+
+);
+
+
+
+}
+
+);
+
+
+
+
+
+
+
+wireSwitch(
+
+document.getElementById(
+"showStars"
+),
+
+"showStars",
+
+true
+
+);
+
+
+
+
+
+
+const shootingStars =
+
+document.getElementById(
+"shootingStars"
+);
+
+
+
+const shootingOptions =
+
+document.getElementById(
+"shootingOptions"
+);
+
+
+
+const shootingCountCard =
+
+document.getElementById(
+"shootingCountCard"
+);
+
+
+
+
+
+wireSwitch(
+
+shootingStars,
+
+"shootingStars",
+
+true
+
+);
+
+
+
+
+
+
+
+function updateShootingState() {
+
+
+const enabled =
+
+shootingStars.checked;
+
+
+
+shootingOptions.classList.toggle(
+
+"disabled",
+
+!enabled
+
+);
+
+
+
+shootingCountCard.classList.toggle(
+
+"disabled",
+
+!enabled
+
+);
+
+
+
+}
+
+
+
+
+
+updateShootingState();
+
+
+
+
+
+shootingStars.addEventListener(
+
+"change",
+
+updateShootingState
+
+);
+
+
+
+}
+
+
+
 
 
 window.addEventListener(
 
-  "wallpaperEngineReady",
+"wallpaperEngineReady",
 
-  () => {
+init,
 
-    init();
+{
 
-  },
+once:true
 
-  {
-    once: true
-  }
+}
 
 );
 
 
-if (
-  !window.WallpaperEngine
-) {
 
-  document.addEventListener(
 
-    "DOMContentLoaded",
 
-    init,
+if(!window.WallpaperEngine) {
 
-    {
-      once: true
-    }
 
-  );
+document.addEventListener(
+
+"DOMContentLoaded",
+
+init,
+
+{
+
+once:true
+
+}
+
+);
+
 
 }
 
 
+
 })();
+
+
 
 </script>
 
+
+
 </body>
+
 </html>

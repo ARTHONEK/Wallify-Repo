@@ -1,13 +1,15 @@
 {
   "name": "Monet Green Orbit",
-  "description": "Зелёная вращающаяся планета с Луной и орбитальным спутником, передающим радиосигналы",
+  "description": "Зелёная вращающаяся планета с Луной, Солнцем, запускаемыми ракетами и орбитальным спутником, передающим радиосигналы.",
   "author": "Worpli",
   "version": "1.0.0",
   "minAppVersion": ">=1.0.0",
   "main": "index.html",
   "settingsPath": "settings/index.html",
+  "cover": "cover.jpg",
+  "icon": "icon.png",
   "useGyroscope": false,
-  "isLite": true,
+  "isLite": false,
   "animationDuration": 2.5,
   "animationDurationUnlock": 2.0,
   "animationDurationScreenOn": 1.0,
@@ -23,8 +25,6 @@
     "showSignals": "true",
     "showOrbits": "true"
   },
-  "cover": "cover.jpg",
-  "icon": "icon.png",
   "tags": [
     "material",
     "dynamic",
@@ -32,7 +32,8 @@
     "planet",
     "moon",
     "satellite",
+    "rocket",
+    "sun",
     "green"
   ]
 }
-

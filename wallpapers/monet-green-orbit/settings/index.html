@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Monet Green Orbit — настройки</title>
+
+  <link
+    rel="stylesheet"
+    href="/wallify-m3.css"
+  >
+
+  <style>
+    body {
+      margin: 0;
+
+      padding:
+        20px
+        16px
+        48px;
+
+      background:
+        var(
+          --wallify-m3-background,
+          #07110b
+        );
+
+      color:
+        var(
+          --wallify-m3-on-surface,
+          #dce8df
+        );
+
+      font-family:
+        "Roboto",
+        system-ui,
+        sans-serif;
+    }
+
+    h1 {
+      margin:
+        4px
+        0
+        2px;
+
+      font-size: 22px;
+      line-height: 28px;
+      font-weight: 500;
+    }
+
+    .sub {
+      margin:
+        0
+        0
+        24px;
+
+      color:
+        var(
+          --wallify-m3-on-surface-variant,
+          #bdc9bf
+        );
+
+      font-size: 13px;
+    }
+
+    .section-title {
+      margin:
+        24px
+        4px
+        8px;
+
+      color:
+        var(
+          --wallify-m3-primary,
+          #8ed8a5
+        );
+
+      font-size: 12px;
+      line-height: 16px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .section-title.first {
+      margin-top: 0;
+    }
+
+    .value {
+      float: right;
+
+      color:
+        var(
+          --wallify-m3-primary,
+          #8ed8a5
+        );
+
+      font-size: 14px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hint {
+      margin:
+        20px
+        5px
+        0;
+
+      color:
+        var(
+          --wallify-m3-on-surface-variant,
+          #bdc9bf
+        );
+
+      font-size: 12px;
+      line-height: 18px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Monet Green Orbit</h1>
+
+  <p class="sub">
+    Настройка планеты, орбит и космических объектов
+  </p>
+
+  <p class="section-title first">
+    Планета
+  </p>
+
+  <div data-wallify-m3="card-group">
+    <section data-wallify-m3="card">
+      <div class="row-content">
+        <div class="row-title">
+          Размер планеты
+
+          <span
+            id="planetScaleValue"
+            class="value"
+          >
+            100%
+          </span>
+        </div>
+
+        <div class="row-desc">
+          Масштаб центральной планеты
+        </div>
+
+        <input
+          id="planetScale"
+          type="range"
+          min="0.75"
+          max="1.3"
+          step="0.05"
+          value="1"
+          data-wallify-m3="slider"
+        >
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row-content">
+        <div class="row-title">
+          Скорость движения
+
+          <span
+            id="speedValue"
+            class="value"
+          >
+            1×
+          </span>
+        </div>
+
+        <div class="row-desc">
+          Вращение планеты и движение по орбитам
+        </div>
+
+        <input
+          id="speed"
+          type="range"
+          min="0.2"
+          max="2.5"
+          step="0.1"
+          value="1"
+          data-wallify-m3="slider"
+        >
+      </div>
+    </section>
+  </div>
+
+  <p class="section-title">
+    Космические объекты
+  </p>
+
+  <div data-wallify-m3="card-group">
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">
+            Луна
+          </div>
+
+          <div class="row-desc">
+            Показывать естественный спутник
+          </div>
+        </div>
+
+        <input
+          id="showMoon"
+          type="checkbox"
+          data-wallify-m3="switch"
+        >
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">
+            Орбитальный спутник
+          </div>
+
+          <div class="row-desc">
+            Показывать аппарат с солнечными панелями
+          </div>
+        </div>
+
+        <input
+          id="showSatellite"
+          type="checkbox"
+          data-wallify-m3="switch"
+        >
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">
+            Радиосигналы
+          </div>
+
+          <div class="row-desc">
+            Импульсы, передаваемые спутником
+          </div>
+        </div>
+
+        <input
+          id="showSignals"
+          type="checkbox"
+          data-wallify-m3="switch"
+        >
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">
+            Линии орбит
+          </div>
+
+          <div class="row-desc">
+            Показывать пунктирные траектории
+          </div>
+        </div>
+
+        <input
+          id="showOrbits"
+          type="checkbox"
+          data-wallify-m3="switch"
+        >
+      </div>
+    </section>
+  </div>
+
+  <p class="section-title">
+    Звёздный фон
+  </p>
+
+  <div data-wallify-m3="card-group">
+    <section data-wallify-m3="card">
+      <div class="row-content">
+        <div class="row-title">
+          Количество звёзд
+
+          <span
+            id="starCountValue"
+            class="value"
+          >
+            110
+          </span>
+        </div>
+
+        <div class="row-desc">
+          Меньше звёзд — ниже нагрузка на устройство
+        </div>
+
+        <input
+          id="starCount"
+          type="range"
+          min="20"
+          max="180"
+          step="10"
+          value="110"
+          data-wallify-m3="slider"
+        >
+      </div>
+    </section>
+  </div>
+
+  <p class="hint">
+    Изменения сохраняются автоматически и применяются к живым
+    обоям без перезапуска.
+  </p>
+
+  <script>
+  (() => {
+    "use strict";
+
+    const defaults = {
+      speed: "1",
+      planetScale: "1",
+      starCount: "110",
+      showMoon: "true",
+      showSatellite: "true",
+      showSignals: "true",
+      showOrbits: "true"
+    };
+
+    let engine = null;
+    let controlsBound = false;
+
+    const controls = {};
+
+    function getElements() {
+      controls.speed =
+        document.getElementById("speed");
+
+      controls.speedValue =
+        document.getElementById("speedValue");
+
+      controls.planetScale =
+        document.getElementById("planetScale");
+
+      controls.planetScaleValue =
+        document.getElementById("planetScaleValue");
+
+      controls.starCount =
+        document.getElementById("starCount");
+
+      controls.starCountValue =
+        document.getElementById("starCountValue");
+
+      controls.showMoon =
+        document.getElementById("showMoon");
+
+      controls.showSatellite =
+        document.getElementById("showSatellite");
+
+      controls.showSignals =
+        document.getElementById("showSignals");
+
+      controls.showOrbits =
+        document.getElementById("showOrbits");
+    }
+
+    function getSetting(key, fallback) {
+      /*
+       * В Wallify всегда читаем из общего хранилища комплекта.
+       */
+      if (engine) {
+        return engine.getSetting(
+          key,
+          String(fallback)
+        );
+      }
+
+      /*
+       * localStorage используется только для проверки
+       * страницы в обычном браузере.
+       */
+      const localValue =
+        localStorage.getItem(key);
+
+      return localValue !== null
+        ? localValue
+        : String(fallback);
+    }
+
+    function saveSetting(key, value) {
+      const stringValue =
+        String(value);
+
+      /*
+       * Локальная копия полезна при открытии страницы
+       * в обычном браузере.
+       */
+      try {
+        localStorage.setItem(
+          key,
+          stringValue
+        );
+      } catch (error) {
+        console.warn(
+          "Не удалось записать localStorage:",
+          error
+        );
+      }
+
+      /*
+       * Основное сохранение для Wallify.
+       */
+      if (engine) {
+        engine.saveSetting(
+          key,
+          stringValue
+        );
+      } else {
+        console.warn(
+          "WallpaperEngine ещё не готов. " +
+          "Значение временно записано в localStorage:",
+          key,
+          stringValue
+        );
+      }
+    }
+
+    function updateSpeedLabel() {
+      const value =
+        Number(controls.speed.value);
+
+      controls.speedValue.textContent =
+        Number.isFinite(value)
+          ? value.toFixed(1) + "×"
+          : "1.0×";
+    }
+
+    function updatePlanetScaleLabel() {
+      const value =
+        Number(controls.planetScale.value);
+
+      controls.planetScaleValue.textContent =
+        Number.isFinite(value)
+          ? Math.round(value * 100) + "%"
+          : "100%";
+    }
+
+    function updateStarCountLabel() {
+      controls.starCountValue.textContent =
+        controls.starCount.value;
+    }
+
+    function updateLabels() {
+      updateSpeedLabel();
+      updatePlanetScaleLabel();
+      updateStarCountLabel();
+    }
+
+    function loadValues() {
+      controls.speed.value =
+        getSetting(
+          "speed",
+          defaults.speed
+        );
+
+      controls.planetScale.value =
+        getSetting(
+          "planetScale",
+          defaults.planetScale
+        );
+
+      controls.starCount.value =
+        getSetting(
+          "starCount",
+          defaults.starCount
+        );
+
+      controls.showMoon.checked =
+        getSetting(
+          "showMoon",
+          defaults.showMoon
+        ) === "true";
+
+      controls.showSatellite.checked =
+        getSetting(
+          "showSatellite",
+          defaults.showSatellite
+        ) === "true";
+
+      controls.showSignals.checked =
+        getSetting(
+          "showSignals",
+          defaults.showSignals
+        ) === "true";
+
+      controls.showOrbits.checked =
+        getSetting(
+          "showOrbits",
+          defaults.showOrbits
+        ) === "true";
+
+      updateLabels();
+    }
+
+    function bindControls() {
+      if (controlsBound) {
+        return;
+      }
+
+      controlsBound = true;
+
+      controls.speed.addEventListener(
+        "input",
+        () => {
+          updateSpeedLabel();
+
+          saveSetting(
+            "speed",
+            controls.speed.value
+          );
+        }
+      );
+
+      controls.planetScale.addEventListener(
+        "input",
+        () => {
+          updatePlanetScaleLabel();
+
+          saveSetting(
+            "planetScale",
+            controls.planetScale.value
+          );
+        }
+      );
+
+      controls.starCount.addEventListener(
+        "input",
+        () => {
+          updateStarCountLabel();
+
+          saveSetting(
+            "starCount",
+            controls.starCount.value
+          );
+        }
+      );
+
+      controls.showMoon.addEventListener(
+        "change",
+        () => {
+          saveSetting(
+            "showMoon",
+            controls.showMoon.checked
+          );
+        }
+      );
+
+      controls.showSatellite.addEventListener(
+        "change",
+        () => {
+          saveSetting(
+            "showSatellite",
+            controls.showSatellite.checked
+          );
+        }
+      );
+
+      controls.showSignals.addEventListener(
+        "change",
+        () => {
+          saveSetting(
+            "showSignals",
+            controls.showSignals.checked
+          );
+        }
+      );
+
+      controls.showOrbits.addEventListener(
+        "change",
+        () => {
+          saveSetting(
+            "showOrbits",
+            controls.showOrbits.checked
+          );
+        }
+      );
+    }
+
+    function initializePage() {
+      getElements();
+      bindControls();
+
+      /*
+       * Пока мост ещё не готов, отображаются локальные
+       * или стандартные значения.
+       */
+      loadValues();
+    }
+
+    function connectEngine() {
+      if (!window.WallpaperEngine) {
+        return;
+      }
+
+      engine =
+        window.WallpaperEngine;
+
+      /*
+       * Критически важно перечитать значения после появления
+       * WallpaperEngine. Именно этого не было в старом коде.
+       */
+      loadValues();
+
+      console.log(
+        "Настройки подключены к WallpaperEngine",
+        engine.getAllSettings()
+      );
+    }
+
+    window.addEventListener(
+      "wallpaperEngineReady",
+      () => {
+        connectEngine();
+      }
+    );
+
+    if (
+      document.readyState === "loading"
+    ) {
+      document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+          initializePage();
+
+          /*
+           * Запасной случай: мост мог появиться между
+           * загрузкой документа и выполнением обработчика.
+           */
+          connectEngine();
+        },
+        {
+          once: true
+        }
+      );
+    } else {
+      initializePage();
+      connectEngine();
+    }
+  })();
+</script>
+
+</body>
+</html>

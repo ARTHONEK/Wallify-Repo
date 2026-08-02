@@ -2,7 +2,7 @@
   "name": "Shape 3",
   "description": "Плавающие фигуры Material 3 с физикой столкновений, изменением размеров и bulge эффект при тапе / зажатии.",
   "author": "wlpne",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "minAppVersion": ">=1.0.0",
   "cover": "cover.png",
   "main": "index.html",

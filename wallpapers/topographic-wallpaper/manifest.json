@@ -2,7 +2,7 @@
   "name": "Topographic Wallpaper",
   "description": "Плавные живые топографические линии на настраиваемом фоне.",
   "author": "nector",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "minAppVersion": ">=1.0.0",
   "main": "index.html",
   "cover": "cover.png",

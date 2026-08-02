@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 
 <html lang="ru">
+
 <head>
+
 <meta charset="UTF-8">
 
 <meta
@@ -16,6 +18,7 @@ content="width=device-width, initial-scale=1.0"
 
 html,
 body {
+
   width: 100%;
   height: 100%;
 
@@ -24,13 +27,16 @@ body {
   overflow: hidden;
 
   background: #090812;
+
 }
 
 canvas {
+
   display: block;
 
   width: 100%;
   height: 100%;
+
 }
 
 </style>
@@ -45,12 +51,16 @@ canvas {
 
 (() => {
 
+
   const canvas =
+
     document.getElementById(
       "canvas"
     );
 
+
   const ctx =
+
     canvas.getContext(
       "2d",
       {
@@ -60,11 +70,14 @@ canvas {
 
 
   let width = 0;
+
   let height = 0;
+
   let dpr = 1;
 
 
   let startTime =
+
     performance.now();
 
 
@@ -73,20 +86,22 @@ canvas {
   */
 
   let isCharging =
+
     false;
 
 
   /*
-    Плавная яркость звёзд.
+    Яркость обычных звёзд.
 
-    Без зарядки:
+    Обычное состояние:
     1.0
 
-    При зарядке:
-    1.65
+    Максимум при зарядке:
+    1.95
   */
 
   let starBrightness =
+
     1;
 
 
@@ -112,7 +127,16 @@ canvas {
       1,
 
     showStars:
-      true
+      true,
+
+    shootingStars:
+      true,
+
+    shootingStarFrequency:
+      "rare",
+
+    shootingStarCount:
+      1
 
   };
 
@@ -122,6 +146,7 @@ canvas {
   */
 
   const palettes = {
+
 
     violet: {
 
@@ -212,18 +237,110 @@ canvas {
       stars:
         "#EEFFF1"
 
+    },
+
+
+    lavender: {
+
+      background:
+        "#100D1A",
+
+      sun:
+        "#D8C7FF",
+
+      planet:
+        "#8F7BC4",
+
+      moon:
+        "#E7DEFF",
+
+      ring:
+        "#B9A4E6",
+
+      stars:
+        "#FFFFFF"
+
+    },
+
+
+    ruby: {
+
+      background:
+        "#16070B",
+
+      sun:
+        "#FF9AA9",
+
+      planet:
+        "#A93E55",
+
+      moon:
+        "#FFD0D7",
+
+      ring:
+        "#E87084",
+
+      stars:
+        "#FFF4F5"
+
+    },
+
+
+    gold: {
+
+      background:
+        "#151006",
+
+      sun:
+        "#FFE08A",
+
+      planet:
+        "#B58A32",
+
+      moon:
+        "#FFF0B8",
+
+      ring:
+        "#D6B55A",
+
+      stars:
+        "#FFF9E8"
+
+    },
+
+
+    arctic: {
+
+      background:
+        "#061116",
+
+      sun:
+        "#B8F0FF",
+
+      planet:
+        "#4C9DB3",
+
+      moon:
+        "#D8F7FF",
+
+      ring:
+        "#8ED3E5",
+
+      stars:
+        "#F1FDFF"
+
     }
 
   };
 
 
   let colors =
+
     palettes.violet;
 
 
   /*
-    Больше и немного
-    крупнее звёзды.
+    Обычные звёзды.
   */
 
   const stars = [];
@@ -244,29 +361,43 @@ canvas {
         Math.random(),
 
       size:
+
         0.8
+
         +
+
         Math.random()
         *
         1.5,
 
       alpha:
+
         0.28
+
         +
+
         Math.random()
         *
         0.55,
 
       phase:
+
         Math.random()
+
         *
+
         Math.PI
+
         *
+
         2,
 
       speed:
+
         0.25
+
         +
+
         Math.random()
         *
         0.45
@@ -274,6 +405,34 @@ canvas {
     });
 
   }
+
+
+  /*
+    Активные падающие звёзды.
+  */
+
+  const shootingStars = [];
+
+
+  /*
+    Вероятность появления.
+
+    Значения рассчитаны
+    на один кадр.
+  */
+
+  const shootingStarRates = {
+
+    rare:
+      0.12,
+
+    normal:
+      0.24,
+
+    frequent:
+      0.42
+
+  };
 
 
   function getSetting(
@@ -286,11 +445,19 @@ canvas {
     ) {
 
       return (
+
         window.WallpaperEngine
+
           .getSetting(
+
             key,
-            String(fallback)
+
+            String(
+              fallback
+            )
+
           )
+
       );
 
     }
@@ -305,19 +472,26 @@ canvas {
 
   function loadSettings() {
 
+
     settings.palette =
 
       getSetting(
+
         "palette",
+
         "violet"
+
       );
 
 
     settings.useMonet =
 
       getSetting(
+
         "useMonet",
+
         false
+
       )
 
       ===
@@ -325,80 +499,255 @@ canvas {
       "true";
 
 
+    const savedMoonCount =
+
+      parseInt(
+
+        getSetting(
+
+          "moonCount",
+
+          2
+
+        ),
+
+        10
+
+      );
+
+
     settings.moonCount =
 
+      Number.isFinite(
+        savedMoonCount
+      )
+
+      ?
+
       Math.max(
+
         1,
+
         Math.min(
+
           3,
-          parseInt(
-            getSetting(
-              "moonCount",
-              2
-            ),
-            10
-          )
+
+          savedMoonCount
+
         )
+
+      )
+
+      :
+
+      2;
+
+
+    const savedRingCount =
+
+      parseInt(
+
+        getSetting(
+
+          "ringCount",
+
+          1
+
+        ),
+
+        10
+
       );
 
 
     settings.ringCount =
 
+      Number.isFinite(
+        savedRingCount
+      )
+
+      ?
+
       Math.max(
+
         0,
+
         Math.min(
+
           3,
-          parseInt(
-            getSetting(
-              "ringCount",
-              1
-            ),
-            10
-          )
+
+          savedRingCount
+
         )
-      );
+
+      )
+
+      :
+
+      1;
 
 
     const savedSpeed =
-    
+
       parseFloat(
-    
+
         getSetting(
-    
+
           "orbitSpeed",
-    
+
           1
-    
+
         )
-    
+
       );
-    
-    
+
+
     settings.orbitSpeed =
-    
+
       Number.isFinite(
         savedSpeed
       )
-    
+
       ?
-    
-      savedSpeed
-    
+
+      Math.max(
+
+        0.2,
+
+        Math.min(
+
+          3,
+
+          savedSpeed
+
+        )
+
+      )
+
       :
-    
+
       1;
 
 
     settings.showStars =
 
       getSetting(
+
         "showStars",
+
         true
+
       )
 
       ===
 
       "true";
+
+
+    settings.shootingStars =
+
+      getSetting(
+
+        "shootingStars",
+
+        true
+
+      )
+
+      ===
+
+      "true";
+
+
+    const frequency =
+
+      getSetting(
+
+        "shootingStarFrequency",
+
+        "rare"
+
+      );
+
+
+    settings.shootingStarFrequency =
+
+      shootingStarRates[
+        frequency
+      ]
+
+      ?
+
+      frequency
+
+      :
+
+      "rare";
+
+
+    const savedShootingCount =
+
+      parseInt(
+
+        getSetting(
+
+          "shootingStarCount",
+
+          5
+
+        ),
+
+        10
+
+      );
+
+
+    settings.shootingStarCount =
+
+      Number.isFinite(
+        savedShootingCount
+      )
+
+      ?
+
+      Math.max(
+
+        1,
+
+        Math.min(
+
+          7,
+
+          savedShootingCount
+
+        )
+
+      )
+
+      :
+
+      1;
+
+
+    /*
+      Если пользователь уменьшил
+      максимальное количество,
+      лишние звёзды удаляются.
+    */
+
+    while (
+
+      shootingStars.length
+
+      >
+
+      settings.shootingStarCount
+
+    ) {
+
+      shootingStars.pop();
+
+    }
 
   }
 
@@ -432,41 +781,53 @@ canvas {
     const value =
 
       hex.replace(
+
         "#",
+
         ""
+
       );
 
 
     const r =
 
       parseInt(
+
         value.slice(
           0,
           2
         ),
+
         16
+
       );
 
 
     const g =
 
       parseInt(
+
         value.slice(
           2,
           4
         ),
+
         16
+
       );
 
 
     const b =
 
       parseInt(
+
         value.slice(
           4,
           6
         ),
+
         16
+
       );
 
 
@@ -518,14 +879,20 @@ canvas {
     const monet =
 
       detail
+
       &&
+
       detail.accentColors;
 
 
     if (
+
       settings.useMonet
+
       &&
+
       monet
+
     ) {
 
       colors = {
@@ -533,42 +900,54 @@ canvas {
         background:
 
           monet.background
+
           ||
+
           "#090812",
 
 
         sun:
 
           monet.primary
+
           ||
+
           "#E8C5FF",
 
 
         planet:
 
           monet.secondary
+
           ||
+
           "#8E79C8",
 
 
         moon:
 
           monet.tertiary
+
           ||
+
           "#D7C7F2",
 
 
         ring:
 
           monet.primary
+
           ||
+
           "#CDB7E9",
 
 
         stars:
 
           monet.onBackground
+
           ||
+
           "#FFFFFF"
 
       };
@@ -594,39 +973,55 @@ canvas {
 
   function resize() {
 
+
     dpr =
 
       Math.min(
+
         window.devicePixelRatio
+
         ||
+
         1,
+
         2
+
       );
 
 
     width =
+
       window.innerWidth;
 
 
     height =
+
       window.innerHeight;
 
 
     canvas.width =
 
       Math.round(
+
         width
+
         *
+
         dpr
+
       );
 
 
     canvas.height =
 
       Math.round(
+
         height
+
         *
+
         dpr
+
       );
 
 
@@ -645,10 +1040,15 @@ canvas {
 
 
   function circle(
+
     x,
+
     y,
+
     radius,
+
     color
+
   ) {
 
     ctx.beginPath();
@@ -657,19 +1057,24 @@ canvas {
     ctx.arc(
 
       x,
+
       y,
+
       radius,
 
       0,
 
       Math.PI
+
       *
+
       2
 
     );
 
 
     ctx.fillStyle =
+
       color;
 
 
@@ -678,29 +1083,22 @@ canvas {
   }
 
 
-  /*
-    Рисование части кольца.
-
-    Передняя и задняя
-    половины рисуются
-    отдельно.
-
-    Поэтому кольца
-    выглядят объёмными.
-  */
-
   function drawRingHalf(
 
     x,
+
     y,
 
     radiusX,
+
     radiusY,
 
     startAngle,
+
     endAngle,
 
     color,
+
     lineWidth
 
   ) {
@@ -711,24 +1109,29 @@ canvas {
     ctx.ellipse(
 
       x,
+
       y,
 
       radiusX,
+
       radiusY,
 
       -0.24,
 
       startAngle,
+
       endAngle
 
     );
 
 
     ctx.strokeStyle =
+
       color;
 
 
     ctx.lineWidth =
+
       lineWidth;
 
 
@@ -737,25 +1140,549 @@ canvas {
   }
 
 
+  /*
+    Создание падающей звезды.
+  */
+
+  function createShootingStar() {
+
+
+    const fromLeft =
+
+      Math.random()
+
+      >
+
+      0.5;
+
+
+    const startX =
+
+      fromLeft
+
+      ?
+
+      -width
+      *
+      0.08
+
+      :
+
+      width
+      *
+      1.08;
+
+
+    const startY =
+
+      height
+
+      *
+
+      (
+        0.05
+
+        +
+
+        Math.random()
+        *
+        0.48
+      );
+
+
+    const direction =
+
+      fromLeft
+
+      ?
+
+      1
+
+      :
+
+      -1;
+
+
+    shootingStars.push({
+
+      x:
+        startX,
+
+      y:
+        startY,
+
+      direction:
+        direction,
+
+      length:
+      
+        Math.min(
+          width,
+          height
+        )
+      
+        *
+      
+        (
+      
+          0.20
+      
+          +
+      
+          Math.random()
+          *
+          0.16
+      
+        ),
+      
+      speed:
+      
+        Math.min(
+          width,
+          height
+        )
+      
+        *
+      
+        (
+      
+          0.26
+      
+          +
+      
+          Math.random()
+          *
+          0.12
+      
+        ),
+      
+      angle:
+      
+        direction
+      
+        *
+      
+        (
+      
+          0.20
+      
+          +
+      
+          Math.random()
+          *
+          0.16
+      
+        ),
+      
+      life:
+        0,
+      
+      duration:
+      
+        2.2
+      
+        +
+      
+        Math.random()
+        *
+        1.8
+
+    });
+
+  }
+
+
+  function updateShootingStars(
+    delta
+  ) {
+
+
+    if (
+
+      settings.shootingStars
+
+      &&
+
+      shootingStars.length
+
+      <
+
+      settings.shootingStarCount
+
+    ) {
+
+      const rate =
+
+        shootingStarRates[
+
+          settings
+            .shootingStarFrequency
+
+        ]
+
+        ||
+
+        shootingStarRates.rare;
+
+
+      if (
+
+        Math.random()
+
+        <
+
+        rate
+        *
+        delta
+
+      ) {
+
+        createShootingStar();
+
+      }
+
+    }
+
+
+    for (
+
+      let i =
+
+        shootingStars.length
+
+        -
+
+        1;
+
+      i >= 0;
+
+      i--
+
+    ) {
+
+      const star =
+
+        shootingStars[i];
+
+
+      star.life +=
+
+        delta;
+
+
+      star.x +=
+
+        Math.cos(
+          star.angle
+        )
+
+        *
+
+        star.speed
+
+        *
+
+        delta;
+
+
+      star.y +=
+
+        Math.sin(
+          star.angle
+        )
+
+        *
+
+        star.speed
+
+        *
+
+        delta;
+
+
+      if (
+
+        star.life
+
+        >=
+
+        star.duration
+
+      ) {
+
+        shootingStars.splice(
+
+          i,
+
+          1
+
+        );
+
+      }
+
+    }
+
+  }
+
+
+  function drawShootingStars() {
+
+
+    for (
+
+      const star
+
+      of
+
+      shootingStars
+
+    ) {
+
+
+      const progress =
+
+        star.life
+
+        /
+
+        star.duration;
+
+
+      const fade =
+
+        Math.sin(
+
+          progress
+
+          *
+
+          Math.PI
+
+        );
+
+
+      const tailX =
+
+        star.x
+
+        -
+
+        Math.cos(
+          star.angle
+        )
+
+        *
+
+        star.length;
+
+
+      const tailY =
+
+        star.y
+
+        -
+
+        Math.sin(
+          star.angle
+        )
+
+        *
+
+        star.length;
+
+
+      const gradient =
+
+        ctx.createLinearGradient(
+
+          tailX,
+
+          tailY,
+
+          star.x,
+
+          star.y
+
+        );
+
+
+      gradient.addColorStop(
+
+        0,
+
+        hexToRgba(
+
+          colors.stars,
+
+          0
+
+        )
+
+      );
+
+
+      gradient.addColorStop(
+
+        0.62,
+        
+        hexToRgba(
+        
+          colors.stars,
+        
+          0.42
+        
+          *
+        
+          fade
+        
+        )
+
+      );
+
+
+      gradient.addColorStop(
+
+        1,
+        
+        hexToRgba(
+        
+          colors.stars,
+        
+          1
+        
+          *
+        
+          fade
+        
+       )
+
+      );
+
+
+      ctx.beginPath();
+
+
+      ctx.moveTo(
+
+        tailX,
+
+        tailY
+
+      );
+
+
+      ctx.lineTo(
+
+        star.x,
+
+        star.y
+
+      );
+
+
+      ctx.strokeStyle =
+
+        gradient;
+
+
+      ctx.lineWidth =
+
+        2;
+
+
+      ctx.lineCap =
+
+        "round";
+
+
+      ctx.stroke();
+
+
+      ctx.globalAlpha =
+
+        fade;
+
+
+      circle(
+
+        star.x,
+
+        star.y,
+
+        2.2,
+
+        colors.stars
+
+      );
+
+
+      ctx.globalAlpha =
+
+        1;
+
+    }
+
+  }
+
+
+  let previousTime =
+
+    performance.now();
+
+
   function draw(
     now
   ) {
 
+
     const time =
 
       (
+
         now
+
         -
+
         startTime
+
       )
 
       /
+
       1000;
 
 
+    const delta =
+
+      Math.min(
+
+        (
+
+          now
+
+          -
+
+          previousTime
+
+        )
+
+        /
+
+        1000,
+
+        0.05
+
+      );
+
+
+    previousTime =
+
+      now;
+
+
     /*
-      Плавная реакция
-      на зарядку.
+      Яркость до 1.95
+      при зарядке.
     */
 
     const targetBrightness =
@@ -764,7 +1691,7 @@ canvas {
 
       ?
 
-      1.65
+      1.95
 
       :
 
@@ -774,12 +1701,17 @@ canvas {
     starBrightness +=
 
       (
+
         targetBrightness
+
         -
+
         starBrightness
+
       )
 
       *
+
       0.025;
 
 
@@ -788,37 +1720,48 @@ canvas {
     */
 
     ctx.globalAlpha =
+
       1;
 
 
     ctx.fillStyle =
+
       colors.background;
 
 
     ctx.fillRect(
 
       0,
+
       0,
 
       width,
+
       height
 
     );
 
 
     /*
-      Звёзды.
+      Обычные звёзды.
     */
 
     if (
+
       settings.showStars
+
     ) {
 
       for (
+
         const star
+
         of
+
         stars
+
       ) {
+
 
         const twinkle =
 
@@ -829,7 +1772,9 @@ canvas {
           Math.sin(
 
             time
+
             *
+
             star.speed
 
             +
@@ -839,6 +1784,7 @@ canvas {
           )
 
           *
+
           0.18;
 
 
@@ -864,14 +1810,21 @@ canvas {
         circle(
 
           star.x
+
           *
+
           width,
 
+
           star.y
+
           *
+
           height,
 
+
           star.size,
+
 
           colors.stars
 
@@ -883,7 +1836,16 @@ canvas {
 
 
     ctx.globalAlpha =
+
       1;
+
+
+    updateShootingStars(
+      delta
+    );
+
+
+    drawShootingStars();
 
 
     /*
@@ -893,25 +1855,33 @@ canvas {
     const sunX =
 
       width
+
       *
+
       -0.08;
 
 
     const sunY =
 
       height
+
       *
+
       0.23;
 
 
     const sunRadius =
 
       Math.min(
+
         width,
+
         height
+
       )
 
       *
+
       0.19;
 
 
@@ -920,6 +1890,7 @@ canvas {
       ctx.createRadialGradient(
 
         sunX,
+
         sunY,
 
         sunRadius
@@ -927,6 +1898,7 @@ canvas {
         0.15,
 
         sunX,
+
         sunY,
 
         sunRadius
@@ -967,15 +1939,18 @@ canvas {
 
 
     ctx.fillStyle =
+
       sunGlow;
 
 
     ctx.fillRect(
 
       0,
+
       0,
 
       width,
+
       height
 
     );
@@ -984,6 +1959,7 @@ canvas {
     circle(
 
       sunX,
+
       sunY,
 
       sunRadius,
@@ -1000,39 +1976,50 @@ canvas {
     const planetX =
 
       width
+
       *
+
       0.58;
 
 
     const planetY =
 
       height
+
       *
+
       0.55;
 
 
     const planetRadius =
 
       Math.min(
+
         width,
+
         height
+
       )
 
       *
+
       0.15;
 
 
     /*
       Задние части колец.
-
-      Рисуются до планеты.
     */
 
     for (
+
       let i = 0;
+
       i < settings.ringCount;
+
       i++
+
     ) {
+
 
       const ringX =
 
@@ -1041,11 +2028,17 @@ canvas {
         *
 
         (
-          1.55
+
+          1.38
+
           +
+
           i
+
           *
-          0.22
+
+          0.18
+
         );
 
 
@@ -1056,20 +2049,28 @@ canvas {
         *
 
         (
-          0.48
+
+          0.52
+
           +
+
           i
+
           *
+
           0.07
+
         );
 
 
       drawRingHalf(
 
         planetX,
+
         planetY,
 
         ringX,
+
         ringY,
 
         Math.PI,
@@ -1086,7 +2087,7 @@ canvas {
 
         ),
 
-        1.8
+        2.2
 
       );
 
@@ -1098,10 +2099,15 @@ canvas {
     */
 
     for (
+
       let i = 0;
+
       i < settings.moonCount;
+
       i++
+
     ) {
+
 
       const angle =
 
@@ -1114,11 +2120,17 @@ canvas {
         *
 
         (
+
           0.55
+
           +
+
           i
+
           *
+
           0.18
+
         )
 
         +
@@ -1128,11 +2140,17 @@ canvas {
         *
 
         (
+
           Math.PI
+
           *
+
           2
+
           /
+
           settings.moonCount
+
         );
 
 
@@ -1143,11 +2161,17 @@ canvas {
         *
 
         (
+
           1.85
+
           +
+
           i
+
           *
+
           0.42
+
         );
 
 
@@ -1158,20 +2182,30 @@ canvas {
         *
 
         (
+
           0.72
+
           +
+
           i
+
           *
+
           0.16
+
         );
 
 
       if (
+
         Math.sin(
           angle
         )
+
         <
+
         0
+
       ) {
 
         circle(
@@ -1207,11 +2241,17 @@ canvas {
           *
 
           (
+
             0.15
+
             -
+
             i
+
             *
+
             0.02
+
           ),
 
 
@@ -1233,20 +2273,33 @@ canvas {
       ctx.createRadialGradient(
 
         planetX
+
         -
+
         planetRadius
+
         *
+
         0.35,
 
+
         planetY
+
         -
-        planetRadius
-        *
-        0.4,
 
         planetRadius
+
         *
+
+        0.4,
+
+
+        planetRadius
+
+        *
+
         0.05,
+
 
         planetX,
 
@@ -1290,16 +2343,18 @@ canvas {
 
     /*
       Передние части колец.
-
-      Рисуются поверх
-      планеты.
     */
 
     for (
+
       let i = 0;
+
       i < settings.ringCount;
+
       i++
+
     ) {
+
 
       const ringX =
 
@@ -1308,11 +2363,17 @@ canvas {
         *
 
         (
-          1.55
+
+          1.38
+
           +
+
           i
+
           *
-          0.22
+
+          0.18
+
         );
 
 
@@ -1323,11 +2384,17 @@ canvas {
         *
 
         (
-          0.48
+
+          0.52
+
           +
+
           i
+
           *
+
           0.07
+
         );
 
 
@@ -1353,7 +2420,7 @@ canvas {
 
         ),
 
-        1.8
+        2.2
 
       );
 
@@ -1365,10 +2432,15 @@ canvas {
     */
 
     for (
+
       let i = 0;
+
       i < settings.moonCount;
+
       i++
+
     ) {
+
 
       const angle =
 
@@ -1381,11 +2453,17 @@ canvas {
         *
 
         (
+
           0.55
+
           +
+
           i
+
           *
+
           0.18
+
         )
 
         +
@@ -1395,11 +2473,17 @@ canvas {
         *
 
         (
+
           Math.PI
+
           *
+
           2
+
           /
+
           settings.moonCount
+
         );
 
 
@@ -1410,11 +2494,17 @@ canvas {
         *
 
         (
+
           1.85
+
           +
+
           i
+
           *
+
           0.42
+
         );
 
 
@@ -1425,20 +2515,30 @@ canvas {
         *
 
         (
+
           0.72
+
           +
+
           i
+
           *
+
           0.16
+
         );
 
 
       if (
+
         Math.sin(
           angle
         )
+
         >=
+
         0
+
       ) {
 
         circle(
@@ -1474,11 +2574,17 @@ canvas {
           *
 
           (
+
             0.15
+
             -
+
             i
+
             *
+
             0.02
+
           ),
 
 
@@ -1492,6 +2598,7 @@ canvas {
 
 
     ctx.globalAlpha =
+
       1;
 
 
@@ -1508,10 +2615,12 @@ canvas {
 
     event => {
 
+
       loadSettings();
 
 
       const detail =
+
         event.detail;
 
 
@@ -1526,6 +2635,7 @@ canvas {
         &&
 
         typeof
+
         detail.battery.isCharging
 
         ===
@@ -1552,80 +2662,61 @@ canvas {
 
 
   window.addEventListener(
-  
+
     "wallpaperUpdate",
-  
+
     event => {
-  
+
+
       const detail =
+
         event.detail;
-  
-  
-      /*
-        Перечитываем настройки.
-  
-        Именно этого не хватало:
-        без loadSettings() значения
-        менялись только после
-        полной перезагрузки.
-      */
-  
+
+
       loadSettings();
-  
-  
-      /*
-        Обновляем палитру.
-  
-        Это нужно делать всегда,
-        потому что пользователь
-        может прямо сейчас
-        включить или выключить
-        Material You.
-      */
-  
+
+
       updatePalette(
         detail
       );
-  
-  
-      /*
-        Обновляем состояние
-        зарядки.
-      */
-  
+
+
       if (
-  
+
         detail
-  
+
         &&
-  
+
         detail.battery
-  
+
         &&
-  
+
         typeof
+
         detail.battery.isCharging
-  
+
         ===
-  
+
         "boolean"
-  
+
       ) {
-  
+
         isCharging =
-  
+
           detail.battery
             .isCharging;
-  
+
       }
-  
+
     }
-  
+
   );
 
 
   if (
+
     !window.WallpaperEngine
+
   ) {
 
     loadSettings();
@@ -1653,9 +2744,11 @@ canvas {
     draw
   );
 
+
 })();
 
 </script>
 
 </body>
+
 </html>

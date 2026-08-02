@@ -1,0 +1,12 @@
+{
+    "name": "Particle Web",
+    "description": "Паутина из партиклов на темном фоне",
+    "author": "rich_beluga",
+    "version": "1.0.0",
+    "minAppVersion": ">=1.0.0",
+    "icon": "icon.jpg",
+    "cover": "cover.jpg",
+    "main": "index.html",
+    "useGyroscope": false,
+    "isLite": false
+}

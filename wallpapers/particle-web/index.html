@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Particle Web</title>
+<style>
+    html, body{
+        margin:0; padding:0;
+        width:100%; height:100%;
+        overflow:hidden;
+        background:#0D0D12;
+        touch-action:none;
+        -webkit-user-select:none; user-select:none;
+    }
+    #c{
+        position:fixed; inset:0;
+        width:100%; height:100%;
+        display:block;
+    }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<script>
+(function(){
+"use strict";
+
+const MAX_DPR = 2;
+
+const COLOR_DEFAULTS = {
+    background: '#0D0D12',
+    particle:   '#E6E0E9',
+    line:       '#D0BCFF',
+};
+
+const PARTICLE_DENSITY   = 1/9000;  // частиц на кв. CSS-пиксель экрана
+const PARTICLE_MIN       = 45;
+const PARTICLE_MAX       = 150;
+const SPEED_MIN          = 4;       // px/сек — «слабое движение»
+const SPEED_MAX          = 10;
+const TURN_RATE          = 1.4;     // рад/сек случайных поворотов — «хаотичное направление»
+const PARTICLE_RADIUS    = 1.6;
+const PARTICLE_ALPHA     = 0.55;
+
+const LINK_COUNT         = 7;       // сколько ближайших частиц подключаем к касанию
+const LINK_RADIUS_FACTOR = 0.32;    // доля min(vw,vh) — дальше частицы не подключаются
+
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const rand  = (a,b) => a + Math.random()*(b-a);
+
+function hexToRGBA(hex, alpha, fallback){
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+    const h = m ? m[1] : fallback;
+    const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+}
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let dpr = 1, vw = 0, vh = 0;
+
+let bgColor       = COLOR_DEFAULTS.background;
+let particleColor = COLOR_DEFAULTS.particle;
+let lineColor     = COLOR_DEFAULTS.line;
+
+function applyColors(meta){
+    if(!meta || !meta.accentColors) return;
+    const c = meta.accentColors;
+    if(c.background) bgColor = c.background;
+    particleColor = c.onSurface || c.outline || particleColor;
+    if(c.primary) lineColor = c.primary;
+}
+function pullMetadata(){
+    return window.WallpaperEngine ? window.WallpaperEngine.getMetadata() : null;
+}
+
+let particles = [];
+
+function spawnParticle(){
+    return {
+        x: rand(0, vw), y: rand(0, vh),
+        angle: rand(0, Math.PI*2),
+        speed: rand(SPEED_MIN, SPEED_MAX),
+        r: PARTICLE_RADIUS * rand(0.7, 1.4),
+    };
+}
+
+function buildParticles(){
+    const target = clamp(Math.round(vw*vh*PARTICLE_DENSITY), PARTICLE_MIN, PARTICLE_MAX);
+    if(particles.length > target){
+        particles.length = target;
+    } else {
+        while(particles.length < target) particles.push(spawnParticle());
+    }
+    particles.forEach(p => {
+        p.x = clamp(p.x, 0, vw);
+        p.y = clamp(p.y, 0, vh);
+    });
+}
+
+function stepParticles(dt){
+    for(let i=0;i<particles.length;i++){
+        const p = particles[i];
+        p.angle += (Math.random()-0.5) * TURN_RATE * dt;
+        p.x += Math.cos(p.angle) * p.speed * dt;
+        p.y += Math.sin(p.angle) * p.speed * dt;
+        // мягкий тор — частица, ушедшая за край, появляется с противоположной стороны
+        if(p.x < -10) p.x = vw+10; else if(p.x > vw+10) p.x = -10;
+        if(p.y < -10) p.y = vh+10; else if(p.y > vh+10) p.y = -10;
+    }
+}
+
+const touches = new Map(); // pointerId -> {x,y}
+
+function pointerPos(e){
+    const rect = canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+canvas.addEventListener('pointerdown', (e) => {
+    touches.set(e.pointerId, pointerPos(e));
+}, { passive:true });
+
+canvas.addEventListener('pointermove', (e) => {
+    if(touches.has(e.pointerId)) touches.set(e.pointerId, pointerPos(e));
+}, { passive:true });
+
+function releaseTouch(e){ touches.delete(e.pointerId); }
+canvas.addEventListener('pointerup',     releaseTouch, { passive:true });
+canvas.addEventListener('pointercancel', releaseTouch, { passive:true });
+canvas.addEventListener('pointerleave',  releaseTouch, { passive:true });
+
+function nearestParticles(cx, cy, maxDist, k){
+    const bestIdx = [], bestDist = [];
+    const maxDist2 = maxDist*maxDist;
+    for(let i=0;i<particles.length;i++){
+        const p = particles[i];
+        const dx = p.x-cx, dy = p.y-cy;
+        const d2 = dx*dx + dy*dy;
+        if(d2 > maxDist2) continue;
+        if(bestIdx.length < k){
+            let j = bestIdx.length;
+            bestIdx.push(i); bestDist.push(d2);
+            while(j>0 && bestDist[j] < bestDist[j-1]){
+                [bestDist[j],bestDist[j-1]] = [bestDist[j-1],bestDist[j]];
+                [bestIdx[j],bestIdx[j-1]] = [bestIdx[j-1],bestIdx[j]];
+                j--;
+            }
+        } else if(d2 < bestDist[k-1]){
+            let j = k-1;
+            bestDist[j] = d2; bestIdx[j] = i;
+            while(j>0 && bestDist[j] < bestDist[j-1]){
+                [bestDist[j],bestDist[j-1]] = [bestDist[j-1],bestDist[j]];
+                [bestIdx[j],bestIdx[j-1]] = [bestIdx[j-1],bestIdx[j]];
+                j--;
+            }
+        }
+    }
+    return bestIdx.map((idx,n) => ({ idx, dist: Math.sqrt(bestDist[n]) }));
+}
+
+function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+    vw = window.innerWidth; vh = window.innerHeight;
+    canvas.width  = Math.max(1, Math.round(vw*dpr));
+    canvas.height = Math.max(1, Math.round(vh*dpr));
+    canvas.style.width = vw+'px'; canvas.style.height = vh+'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    buildParticles();
+}
+
+function render(){
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, vw, vh);
+
+    const linkRadius = Math.min(vw, vh) * LINK_RADIUS_FACTOR;
+    const highlighted = new Set();
+    const links = [];
+
+    touches.forEach((pos) => {
+        nearestParticles(pos.x, pos.y, linkRadius, LINK_COUNT).forEach(({idx, dist}) => {
+            highlighted.add(idx);
+            links.push({ cx: pos.x, cy: pos.y, idx, dist });
+        });
+    });
+
+    ctx.lineWidth = 1;
+    links.forEach(({cx, cy, idx, dist}) => {
+        const p = particles[idx];
+        const alpha = clamp(1 - dist/linkRadius, 0.06, 0.85);
+        ctx.strokeStyle = hexToRGBA(lineColor, alpha, 'D0BCFF');
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+    });
+
+    for(let i=0;i<particles.length;i++){
+        const p = particles[i];
+        const isLinked = highlighted.has(i);
+        ctx.beginPath();
+        ctx.fillStyle = isLinked
+            ? hexToRGBA(lineColor, 0.95, 'D0BCFF')
+            : hexToRGBA(particleColor, PARTICLE_ALPHA, 'E6E0E9');
+        ctx.arc(p.x, p.y, isLinked ? p.r*1.8 : p.r, 0, Math.PI*2);
+        ctx.fill();
+    }
+
+    touches.forEach((pos) => {
+        const g = ctx.createRadialGradient(pos.x,pos.y,0, pos.x,pos.y,10);
+        g.addColorStop(0, hexToRGBA(lineColor, 0.9, 'D0BCFF'));
+        g.addColorStop(1, hexToRGBA(lineColor, 0,   'D0BCFF'));
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 10, 0, Math.PI*2);
+        ctx.fill();
+    });
+}
+
+let rafId = null, lastTime = 0, isPaused = false;
+
+function frame(now){
+    if(isPaused){ rafId = null; return; }
+    if(!lastTime) lastTime = now;
+    const dt = Math.min((now-lastTime)/1000, 0.1); // ограничиваем прыжок после паузы/сворачивания
+    lastTime = now;
+    stepParticles(dt);
+    render();
+    rafId = requestAnimationFrame(frame);
+}
+
+function startLoop(){
+    if(isPaused) return;
+    if(!rafId){ lastTime = 0; rafId = requestAnimationFrame(frame); }
+}
+
+window.addEventListener('wallpaperPause', () => {
+    isPaused = true;
+    if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+});
+window.addEventListener('wallpaperResume', () => {
+    isPaused = false;
+    lastTime = 0;
+    startLoop();
+});
+
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(resize, 150);
+});
+
+window.addEventListener('wallpaperEngineReady', () => { applyColors(pullMetadata()); boot(); });
+window.addEventListener('wallpaperUpdate', (e) => { applyColors(e.detail); });
+
+let booted = false;
+function boot(){
+    if(booted) return;
+    booted = true;
+    resize();
+    startLoop();
+}
+
+window.addEventListener('load', () => setTimeout(boot, 150));
+})();
+</script>
+</body>
+</html>

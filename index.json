@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-01T15:25:32Z",
+  "updatedAt": "2026-08-02T06:07:09Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -94,9 +94,6 @@
       "isLite": false,
       "cover": "cover.png",
       "icon": "icon.png",
-      "orientations": [
-        "portrait"
-      ],
       "themeSupport": [
         "light",
         "dark"
@@ -107,7 +104,7 @@
         "dynamic"
       ],
       "createdAt": "2026-07-27T15:21:09Z",
-      "updatedAt": "2026-07-30T11:22:33Z",
+      "updatedAt": "2026-08-02T06:07:09Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/yui-material.zip"
     },
     {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-02T08:19:53Z",
+  "updatedAt": "2026-08-02T14:11:03Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -273,6 +273,52 @@
       "createdAt": "2026-08-01T15:25:32Z",
       "updatedAt": "2026-08-01T15:25:32Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/EmoiWaves.zip"
+    },
+    {
+      "id": "monet-green-orbit",
+      "name": "Monet Green Orbit",
+      "author": "Worpli",
+      "version": "1.4.0",
+      "description": "Динамическая космическая сцена с Землёй, Марсом, Юпитером, Сатурном, Гаргантюа, планетой Миллер, Лунами, спутниками, МКС и космическими событиями.",
+      "path": "wallpapers/monet-green-orbit",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.jpg",
+      "icon": "icon.png",
+      "supportsMonet": true,
+      "tags": [
+        "material",
+        "monet",
+        "dynamic",
+        "space",
+        "planet",
+        "earth",
+        "mars",
+        "jupiter",
+        "saturn",
+        "gargantua",
+        "miller",
+        "black-hole",
+        "singularity",
+        "accretion-disk",
+        "endurance",
+        "interstellar",
+        "moon",
+        "satellite",
+        "iss",
+        "ufo",
+        "alien",
+        "rocket",
+        "sun",
+        "wormhole",
+        "aurora",
+        "solar-flare",
+        "mars-base"
+      ],
+      "createdAt": "2026-08-02T14:11:03Z",
+      "updatedAt": "2026-08-02T14:11:03Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/monet-green-orbit.zip"
     }
   ]
 }

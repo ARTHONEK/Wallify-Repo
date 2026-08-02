@@ -12,11 +12,11 @@
             --primary: #D0BCFF;
             --on-primary: #381E72;
             --outline: #938F99;
-            --track: rgba(147, 143, 153, 0.3);
+            --track: rgba(147, 143, 153, 0.25);
         }
 
         body {
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: 'Google Sans', 'Google Sans Text', system-ui, -apple-system, sans-serif;
             background-color: var(--bg);
             color: var(--on-surface);
             margin: 0;
@@ -31,22 +31,25 @@
             font-size: 32px;
             font-weight: 400;
             margin: 24px 8px 0 8px;
+            letter-spacing: -0.5px;
         }
 
+        /* 
+         * M3 Segmented Containers
+         */
         .settings-group {
-            background-color: var(--surface);
-            border-radius: 28px;
             display: flex;
             flex-direction: column;
-            transition: background-color 0.3s ease;
+            gap: 3px; /* Разделитель сегментов */
         }
 
         .setting-item {
+            background-color: var(--surface);
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            padding: 20px 24px;
             gap: 16px;
-            position: relative;
+            transition: background-color 0.3s ease;
         }
 
         .setting-item.row {
@@ -56,16 +59,11 @@
             gap: 0;
         }
 
-        .setting-item:not(:last-child)::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 24px;
-            right: 24px;
-            height: 1px;
-            background-color: var(--outline);
-            opacity: 0.2;
-        }
+        /* Логика скруглений для сегментов */
+        .setting-item { border-radius: 4px; }
+        .setting-item:first-child { border-radius: 28px 28px 4px 4px; }
+        .setting-item:last-child { border-radius: 4px 4px 28px 28px; }
+        .setting-item:only-child { border-radius: 28px; }
 
         .setting-header {
             display: flex;
@@ -74,70 +72,86 @@
         }
 
         .label {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 400;
+            letter-spacing: 0.2px;
         }
 
         .value-badge {
             font-size: 14px;
-            color: var(--primary);
+            color: var(--on-primary);
+            background: var(--primary);
             font-weight: 500;
-            transition: color 0.3s ease;
+            padding: 6px 14px;
+            border-radius: 24px;
+            transition: all 0.3s ease;
         }
 
+        /* 
+         * M3 Expressive Slider
+         */
         input[type="range"] {
             width: 100%;
-            margin: 0;
+            margin: 8px 0;
             -webkit-appearance: none;
             appearance: none;
             background: transparent;
-            height: 24px;
-            --slider-percent: 25%;
+            height: 16px;
+            --slider-percent: 50%;
+            cursor: pointer;
         }
 
         input[type="range"]::-webkit-slider-runnable-track {
             width: 100%;
-            height: 4px;
-            border-radius: 2px;
-            background: linear-gradient(to right, var(--primary) var(--slider-percent), var(--track) var(--slider-percent));
+            height: 16px;
+            border-radius: 16px;
+            background: linear-gradient(
+                to right, 
+                var(--primary) var(--slider-percent), 
+                var(--track) var(--slider-percent)
+            );
         }
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
+            width: 12px;
+            height: 32px;
+            border-radius: 6px;
             background: var(--primary);
-            margin-top: -8px;
-            transition: transform 0.1s ease;
+            box-shadow: 0 0 0 4px var(--surface); /* Эффект выреза вокруг ползунка */
+            margin-top: -8px; /* Центрируем (16 - 32) / 2 */
+            transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
         }
 
         input[type="range"]:active::-webkit-slider-thumb {
-            transform: scale(1.2);
+            transform: scale(1.15);
         }
 
+        /* 
+         * Perfect M3 Switch
+         */
         .switch {
             position: relative;
-            display: inline-block;
+            display: inline-flex;
             width: 52px;
             height: 32px;
+            flex-shrink: 0;
+            align-items: center;
         }
 
         .switch input {
             opacity: 0;
             width: 0;
             height: 0;
+            margin: 0;
         }
 
         .slider {
             position: absolute;
             cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: var(--surface);
+            inset: 0;
+            background-color: transparent;
             border: 2px solid var(--outline);
             border-radius: 32px;
             box-sizing: border-box;
@@ -149,7 +163,7 @@
             content: "";
             height: 16px;
             width: 16px;
-            left: 6px;
+            left: 6px; 
             bottom: 6px;
             background-color: var(--outline);
             border-radius: 50%;
@@ -165,8 +179,17 @@
             background-color: var(--on-primary);
             height: 24px;
             width: 24px;
-            left: 24px;
+            left: 22px; /* Математика: 48 (ширина внутри рамки) - 24 (ползунок) - 2 (отступ) = 22px */
             bottom: 2px;
+        }
+        
+        /* Анимация сдавливания при нажатии */
+        .switch:active .slider:before {
+            width: 28px;
+            border-radius: 16px;
+        }
+        input:checked:active + .slider:before {
+            left: 18px; 
         }
     </style>
 </head>
@@ -235,6 +258,7 @@
             const amoledInput = document.getElementById('amoled');
 
             const getVal = (key, def) => {
+                // Извлекаем настройки через API Wallify[span_0](start_span)[span_0](end_span)
                 if (window.WallpaperEngine && window.WallpaperEngine.getSetting) {
                     const val = window.WallpaperEngine.getSetting(key, def);
                     if (val !== undefined && val !== null) return val;
@@ -245,6 +269,7 @@
 
             const setVal = (key, val) => {
                 const strVal = String(val);
+                // Сохраняем настройки через API Wallify, значения всегда конвертируем в строку[span_1](start_span)[span_1](end_span)
                 if (window.WallpaperEngine && window.WallpaperEngine.saveSetting) {
                     window.WallpaperEngine.saveSetting(key, strVal);
                 }
@@ -287,6 +312,8 @@
                 if (!metadata || !metadata.accentColors) return;
                 const c = metadata.accentColors;
                 const root = document.documentElement;
+                
+                // Извлекаем палитру Monet для всего интерфейса[span_2](start_span)[span_2](end_span)
                 root.style.setProperty('--bg', c.background);
                 root.style.setProperty('--surface', c.surfaceContainer);
                 root.style.setProperty('--on-surface', c.onSurface);
@@ -299,6 +326,7 @@
                 applyColors(window.WallpaperEngine.metadata);
             }
 
+            // Слушаем события моста для динамического обновления[span_3](start_span)[span_3](end_span)
             window.addEventListener('wallpaperEngineReady', (e) => applyColors(e.detail));
             window.addEventListener('wallpaperUpdate', (e) => applyColors(e.detail));
         });

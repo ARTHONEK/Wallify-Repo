@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-02T14:11:03Z",
+  "updatedAt": "2026-08-02T18:14:04Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -319,6 +319,22 @@
       "createdAt": "2026-08-02T14:11:03Z",
       "updatedAt": "2026-08-02T14:11:03Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/monet-green-orbit.zip"
+    },
+    {
+      "id": "particle-web",
+      "name": "Particle Web",
+      "author": "rich_beluga",
+      "version": "1.0.0",
+      "description": "Паутина из партиклов на темном фоне",
+      "path": "wallpapers/particle-web",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.jpg",
+      "icon": "icon.jpg",
+      "createdAt": "2026-08-02T18:14:04Z",
+      "updatedAt": "2026-08-02T18:14:04Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/particle-web.zip"
     }
   ]
 }

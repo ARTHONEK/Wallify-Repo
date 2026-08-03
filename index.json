@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-02T18:14:04Z",
+  "updatedAt": "2026-08-03T05:41:55Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -335,6 +335,22 @@
       "createdAt": "2026-08-02T18:14:04Z",
       "updatedAt": "2026-08-02T18:14:04Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/particle-web.zip"
+    },
+    {
+      "id": "topographic-wallpaper",
+      "name": "Topographic Wallpaper",
+      "author": "nector",
+      "version": "1.0.3",
+      "description": "Плавные живые топографические линии на настраиваемом фоне.",
+      "path": "wallpapers/topographic-wallpaper",
+      "main": "index.html",
+      "useGyroscope": true,
+      "isLite": false,
+      "cover": "cover.png",
+      "icon": "icon.png",
+      "createdAt": "2026-08-03T05:41:55Z",
+      "updatedAt": "2026-08-03T05:41:55Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/topographic-wallpaper.zip"
     }
   ]
 }

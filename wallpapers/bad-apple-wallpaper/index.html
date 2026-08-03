@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bad Apple Wallpaper</title>
+<style>
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000;overscroll-behavior:none}
+#video{position:fixed;inset:0;width:100%;height:100%;background:#000;object-fit:cover;opacity:1;display:block}
+#video.contain{object-fit:contain}#video.stretch{object-fit:fill}#video.hidden{display:none}
+</style>
+</head>
+<body><video id="video" src="badapple.webm" loop playsinline preload="auto" autoplay muted></video>
+<script>
+(() => {
+  const video = document.getElementById('video');
+  let paused = false;
+  const engine = () => window.WallpaperEngine;
+  const get = (key, fallback) => engine() ? engine().getSetting(key, fallback) : fallback;
+
+  function playSafely() {
+    if (paused || get('enabled', 'true') !== 'true') return;
+    const result = video.play();
+    if (result && result.catch) result.catch(() => {
+      // Some Android WebViews reject unmuted autoplay; retry silently rather than leaving a frozen frame.
+      video.muted = true;
+      video.play().catch(() => {});
+    });
+  }
+  function applySettings() {
+    const enabled = get('enabled', 'true') === 'true';
+    const fit = get('fit', 'cover');
+    const opacity = Math.max(0, Math.min(100, parseInt(get('opacity', '100'), 10) || 100));
+    const speed = Math.max(.25, Math.min(2, parseFloat(get('speed', '1')) || 1));
+    const sound = get('sound', 'false') === 'true';
+    video.className = enabled ? fit : 'hidden';
+    video.style.opacity = opacity / 100;
+    video.playbackRate = speed;
+    video.muted = !sound;
+    video.volume = sound ? 1 : 0;
+    if (enabled) playSafely(); else video.pause();
+  }
+  window.addEventListener('wallpaperEngineReady', applySettings);
+  window.addEventListener('wallpaperUpdate', applySettings);
+  window.addEventListener('wallpaperPause', () => { paused = true; video.pause(); });
+  window.addEventListener('wallpaperResume', () => { paused = false; applySettings(); });
+  window.addEventListener('wallpaperScreenOff', () => video.pause());
+  window.addEventListener('wallpaperScreenOn', () => { if (!paused) playSafely(); });
+  document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+  applySettings();
+})();
+</script></body></html>

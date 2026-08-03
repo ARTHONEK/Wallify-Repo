@@ -1,8 +1,8 @@
 {
   "name": "Topographic Wallpaper",
-  "description": "Живые топографические линии с фигурами, анимацией и Material You настройками.",
+  "description": "Живые топографические линии с формами, анимацией и цветовой пульсацией.",
   "author": "nector",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "minAppVersion": ">=1.0.0",
   "main": "index.html",
   "cover": "cover.png",

@@ -2,7 +2,7 @@
   "name": "Minecraft Wallpaper",
   "description": "Офлайн Eaglercraft 1.12.2 Minecraft.",
   "author": "nector",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "minAppVersion": ">=1.0.0",
   "main": "index.html",
   "cover": "cover.png",

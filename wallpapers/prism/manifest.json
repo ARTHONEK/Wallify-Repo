@@ -1,0 +1,13 @@
+{
+  "name": "prism",
+  "description": "Анимированное стекло, каустики и радужное преломление в гранях призмы.",
+  "author": "nector",
+  "version": "1.0.2",
+  "minAppVersion": ">=1.0.0",
+  "main": "index.html",
+  "cover": "cover.png",
+  "icon": "icon.png",
+  "settingsPath": "settings/index.html",
+  "useGyroscope": false,
+  "isLite": false
+}

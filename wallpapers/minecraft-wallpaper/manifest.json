@@ -1,0 +1,13 @@
+{
+  "name": "Minecraft Wallpaper",
+  "description": "КНОПКИ МЫШИ НЕ РАБОТАЮТ! ЭТО БЕТА! Офлайн Eaglercraft 1.12.2 Minecraft.",
+  "author": "nector",
+  "version": "1.0.11",
+  "minAppVersion": ">=1.0.0",
+  "main": "index.html",
+  "cover": "cover.png",
+  "icon": "icon.png",
+  "settingsPath": "settings/index.html",
+  "useGyroscope": false,
+  "isLite": false
+}

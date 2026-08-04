@@ -2,7 +2,7 @@
   "name": "Minecraft Wallpaper",
   "description": "Офлайн Eaglercraft 1.12.2 Minecraft с управлением касанием по экрану.",
   "author": "nector",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "minAppVersion": ">=1.0.0",
   "main": "index.html",
   "cover": "cover.png",

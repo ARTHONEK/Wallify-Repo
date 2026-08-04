@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-03T21:40:37Z",
+  "updatedAt": "2026-08-04T05:43:43Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -356,7 +356,7 @@
       "id": "bad-apple-wallpaper",
       "name": "Bad Apple Wallpaper",
       "author": "nector",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "description": "Зацикленное видео Bad Apple на рабочем столе с настройками звука и кадрирования.",
       "path": "wallpapers/bad-apple-wallpaper",
       "main": "index.html",
@@ -365,8 +365,24 @@
       "cover": "cover.png",
       "icon": "icon.png",
       "createdAt": "2026-08-03T20:49:56Z",
-      "updatedAt": "2026-08-03T20:49:56Z",
+      "updatedAt": "2026-08-04T05:43:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/bad-apple-wallpaper.zip"
+    },
+    {
+      "id": "doom-wallpaper",
+      "name": "Doom",
+      "author": "nector",
+      "version": "1.0.6",
+      "description": "Интерактивный DOOM Shareware на рабочем столе с мобильным джойстиком и A/B/X/Y.",
+      "path": "wallpapers/doom-wallpaper",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.png",
+      "icon": "icon.png",
+      "createdAt": "2026-08-04T05:43:43Z",
+      "updatedAt": "2026-08-04T05:43:43Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/doom-wallpaper.zip"
     }
   ]
 }

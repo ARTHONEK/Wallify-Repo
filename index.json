@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-04T05:43:43Z",
+  "updatedAt": "2026-08-04T13:15:13Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -383,6 +383,38 @@
       "createdAt": "2026-08-04T05:43:43Z",
       "updatedAt": "2026-08-04T05:43:43Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/doom-wallpaper.zip"
+    },
+    {
+      "id": "minecraft-wallpaper",
+      "name": "Minecraft Wallpaper",
+      "author": "nector",
+      "version": "1.0.11",
+      "description": "КНОПКИ МЫШИ НЕ РАБОТАЮТ! ЭТО БЕТА! Офлайн Eaglercraft 1.12.2 Minecraft.",
+      "path": "wallpapers/minecraft-wallpaper",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.png",
+      "icon": "icon.png",
+      "createdAt": "2026-08-04T13:15:13Z",
+      "updatedAt": "2026-08-04T13:15:13Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/minecraft-wallpaper.zip"
+    },
+    {
+      "id": "prism",
+      "name": "prism",
+      "author": "nector",
+      "version": "1.0.2",
+      "description": "Анимированное стекло, каустики и радужное преломление в гранях призмы.",
+      "path": "wallpapers/prism",
+      "main": "index.html",
+      "useGyroscope": false,
+      "isLite": false,
+      "cover": "cover.png",
+      "icon": "icon.png",
+      "createdAt": "2026-08-04T13:15:13Z",
+      "updatedAt": "2026-08-04T13:15:13Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/prism.zip"
     }
   ]
 }

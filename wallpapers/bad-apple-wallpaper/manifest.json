@@ -2,7 +2,7 @@
   "name": "Bad Apple Wallpaper",
   "description": "Зацикленное видео Bad Apple на рабочем столе с настройками звука и кадрирования.",
   "author": "nector",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minAppVersion": ">=1.0.0",
   "main": "index.html",
   "cover": "cover.png",

@@ -1,0 +1,13 @@
+{
+  "name": "Doom",
+  "description": "Интерактивный DOOM Shareware на рабочем столе с мобильным джойстиком и A/B/X/Y.",
+  "author": "nector",
+  "version": "1.0.6",
+  "minAppVersion": ">=1.0.0",
+  "main": "index.html",
+  "cover": "cover.png",
+  "icon": "icon.png",
+  "settingsPath": "settings/index.html",
+  "useGyroscope": false,
+  "isLite": false
+}

@@ -5,11 +5,11 @@
 <title>Bad Apple Wallpaper</title>
 <style>
 html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000;overscroll-behavior:none}
-#video{position:fixed;inset:0;width:100%;height:100%;background:#000;object-fit:cover;opacity:1;display:block}
+#stage{position:fixed;inset:0;width:100vw;height:100vh;overflow:hidden;background:#000}#video{position:absolute;top:0;left:0;width:100vw;height:100vh;min-width:100%;min-height:100%;background:#000;object-fit:cover;object-position:center center;opacity:1;display:block;transform:translateZ(0)}
 #video.contain{object-fit:contain}#video.stretch{object-fit:fill}#video.hidden{display:none}
 </style>
 </head>
-<body><video id="video" src="badapple.webm" loop playsinline preload="auto" autoplay muted></video>
+<body><div id="stage"><video id="video" src="badapple.webm" loop playsinline preload="auto" autoplay muted></video></div>
 <script>
 (() => {
   const video = document.getElementById('video');
@@ -26,6 +26,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000;oversc
       video.play().catch(() => {});
     });
   }
+  function fitViewport() { video.style.width = `${window.innerWidth}px`; video.style.height = `${window.innerHeight}px`; }
   function applySettings() {
     const enabled = get('enabled', 'true') === 'true';
     const fit = get('fit', 'cover');
@@ -39,6 +40,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000;oversc
     video.volume = sound ? 1 : 0;
     if (enabled) playSafely(); else video.pause();
   }
+  window.addEventListener('resize', () => { fitViewport(); applySettings(); });
   window.addEventListener('wallpaperEngineReady', applySettings);
   window.addEventListener('wallpaperUpdate', applySettings);
   window.addEventListener('wallpaperPause', () => { paused = true; video.pause(); });
@@ -46,6 +48,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000;oversc
   window.addEventListener('wallpaperScreenOff', () => video.pause());
   window.addEventListener('wallpaperScreenOn', () => { if (!paused) playSafely(); });
   document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+  fitViewport();
   applySettings();
 })();
 </script></body></html>

@@ -1,0 +1,293 @@
+/*
+  wallify-m3.css
+  Локальная реализация M3/Monet-стилей для тестирования страницы настроек
+  в обычном браузере. Внутри приложения Wallify эти переменные и классы
+  переопределяются собственным UI Kit'ом — но структура (data-wallify-m3)
+  остаётся совместимой.
+
+  Цветовые переменные по умолчанию — палитра "Чайный сад". Реальные
+  значения подставляются из window.WallpaperEngine.metadata.accentColors
+  скриптом страницы (см. index.html), поэтому настройки визуально
+  подстраиваются под Monet-палитру устройства.
+*/
+
+:root {
+  --wallify-m3-primary: #56794C;
+  --wallify-m3-on-primary: #FFFFFF;
+  --wallify-m3-secondary: #A7C28C;
+  --wallify-m3-surface: #1D1F1A;
+  --wallify-m3-surface-container: #262920;
+  --wallify-m3-surface-container-high: #2E3227;
+  --wallify-m3-surface-container-highest: #363A2E;
+  --wallify-m3-on-surface: #E4E3D8;
+  --wallify-m3-on-surface-variant: #C4C7B8;
+  --wallify-m3-background: #14160F;
+  --wallify-m3-outline: #7D8070;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+[data-wallify-m3="card-group"] {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: var(--wallify-m3-surface-container);
+}
+
+[data-wallify-m3="card"] {
+  background: var(--wallify-m3-surface-container);
+  padding: 14px 18px;
+  transition: background-color 0.4s ease;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.row-content { display: block; }
+
+.row-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--wallify-m3-on-surface);
+  line-height: 20px;
+}
+
+.row-desc {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--wallify-m3-on-surface-variant);
+  line-height: 18px;
+}
+
+/* ---------- slider ---------- */
+
+input[data-wallify-m3="slider"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  margin-top: 14px;
+  border-radius: 4px;
+  background: linear-gradient(
+    to right,
+    var(--wallify-m3-primary) 0%,
+    var(--wallify-m3-primary) var(--wallify-m3-percent, 50%),
+    var(--wallify-m3-outline) var(--wallify-m3-percent, 50%),
+    var(--wallify-m3-outline) 100%
+  );
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input[data-wallify-m3="slider"]:focus {
+  outline: none;
+}
+
+input[data-wallify-m3="slider"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--wallify-m3-primary);
+  border: 3px solid var(--wallify-m3-surface-container);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  margin-top: -8px;
+}
+
+/* A native :active-based halo is more reliable than JS class toggling —
+   it shows only while the thumb is actually being pressed/dragged and
+   clears itself immediately on release, no event wiring required. */
+input[data-wallify-m3="slider"]:active::-webkit-slider-thumb {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 8px rgba(255, 255, 255, 0.22);
+}
+
+input[data-wallify-m3="slider"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--wallify-m3-primary);
+  border: 3px solid var(--wallify-m3-surface-container);
+  cursor: pointer;
+}
+
+input[data-wallify-m3="slider"]::-moz-range-track {
+  height: 4px;
+  border-radius: 4px;
+  background: var(--wallify-m3-outline);
+}
+
+/* ---------- switch ---------- */
+
+.m3-switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 32px;
+  flex: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.m3-switch input[data-wallify-m3="switch"] {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.m3-switch-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  box-sizing: border-box;
+  background: var(--wallify-m3-surface-container-highest);
+  border: 2px solid var(--wallify-m3-outline);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+  pointer-events: none;
+}
+
+.m3-switch-thumb {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 8px;
+  margin: auto 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--wallify-m3-outline);
+  transition: left 0.22s cubic-bezier(0.2, 0, 0, 1), width 0.18s ease, height 0.18s ease, background-color 0.22s ease;
+  pointer-events: none;
+}
+
+.m3-switch input[data-wallify-m3="switch"]:checked ~ .m3-switch-track {
+  background: var(--wallify-m3-primary);
+  border-color: var(--wallify-m3-primary);
+}
+
+.m3-switch input[data-wallify-m3="switch"]:checked ~ .m3-switch-thumb {
+  background: var(--wallify-m3-on-primary);
+  width: 24px;
+  height: 24px;
+  left: 20px;
+}
+
+.m3-switch input[data-wallify-m3="switch"]:disabled ~ .m3-switch-track,
+.m3-switch input[data-wallify-m3="switch"]:disabled ~ .m3-switch-thumb {
+  opacity: 0.38;
+}
+
+.m3-switch input[data-wallify-m3="switch"]:disabled {
+  pointer-events: none;
+}
+
+/* ---------- swatches (palette picker) ---------- */
+
+.swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.swatch {
+  border: none;
+  border-radius: 16px;
+  padding: 10px 8px 8px;
+  background: var(--wallify-m3-surface-container-high);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: outline-color 0.2s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.swatch:active { transform: scale(0.96); }
+
+.swatch.selected {
+  outline-color: var(--wallify-m3-primary);
+}
+
+.swatch-dots {
+  display: flex;
+  gap: 3px;
+}
+
+.swatch-dots span {
+  width: 15px;
+  height: 26px;
+  border-radius: 7px;
+  display: block;
+}
+
+.swatch-label {
+  font-size: 12px;
+  color: var(--wallify-m3-on-surface-variant);
+  text-align: center;
+}
+
+.swatch.selected .swatch-label {
+  color: var(--wallify-m3-on-surface);
+  font-weight: 500;
+}
+
+.swatch[disabled] {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ---------- segmented shape picker ---------- */
+
+.segmented {
+  display: flex;
+  gap: 6px;
+  background: var(--wallify-m3-surface-container-high);
+  padding: 6px;
+  border-radius: 18px;
+}
+
+.segmented button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--wallify-m3-on-surface-variant);
+  border-radius: 13px;
+  padding: 9px 2px 7px;
+  font-size: 9.5px;
+  line-height: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.segmented button.selected {
+  background: var(--wallify-m3-primary);
+  color: var(--wallify-m3-on-primary);
+}
+
+.segmented svg { width: 19px; height: 19px; display: block; }

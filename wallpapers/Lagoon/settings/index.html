@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lagoon — настройки</title>
+
+<!--
+  Нужны только для тестирования страницы в обычном браузере.
+  В Wallify UI Kit подключается автоматически.
+-->
+<link rel="stylesheet" href="wallify-m3.css">
+
+<style>
+  body {
+    margin: 0;
+    padding: 20px 16px 48px;
+    background: var(--wallify-m3-background, #0F1A14);
+    color: var(--wallify-m3-on-surface, #E4EDE7);
+    font-family: "Roboto", system-ui, -apple-system, sans-serif;
+  }
+
+  h1 {
+    margin: 4px 0 2px;
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 500;
+  }
+
+  .sub {
+    margin: 0 0 24px;
+    font-size: 13px;
+    color: var(--wallify-m3-on-surface-variant, #C4CFC8);
+  }
+
+  .section-title {
+    margin: 24px 4px 8px;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--wallify-m3-primary, #5FAE82);
+  }
+
+  .section-title.first { margin-top: 0; }
+
+  .value-pill {
+    float: right;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--wallify-m3-primary, #5FAE82);
+  }
+
+  .slider-content { gap: 8px; }
+
+  .hint {
+    margin: 8px 4px 0;
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--wallify-m3-on-surface-variant, #C4CFC8);
+  }
+
+  .swatch[disabled] { opacity: 0.4; pointer-events: none; }
+
+  .swatch-dots.single {
+    width: 100%;
+  }
+
+  .swatch-dots.single span {
+    width: 100%;
+  }
+
+  #customColorInput {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+  <h1>Lagoon</h1>
+  <p class="sub">Настройки живых обоев</p>
+
+  <!-- Оформление -->
+
+  <p class="section-title first">Оформление</p>
+
+  <div data-wallify-m3="card-group">
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">Monet</div>
+          <div class="row-desc">Брать цвета из динамической палитры системы вместо готовой темы</div>
+        </div>
+        <label class="m3-switch">
+          <input id="useMonet" type="checkbox" data-wallify-m3="switch">
+          <span class="m3-switch-track"></span>
+          <span class="m3-switch-thumb"></span>
+        </label>
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row-content" id="paletteWrap">
+        <div class="row-title" style="margin-bottom: 12px;">Цвет</div>
+        <div class="swatch-grid" id="paletteGrid">
+          <button class="swatch" data-id="emerald">
+            <span class="swatch-dots single"><span style="background:#3FA873"></span></span>
+            <span class="swatch-label">Изумруд</span>
+          </button>
+          <button class="swatch" data-id="ocean">
+            <span class="swatch-dots single"><span style="background:#3E93C4"></span></span>
+            <span class="swatch-label">Океан</span>
+          </button>
+          <button class="swatch" data-id="turquoise">
+            <span class="swatch-dots single"><span style="background:#29C2B5"></span></span>
+            <span class="swatch-label">Бирюза</span>
+          </button>
+          <button class="swatch" data-id="sunset">
+            <span class="swatch-dots single"><span style="background:#E07A56"></span></span>
+            <span class="swatch-label">Закат</span>
+          </button>
+          <button class="swatch" data-id="amethyst">
+            <span class="swatch-dots single"><span style="background:#9A6BC0"></span></span>
+            <span class="swatch-label">Аметист</span>
+          </button>
+          <button class="swatch custom" data-id="custom">
+            <span class="swatch-dots single" id="customDot"><span style="background:#2E8A5B"></span></span>
+            <span class="swatch-label">Свой цвет</span>
+          </button>
+        </div>
+        <input id="customColorInput" type="color" value="#2E8A5B">
+        <p class="hint" id="paletteHint">Недоступно, пока включён Monet</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Пятна и протоки -->
+
+  <p class="section-title">Пятна и протоки</p>
+
+  <div data-wallify-m3="card-group">
+
+    <section data-wallify-m3="card">
+      <div class="row-content slider-content">
+        <div class="row-title">
+          Размер пятен
+          <span id="blobSizeValue" class="value-pill">1.0×</span>
+        </div>
+        <input id="blobSize" type="range" min="0.6" max="2.2" step="0.1" value="1.0" data-wallify-m3="slider">
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row-content slider-content">
+        <div class="row-title">
+          Ширина проток
+          <span id="channelWidthValue" class="value-pill">1.0×</span>
+        </div>
+        <input id="channelWidth" type="range" min="0.4" max="2.2" step="0.1" value="1.0" data-wallify-m3="slider">
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row-content slider-content">
+        <div class="row-title">
+          Скругление углов
+          <span id="cornerRoundValue" class="value-pill">0.09</span>
+        </div>
+        <input id="cornerRound" type="range" min="0" max="0.2" step="0.01" value="0.09" data-wallify-m3="slider">
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row-content slider-content">
+        <div class="row-title">
+          Скорость течения
+          <span id="flowSpeedValue" class="value-pill">1.0×</span>
+        </div>
+        <input id="flowSpeed" type="range" min="0.2" max="2.5" step="0.1" value="1.0" data-wallify-m3="slider">
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Бассейн -->
+
+  <p class="section-title">Бассейн</p>
+
+  <div data-wallify-m3="card-group">
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">Плитка под водой</div>
+          <div class="row-desc">Фон из кафельной плитки — вода лежит поверх полупрозрачным слоем</div>
+        </div>
+        <label class="m3-switch">
+          <input id="poolEnabled" type="checkbox" data-wallify-m3="switch">
+          <span class="m3-switch-track"></span>
+          <span class="m3-switch-thumb"></span>
+        </label>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Реакции -->
+
+  <p class="section-title">Реакции</p>
+
+  <div data-wallify-m3="card-group">
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">Блики граней</div>
+          <div class="row-desc">Целая грань вспыхивает сама по себе, а также когда наклон телефона совпадает с её случайным углом</div>
+        </div>
+        <label class="m3-switch">
+          <input id="glintEnabled" type="checkbox" data-wallify-m3="switch">
+          <span class="m3-switch-track"></span>
+          <span class="m3-switch-thumb"></span>
+        </label>
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">Солнечные блики</div>
+          <div class="row-desc">До десяти маленьких ярких бликов на поверхности, которые сдвигаются от наклона телефона</div>
+        </div>
+        <label class="m3-switch">
+          <input id="sunGlintsEnabled" type="checkbox" data-wallify-m3="switch">
+          <span class="m3-switch-track"></span>
+          <span class="m3-switch-thumb"></span>
+        </label>
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">Рябь поверх картинки</div>
+          <div class="row-desc">Лёгкое мерцание бегущими волнами поверх всей сцены, как блики на поверхности воды</div>
+        </div>
+        <label class="m3-switch">
+          <input id="waveOverlayEnabled" type="checkbox" data-wallify-m3="switch">
+          <span class="m3-switch-track"></span>
+          <span class="m3-switch-thumb"></span>
+        </label>
+      </div>
+    </section>
+
+    <section data-wallify-m3="card">
+      <div class="row">
+        <div class="row-content">
+          <div class="row-title">Волна при разблокировке</div>
+          <div class="row-desc">От центра расходится рябь, которая слегка расталкивает поверхность в стороны</div>
+        </div>
+        <label class="m3-switch">
+          <input id="reactUnlock" type="checkbox" data-wallify-m3="switch">
+          <span class="m3-switch-track"></span>
+          <span class="m3-switch-thumb"></span>
+        </label>
+      </div>
+    </section>
+
+  </div>
+
+  <p class="hint">Гироскоп используется только пока экран включён и обои видимы — на энергопотребление в кармане это не влияет.</p>
+
+  <!--
+    Нужны только для тестирования в обычном браузере.
+    В Wallify подключаются автоматически.
+  -->
+  <script src="../colorUtils.js"></script>
+  <script src="wallify-m3.js"></script>
+
+  <script>
+    (function () {
+
+      var CU = window.ColorUtils;
+
+      var useMonet = document.getElementById("useMonet");
+      var paletteGrid = document.getElementById("paletteGrid");
+      var paletteHint = document.getElementById("paletteHint");
+      var customColorInput = document.getElementById("customColorInput");
+      var customDot = document.getElementById("customDot").querySelector("span");
+      var blobSize = document.getElementById("blobSize");
+      var blobSizeValue = document.getElementById("blobSizeValue");
+      var channelWidth = document.getElementById("channelWidth");
+      var channelWidthValue = document.getElementById("channelWidthValue");
+      var cornerRound = document.getElementById("cornerRound");
+      var cornerRoundValue = document.getElementById("cornerRoundValue");
+      var flowSpeed = document.getElementById("flowSpeed");
+      var flowSpeedValue = document.getElementById("flowSpeedValue");
+      var poolEnabled = document.getElementById("poolEnabled");
+      var glintEnabled = document.getElementById("glintEnabled");
+      var sunGlintsEnabled = document.getElementById("sunGlintsEnabled");
+      var waveOverlayEnabled = document.getElementById("waveOverlayEnabled");
+      var reactUnlock = document.getElementById("reactUnlock");
+
+      function applyAccentColors(accent) {
+        if (!accent) return;
+        var root = document.documentElement.style;
+
+        var background = accent.background || "#0F1A14";
+        var surface = accent.surface || background;
+        var surfaceContainer = accent.surfaceContainer || CU.lighten(background, 0.08);
+        var primary = accent.primary || "#5FAE82";
+        var secondary = accent.secondary || "#C4CFC8";
+
+        var surfaceContainerHigh = CU.lighten(surfaceContainer, 0.06);
+        var surfaceContainerHighest = CU.lighten(surfaceContainer, 0.12);
+        var outline = CU.mix(surfaceContainer, CU.contrastOn(surfaceContainer), 0.42);
+        var onPrimary = CU.contrastOn(primary);
+        var onSurface = CU.contrastOn(background);
+        var onSurfaceVariant = CU.mix(onSurface, background, 0.35);
+
+        root.setProperty("--wallify-m3-background", background);
+        root.setProperty("--wallify-m3-surface", surface);
+        root.setProperty("--wallify-m3-surface-container", surfaceContainer);
+        root.setProperty("--wallify-m3-surface-container-high", surfaceContainerHigh);
+        root.setProperty("--wallify-m3-surface-container-highest", surfaceContainerHighest);
+        root.setProperty("--wallify-m3-outline", outline);
+        root.setProperty("--wallify-m3-primary", primary);
+        root.setProperty("--wallify-m3-secondary", secondary);
+        root.setProperty("--wallify-m3-on-primary", onPrimary);
+        root.setProperty("--wallify-m3-on-surface", onSurface);
+        root.setProperty("--wallify-m3-on-surface-variant", onSurfaceVariant);
+      }
+
+      function setPaletteSelection(id) {
+        var buttons = paletteGrid.querySelectorAll(".swatch");
+        for (var i = 0; i < buttons.length; i++) {
+          buttons[i].classList.toggle("selected", buttons[i].getAttribute("data-id") === id);
+        }
+      }
+
+      function updateMonetLock(isMonet) {
+        var buttons = paletteGrid.querySelectorAll(".swatch");
+        for (var i = 0; i < buttons.length; i++) buttons[i].disabled = isMonet;
+        paletteHint.style.display = isMonet ? "block" : "none";
+      }
+
+      function init(engine) {
+
+        applyAccentColors(engine.metadata && engine.metadata.accentColors);
+        window.addEventListener("wallpaperUpdate", function (e) {
+          applyAccentColors(e.detail && e.detail.accentColors);
+        });
+
+        useMonet.checked = engine.getSetting("useMonet", "false") === "true";
+        useMonet.dispatchEvent(new Event("change"));
+        updateMonetLock(useMonet.checked);
+        useMonet.addEventListener("change", function () {
+          engine.saveSetting("useMonet", useMonet.checked ? "true" : "false");
+          updateMonetLock(useMonet.checked);
+        });
+
+        var paletteId = engine.getSetting("paletteId", "emerald");
+        var customColor = engine.getSetting("customColor", "#2E8A5B");
+        customColorInput.value = customColor;
+        customDot.style.background = customColor;
+        setPaletteSelection(paletteId);
+
+        paletteGrid.addEventListener("click", function (e) {
+          var btn = e.target.closest(".swatch");
+          if (!btn || btn.disabled) return;
+          var id = btn.getAttribute("data-id");
+          if (id === "custom") {
+            customColorInput.click();
+            return;
+          }
+          setPaletteSelection(id);
+          engine.saveSetting("paletteId", id);
+        });
+
+        customColorInput.addEventListener("input", function () {
+          customDot.style.background = customColorInput.value;
+          setPaletteSelection("custom");
+          engine.saveSetting("paletteId", "custom");
+          engine.saveSetting("customColor", customColorInput.value);
+        });
+
+        blobSize.value = engine.getSetting("blobSize", "1.0");
+        blobSizeValue.textContent = parseFloat(blobSize.value).toFixed(1) + "×";
+        blobSize.dispatchEvent(new Event("input"));
+        blobSize.addEventListener("input", function () {
+          blobSizeValue.textContent = parseFloat(blobSize.value).toFixed(1) + "×";
+          engine.saveSetting("blobSize", blobSize.value);
+        });
+
+        channelWidth.value = engine.getSetting("channelWidth", "1.0");
+        channelWidthValue.textContent = parseFloat(channelWidth.value).toFixed(1) + "×";
+        channelWidth.dispatchEvent(new Event("input"));
+        channelWidth.addEventListener("input", function () {
+          channelWidthValue.textContent = parseFloat(channelWidth.value).toFixed(1) + "×";
+          engine.saveSetting("channelWidth", channelWidth.value);
+        });
+
+        cornerRound.value = engine.getSetting("cornerRound", "0.09");
+        cornerRoundValue.textContent = parseFloat(cornerRound.value).toFixed(2);
+        cornerRound.dispatchEvent(new Event("input"));
+        cornerRound.addEventListener("input", function () {
+          cornerRoundValue.textContent = parseFloat(cornerRound.value).toFixed(2);
+          engine.saveSetting("cornerRound", cornerRound.value);
+        });
+
+        flowSpeed.value = engine.getSetting("flowSpeed", "1.0");
+        flowSpeedValue.textContent = parseFloat(flowSpeed.value).toFixed(1) + "×";
+        flowSpeed.dispatchEvent(new Event("input"));
+        flowSpeed.addEventListener("input", function () {
+          flowSpeedValue.textContent = parseFloat(flowSpeed.value).toFixed(1) + "×";
+          engine.saveSetting("flowSpeed", flowSpeed.value);
+        });
+
+        function wireSwitch(element, key, defaultValue) {
+          element.checked = engine.getSetting(key, defaultValue ? "true" : "false") === "true";
+          element.dispatchEvent(new Event("change"));
+          element.addEventListener("change", function () {
+            engine.saveSetting(key, element.checked ? "true" : "false");
+          });
+        }
+
+        wireSwitch(poolEnabled, "poolEnabled", true);
+        wireSwitch(glintEnabled, "glintEnabled", true);
+        wireSwitch(sunGlintsEnabled, "sunGlintsEnabled", true);
+        wireSwitch(waveOverlayEnabled, "waveOverlayEnabled", true);
+        wireSwitch(reactUnlock, "reactUnlock", true);
+      }
+
+      window.addEventListener("wallpaperEngineReady", function () {
+        if (window.WallpaperEngine) init(window.WallpaperEngine);
+      }, { once: true });
+
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Lagoon</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #2E8A5B;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  #gl {
+    position: fixed;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+  }
+  #fallback {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-family: system-ui, sans-serif;
+    color: #cfe8da;
+    text-align: center;
+    padding: 24px;
+    box-sizing: border-box;
+    background: radial-gradient(circle at 50% 40%, #1E5A42 0%, #12362A 70%);
+  }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="fallback">WebGL недоступен на этом устройстве</div>
+
+<script src="colorUtils.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var CU = window.ColorUtils;
+
+  function hx(hex) {
+    var rgb = CU.hexToRgb(hex);
+    return [rgb[0] / 255, rgb[1] / 255, rgb[2] / 255];
+  }
+
+  /* =========================================================
+     0. Палитры: один цвет заливки + цвет протоки (без случайного
+     разброса тона у отдельных пятен — только сам цвет)
+     ========================================================= */
+
+  var PALETTES = {
+    emerald:   { fill: hx("#3FA873"), channel: hx("#F4ECDB") },
+    ocean:     { fill: hx("#3E93C4"), channel: hx("#EFEEE3") },
+    turquoise: { fill: hx("#29C2B5"), channel: hx("#EFF8F6") },
+    sunset:    { fill: hx("#E07A56"), channel: hx("#FBEBDD") },
+    amethyst:  { fill: hx("#9A6BC0"), channel: hx("#F5E9F2") }
+  };
+
+  var monetPalette = null;
+
+  var settings = {
+    paletteId: "emerald",
+    customColor: "#2E8A5B",
+    useMonet: false,
+    flowSpeed: 1.0,
+    channelWidth: 1.0,
+    blobSize: 1.0,
+    cornerRound: 0.09,
+    glintEnabled: true,
+    sunGlintsEnabled: true,
+    poolEnabled: true,
+    waveOverlayEnabled: true,
+    reactUnlock: true
+  };
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  function buildCustomPalette(hex) {
+    var fill = CU.clampLuminance(hex, 0.32, 0.62);
+    var channel = CU.clampLuminance(hex, 0.90, 0.97);
+    return { fill: hx(fill), channel: hx(channel) };
+  }
+
+  function currentPalette() {
+    if (settings.useMonet && monetPalette) return monetPalette;
+    if (settings.paletteId === "custom") return buildCustomPalette(settings.customColor);
+    return PALETTES[settings.paletteId] || PALETTES.emerald;
+  }
+
+  function buildMonetPalette(accent) {
+    if (!accent) return null;
+    var primary = accent.primary || "#3FA873";
+    var background = accent.background || "#F4ECDB";
+    var fill = CU.clampLuminance(primary, 0.34, 0.60);
+    var channel = CU.clampLuminance(background, 0.88, 0.97);
+    return { fill: hx(fill), channel: hx(channel) };
+  }
+
+  /* =========================================================
+     1. Canvas / WebGL init
+     ========================================================= */
+
+  var canvas = document.getElementById("gl");
+  var gl = canvas.getContext("webgl2", { antialias: true, alpha: false, premultipliedAlpha: false }) ||
+           canvas.getContext("webgl", { antialias: true, alpha: false, premultipliedAlpha: false });
+
+  if (!gl) {
+    document.getElementById("fallback").style.display = "flex";
+    return;
+  }
+
+  var width = 0, height = 0;
+
+  function resize() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = canvas.clientWidth || window.innerWidth;
+    var h = canvas.clientHeight || window.innerHeight;
+    width = Math.max(1, Math.round(w * dpr));
+    height = Math.max(1, Math.round(h * dpr));
+    canvas.width = width;
+    canvas.height = height;
+    gl.viewport(0, 0, width, height);
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  function syncBodyBackground() {
+    var c = currentPalette().fill;
+    document.body.style.background =
+      "rgb(" + Math.round(c[0] * 255) + "," + Math.round(c[1] * 255) + "," + Math.round(c[2] * 255) + ")";
+  }
+
+  /* =========================================================
+     2. Shader
+     ========================================================= */
+
+  function compileShader(type, src) {
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      console.error("Shader error:", gl.getShaderInfoLog(s));
+      gl.deleteShader(s);
+      return null;
+    }
+    return s;
+  }
+
+  function makeProgram(vsSrc, fsSrc) {
+    var vs = compileShader(gl.VERTEX_SHADER, vsSrc);
+    var fs = compileShader(gl.FRAGMENT_SHADER, fsSrc);
+    var p = gl.createProgram();
+    gl.attachShader(p, vs);
+    gl.attachShader(p, fs);
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+      console.error("Program link error:", gl.getProgramInfoLog(p));
+      return null;
+    }
+    return p;
+  }
+
+  var VS = [
+    "attribute vec2 aPos;",
+    "varying vec2 vUv;",
+    "void main(){",
+    "  vUv = aPos * 0.5 + 0.5;",
+    "  gl_Position = vec4(aPos, 0.0, 1.0);",
+    "}"
+  ].join("\n");
+
+  var FS = [
+    "#ifdef GL_FRAGMENT_PRECISION_HIGH",
+    "precision highp float;",
+    "#else",
+    "precision mediump float;",
+    "#endif",
+    "varying vec2 vUv;",
+    "uniform float uAspect;",
+    "uniform float uScale;",
+    "uniform float uTime;",
+    "uniform float uEdgeWidth;",
+    "uniform float uCornerRound;",
+    "uniform float uDriftAmt;",
+    "uniform float uRingRadius;",
+    "uniform float uRingThickness;",
+    "uniform vec2 uTilt;",
+    "uniform float uGlintEnabled;",
+    "uniform float uPoolEnabled;",
+    "uniform float uSunGlintsEnabled;",
+    "uniform float uWaveOverlayEnabled;",
+    "uniform vec3 uFill;",
+    "uniform vec3 uChannel;",
+
+    "vec2 hash2(vec2 p){",
+    "  p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));",
+    "  return fract(sin(p) * 43758.5453);",
+    "}",
+    "float hash1(vec2 p){",
+    "  return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453);",
+    "}",
+    "float smin(float a, float b, float k){",
+    "  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);",
+    "  return mix(b, a, h) - k * h * (1.0 - h);",
+    "}",
+    "vec2 seedPoint(vec2 ip, vec2 neighbor, float t){",
+    "  vec2 base = hash2(ip + neighbor);",
+    "  float ph1 = hash1(ip + neighbor + 3.1);",
+    "  float ph2 = hash1(ip + neighbor + 9.7);",
+    "  vec2 drift = vec2(sin(t * 0.35 + ph1 * 30.0), cos(t * 0.28 + ph2 * 30.0)) * uDriftAmt;",
+    "  return neighbor + base + drift;",
+    "}",
+
+    "void main(){",
+    "  vec2 rawUv = vUv;",
+
+    "  vec2 uv = rawUv;",
+    "  uv.x *= uAspect;",
+
+    // overall gentle sway, applied on top of everything else
+    "  vec2 sway = vec2(sin(uTime * 0.17), cos(uTime * 0.13) * 0.6) * 0.035;",
+    "  uv += sway;",
+
+    // unlock ripple: pushes the sampled coordinates radially outward
+    "  vec2 center = vec2(0.5 * uAspect, 0.5);",
+    "  vec2 toCenter = uv - center;",
+    "  float distC = length(toCenter);",
+    "  float ringProx = 1.0 - smoothstep(0.0, uRingThickness * 1.4, abs(distC - uRingRadius));",
+    "  ringProx = clamp(ringProx, 0.0, 1.0);",
+    "  vec2 pushDir = distC > 0.0001 ? toCenter / distC : vec2(0.0);",
+    "  uv += pushDir * ringProx * 0.06;",
+
+    "  float wobbleAmt = 0.028;",
+    "  vec2 warp = vec2(",
+    "    sin(uv.y * 3.1 + uTime * 0.6) * wobbleAmt + sin(uv.y * 7.3 - uTime * 0.9) * wobbleAmt * 0.4,",
+    "    cos(uv.x * 3.4 - uTime * 0.5) * wobbleAmt + cos(uv.x * 6.7 + uTime * 0.8) * wobbleAmt * 0.4",
+    "  );",
+    "  vec2 wuv = uv + warp;",
+
+    "  vec2 p = wuv * uScale;",
+    "  vec2 ip = floor(p);",
+    "  vec2 fp = fract(p);",
+
+    // pass 1: find the nearest seed (mr) and its cell id
+    "  vec2 mr = vec2(0.0);",
+    "  vec2 cellId = ip;",
+    "  float md = 8.0;",
+    "  for (int j = -1; j <= 1; j++) {",
+    "    for (int i = -1; i <= 1; i++) {",
+    "      vec2 neighbor = vec2(float(i), float(j));",
+    "      vec2 pt = seedPoint(ip, neighbor, uTime);",
+    "      float d = length(pt - fp);",
+    "      if (d < md) { md = d; mr = pt; cellId = ip + neighbor; }",
+    "    }",
+    "  }",
+
+    // pass 2: smooth-min distance to every bisector plane -> rounded borders
+    "  float cornerRound = uCornerRound;",
+    "  float borderDist = 8.0;",
+    "  for (int j = -1; j <= 1; j++) {",
+    "    for (int i = -1; i <= 1; i++) {",
+    "      vec2 neighbor = vec2(float(i), float(j));",
+    "      vec2 pt = seedPoint(ip, neighbor, uTime);",
+    "      vec2 diff = pt - mr;",
+    "      float distSq = dot(diff, diff);",
+    "      if (distSq > 0.000001) {",
+    "        vec2 mid = (mr + pt) * 0.5;",
+    "        vec2 dir = diff * inversesqrt(distSq);",
+    "        float d = dot(mid - fp, dir);",
+    "        borderDist = smin(borderDist, d, cornerRound);",
+    "      }",
+    "    }",
+    "  }",
+
+    // crisp edge: a small fixed antialiasing width, independent of channel
+    // width/corner rounding, so the boundary itself isn't blurry.
+    "  float aa = 0.0055;",
+    "  float edge = smoothstep(uEdgeWidth - aa, uEdgeWidth + aa, borderDist);",
+
+    "  vec3 fill = uFill;",
+    "  float grain = (hash1(floor(rawUv * vec2(720.0, 1560.0))) - 0.5) * 0.02;",
+    "  fill += grain;",
+
+    // glints: gyroscope alignment OR independent idle twinkle per cell
+    "  float tiltMag = length(uTilt);",
+    "  vec2 tiltDir = tiltMag > 0.001 ? uTilt / tiltMag : vec2(0.0);",
+    "  float glintAngle = hash1(cellId + 55.0) * 6.28318;",
+    "  float gyroGlint = smoothstep(0.82, 1.0, dot(vec2(cos(glintAngle), sin(glintAngle)), tiltDir)) * smoothstep(0.10, 0.40, tiltMag);",
+    "  float twinkleSeed = hash1(cellId + 40.0);",
+    "  float idleGlint = pow(0.5 + 0.5 * sin(uTime * (0.5 + twinkleSeed * 1.3) + twinkleSeed * 50.0), 10.0) * 0.55;",
+    "  float glint = clamp(max(gyroGlint, idleGlint), 0.0, 1.0) * uGlintEnabled;",
+    "  fill = mix(fill, vec3(1.0), glint * 0.7);",
+
+    "  vec3 lagoonCol = mix(uChannel, fill, edge);",
+
+    // unlock: brief contrast/saturation boost riding the same ring
+    "  float ringBand = 1.0 - smoothstep(0.0, uRingThickness, abs(distC - uRingRadius));",
+    "  ringBand = clamp(ringBand, 0.0, 1.0);",
+    "  float luma = dot(lagoonCol, vec3(0.299, 0.587, 0.114));",
+    "  vec3 sat = mix(vec3(luma), lagoonCol, 1.0 + ringBand * 0.4);",
+    "  lagoonCol = clamp(sat, 0.0, 1.0);",
+
+    "  vec3 finalColor = lagoonCol;",
+
+    // pool tiles as a full-screen background layer; "water" (the lagoon
+    // pattern) sits semi-transparently on top — more opaque within fill
+    // regions, more see-through in the channels, like shallow water.
+    "  if (uPoolEnabled > 0.5) {",
+    "    vec2 tileUv = vec2(rawUv.x * uAspect, rawUv.y) * 26.0;",
+    "    vec2 tid = floor(tileUv);",
+    "    vec2 tfp = fract(tileUv);",
+    "    float groutW = 0.07;",
+    "    float gline = min(min(tfp.x, 1.0 - tfp.x), min(tfp.y, 1.0 - tfp.y));",
+    "    float insideTile = smoothstep(0.0, groutW, gline);",
+    "    float tshade = (hash1(tid + 77.0) - 0.5) * 0.05;",
+    "    vec3 tileCol = vec3(0.87, 0.93, 0.92) + tshade;",
+    "    vec3 groutCol = vec3(0.68, 0.77, 0.75);",
+    "    vec3 poolCol = mix(groutCol, tileCol, insideTile);",
+    "    float waterOpacity = 0.92;",
+    "    finalColor = mix(poolCol, lagoonCol, waterOpacity);",
+    "  }",
+
+    // up to 10 soft round specular highlights ("sun glints"), shifting with
+    // device tilt and twinkling independently over time.
+    "  if (uSunGlintsEnabled > 0.5) {",
+    "    float glints = 0.0;",
+    "    for (int k = 0; k < 10; k++) {",
+    "      float fi = float(k);",
+    "      vec2 base = hash2(vec2(fi * 13.7 + 4.0, fi * 5.3 + 91.0));",
+    "      vec2 basePos = vec2(base.x * uAspect, base.y);",
+    "      float depthF = hash1(vec2(fi * 3.1 + 1.0, fi * 7.9 + 2.0));",
+    "      vec2 pos = basePos + uTilt * 0.05 * (0.4 + depthF) +",
+    "        vec2(sin(uTime * 0.13 + fi * 12.0), cos(uTime * 0.11 + fi * 7.0)) * 0.03;",
+    "      float radius = 0.018 + hash1(vec2(fi * 2.3 + 5.0, fi * 9.1 + 6.0)) * 0.022;",
+    "      float dist = length(uv - pos);",
+    "      float falloff = clamp(1.0 - dist / radius, 0.0, 1.0);",
+    "      float bump = falloff * falloff * falloff;",
+    "      float twinkle = 0.4 + 0.6 * pow(0.5 + 0.5 * sin(uTime * (0.8 + depthF * 1.6) + fi * 19.0), 4.0);",
+    "      glints += bump * twinkle;",
+    "    }",
+    "    finalColor += clamp(glints, 0.0, 1.2) * vec3(1.0, 0.98, 0.92);",
+    "  }",
+
+    // overlay wave shimmer, layered on top of the entire composited image
+    "  if (uWaveOverlayEnabled > 0.5) {",
+    "    float w1 = sin(rawUv.x * 14.0 + rawUv.y * 9.0 + uTime * 1.4) * 0.5 + 0.5;",
+    "    float w2 = sin(rawUv.x * 7.0 - rawUv.y * 11.0 - uTime * 1.1) * 0.5 + 0.5;",
+    "    float shimmer = w1 * w2;",
+    "    finalColor += shimmer * 0.06;",
+    "  }",
+
+    "  gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), 1.0);",
+    "}"
+  ].join("\n");
+
+  var program = makeProgram(VS, FS);
+  var aPos = gl.getAttribLocation(program, "aPos");
+  var U = {
+    uAspect: gl.getUniformLocation(program, "uAspect"),
+    uScale: gl.getUniformLocation(program, "uScale"),
+    uTime: gl.getUniformLocation(program, "uTime"),
+    uEdgeWidth: gl.getUniformLocation(program, "uEdgeWidth"),
+    uCornerRound: gl.getUniformLocation(program, "uCornerRound"),
+    uDriftAmt: gl.getUniformLocation(program, "uDriftAmt"),
+    uRingRadius: gl.getUniformLocation(program, "uRingRadius"),
+    uRingThickness: gl.getUniformLocation(program, "uRingThickness"),
+    uTilt: gl.getUniformLocation(program, "uTilt"),
+    uGlintEnabled: gl.getUniformLocation(program, "uGlintEnabled"),
+    uPoolEnabled: gl.getUniformLocation(program, "uPoolEnabled"),
+    uSunGlintsEnabled: gl.getUniformLocation(program, "uSunGlintsEnabled"),
+    uWaveOverlayEnabled: gl.getUniformLocation(program, "uWaveOverlayEnabled"),
+    uFill: gl.getUniformLocation(program, "uFill"),
+    uChannel: gl.getUniformLocation(program, "uChannel")
+  };
+
+  var vbo = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+
+  /* =========================================================
+     3. Wallify bridge integration
+     ========================================================= */
+
+  var metadata = null;
+
+  function refreshSettingsFromEngine() {
+    if (!window.WallpaperEngine) return;
+    var eng = window.WallpaperEngine;
+    var all = eng.getAllSettings ? eng.getAllSettings() : {};
+    settings.paletteId = all.paletteId || settings.paletteId;
+    settings.customColor = all.customColor || settings.customColor;
+    settings.useMonet = (all.useMonet !== undefined) ? (all.useMonet === "true") : settings.useMonet;
+
+    var fs = parseFloat(all.flowSpeed);
+    settings.flowSpeed = isNaN(fs) ? settings.flowSpeed : clamp(fs, 0.2, 2.5);
+
+    var cw = parseFloat(all.channelWidth);
+    settings.channelWidth = isNaN(cw) ? settings.channelWidth : clamp(cw, 0.4, 2.2);
+
+    var bs = parseFloat(all.blobSize);
+    settings.blobSize = isNaN(bs) ? settings.blobSize : clamp(bs, 0.6, 2.2);
+
+    var cr = parseFloat(all.cornerRound);
+    settings.cornerRound = isNaN(cr) ? settings.cornerRound : clamp(cr, 0.0, 0.20);
+
+    settings.glintEnabled = (all.glintEnabled !== undefined) ? (all.glintEnabled === "true") : settings.glintEnabled;
+    settings.sunGlintsEnabled = (all.sunGlintsEnabled !== undefined) ? (all.sunGlintsEnabled === "true") : settings.sunGlintsEnabled;
+    settings.poolEnabled = (all.poolEnabled !== undefined) ? (all.poolEnabled === "true") : settings.poolEnabled;
+    settings.waveOverlayEnabled = (all.waveOverlayEnabled !== undefined) ? (all.waveOverlayEnabled === "true") : settings.waveOverlayEnabled;
+    settings.reactUnlock = (all.reactUnlock !== undefined) ? (all.reactUnlock === "true") : settings.reactUnlock;
+
+    syncBodyBackground();
+  }
+
+  function applyMetadata(detail) {
+    metadata = detail;
+    if (detail && detail.accentColors) {
+      monetPalette = buildMonetPalette(detail.accentColors);
+    }
+  }
+
+  window.addEventListener("wallpaperEngineReady", function (e) {
+    applyMetadata(e.detail);
+    refreshSettingsFromEngine();
+  });
+  window.addEventListener("wallpaperUpdate", function (e) {
+    applyMetadata(e.detail);
+    refreshSettingsFromEngine();
+  });
+
+  /* ---- gyroscope: smoothed tilt drives glints ---- */
+  var smoothRoll = 0, smoothPitch = 0;
+  window.addEventListener("wallpaperGyroscope", function (e) {
+    if (!e.detail) return;
+    var roll = e.detail.roll || 0;
+    var pitch = e.detail.pitch || 0;
+    var nx = clamp(roll / 9.8, -1, 1);
+    var ny = clamp(pitch / 9.8, -1, 1);
+    smoothRoll += (nx - smoothRoll) * 0.15;
+    smoothPitch += (ny - smoothPitch) * 0.15;
+  });
+
+  /* ---- unlock: expanding ring ripple that also pushes the surface ---- */
+  var unlockActive = false;
+  var unlockElapsed = 0;
+  var unlockThickness = 0.14;
+  var unlockSpeed = 1.0;
+
+  window.addEventListener("wallpaperUnlock", function () {
+    if (!settings.reactUnlock) return;
+    unlockActive = true;
+    unlockElapsed = 0;
+    var aspect = width / height;
+    var maxR = Math.sqrt(Math.pow(0.5 * aspect, 2) + Math.pow(0.5, 2)) + unlockThickness;
+    var duration = (metadata && metadata.animationDurationUnlock) || 1.2;
+    unlockSpeed = maxR / duration;
+  });
+
+  /* pause / resume / screen on-off */
+  var paused = false;
+  window.addEventListener("wallpaperPause", function () { paused = true; });
+  window.addEventListener("wallpaperResume", function () {
+    if (paused) { paused = false; last = 0; requestAnimationFrame(frame); }
+  });
+  window.addEventListener("wallpaperScreenOff", function () { paused = true; });
+  window.addEventListener("wallpaperScreenOn", function () {
+    if (paused) { paused = false; last = 0; requestAnimationFrame(frame); }
+  });
+
+  /* =========================================================
+     4. Render loop
+     ========================================================= */
+
+  var t = 0;
+  var last = 0;
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+  gl.useProgram(program);
+
+  function frame(now) {
+    if (paused) return;
+    if (!last) last = now;
+    var dt = Math.min((now - last) / 1000, 0.1);
+    last = now;
+    t += dt * settings.flowSpeed;
+    if (t > 6283.0) t -= 6283.0;
+
+    if (unlockActive) {
+      unlockElapsed += dt;
+      var aspect = width / height;
+      var maxR = Math.sqrt(Math.pow(0.5 * aspect, 2) + Math.pow(0.5, 2)) + unlockThickness;
+      if (unlockElapsed * unlockSpeed > maxR) unlockActive = false;
+    }
+
+    var pal = currentPalette();
+
+    gl.viewport(0, 0, width, height);
+    gl.clearColor(pal.fill[0], pal.fill[1], pal.fill[2], 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    gl.uniform1f(U.uAspect, width / height);
+    gl.uniform1f(U.uScale, 4.6 / settings.blobSize);
+    gl.uniform1f(U.uTime, t);
+    gl.uniform1f(U.uEdgeWidth, 0.045 * settings.channelWidth);
+    gl.uniform1f(U.uCornerRound, Math.max(0.0001, settings.cornerRound));
+    gl.uniform1f(U.uDriftAmt, 0.16);
+    gl.uniform1f(U.uRingRadius, unlockActive ? unlockElapsed * unlockSpeed : -10.0);
+    gl.uniform1f(U.uRingThickness, unlockThickness);
+    gl.uniform2f(U.uTilt, smoothRoll, smoothPitch);
+    gl.uniform1f(U.uGlintEnabled, settings.glintEnabled ? 1.0 : 0.0);
+    gl.uniform1f(U.uPoolEnabled, settings.poolEnabled ? 1.0 : 0.0);
+    gl.uniform1f(U.uSunGlintsEnabled, settings.sunGlintsEnabled ? 1.0 : 0.0);
+    gl.uniform1f(U.uWaveOverlayEnabled, settings.waveOverlayEnabled ? 1.0 : 0.0);
+    gl.uniform3fv(U.uFill, pal.fill);
+    gl.uniform3fv(U.uChannel, pal.channel);
+
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    requestAnimationFrame(frame);
+  }
+
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

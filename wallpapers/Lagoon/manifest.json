@@ -1,0 +1,19 @@
+{
+  "name": "Lagoon",
+  "description": "Органичные цветные пятна, разделённые светлыми извилистыми протоками — как лагуна сверху. Протоки медленно текут, углы между ними плавно скруглены, картина слегка покачивается. При разблокировке по поверхности расходится волна, а некоторые грани ловят блик от наклона телефона. WebGL, полноценный выбор цвета, поддержка Monet.",
+  "author": "Jardaken",
+  "version": "2.0.0",
+  "minAppVersion": ">=1.0.0",
+  "cover": "cover.jpg",
+  "icon": "cover.jpg",
+  "main": "index.html",
+  "settingsPath": "settings/index.html",
+  "useGyroscope": true,
+  "isLite": false,
+  "supportsMonet": true,
+  "animationDuration": 2.5,
+  "animationDurationUnlock": 1.2,
+  "animationDurationScreenOn": 1.0,
+  "animationDurationScreenOff": 0.4,
+  "animateOn": "both"
+}

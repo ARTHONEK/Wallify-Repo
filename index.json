@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-06T12:33:38Z",
+  "updatedAt": "2026-08-19T16:10:52Z",
   "wallpapers": [
     {
       "id": "fluids",
@@ -431,6 +431,55 @@
       "createdAt": "2026-08-06T12:33:38Z",
       "updatedAt": "2026-08-06T12:33:38Z",
       "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3e-shapes-lite.zip"
+    },
+    {
+      "id": "Lagoon",
+      "name": "Lagoon",
+      "author": "Jardaken",
+      "version": "2.0.0",
+      "description": "Органичные цветные пятна, разделённые светлыми извилистыми протоками — как лагуна сверху. Протоки медленно текут, углы между ними плавно скруглены, картина слегка покачивается. При разблокировке по поверхности расходится волна, а некоторые грани ловят блик от наклона телефона. WebGL, полноценный выбор цвета, поддержка Monet.",
+      "path": "wallpapers/Lagoon",
+      "main": "index.html",
+      "useGyroscope": true,
+      "isLite": false,
+      "cover": "cover.jpg",
+      "icon": "cover.jpg",
+      "supportsMonet": true,
+      "createdAt": "2026-08-19T16:10:52Z",
+      "updatedAt": "2026-08-19T16:10:52Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/Lagoon.zip"
+    },
+    {
+      "id": "m3-expressive-shapes",
+      "name": "Material 3 Expressive Shapes",
+      "author": "wafuv",
+      "version": "1.0.0",
+      "description": "Живые обои с парящими и динамично меняющими форму фигурами.",
+      "path": "wallpapers/m3-expressive-shapes",
+      "main": "index.html",
+      "useGyroscope": true,
+      "isLite": false,
+      "cover": "cover.png",
+      "icon": "icon.png",
+      "createdAt": "2026-08-19T16:10:52Z",
+      "updatedAt": "2026-08-19T16:10:52Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-expressive-shapes.zip"
+    },
+    {
+      "id": "m3-expressive-shapes-lite",
+      "name": "Material 3 Expressive Shapes Lite",
+      "author": "wafuv",
+      "version": "1.0.0",
+      "description": "Облегчённая версия живых обоев в стиле Material 3 Expressive.",
+      "path": "wallpapers/m3-expressive-shapes-lite",
+      "main": "index.html",
+      "useGyroscope": true,
+      "isLite": true,
+      "cover": "cover.png",
+      "icon": "icon.png",
+      "createdAt": "2026-08-19T16:10:52Z",
+      "updatedAt": "2026-08-19T16:10:52Z",
+      "downloadUrl": "https://github.com/YouRooni/Wallify-Repo/releases/download/bundles/m3-expressive-shapes-lite.zip"
     }
   ]
 }

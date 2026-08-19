@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Настройки обоев Lite</title>
+  <style>
+    :root {
+      --bg: #141218;
+      --surface: #211F26;
+      --surface-variant: #36343B;
+      --primary: #D0BCFF;
+      --on-primary: #381E72;
+      --on-surface: #E6E0E9;
+      --on-surface-variant: #CAC4D0;
+      --outline: #938F99;
+      --track-inactive: #49454F;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--on-surface);
+      padding: 20px 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    .header {
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 500;
+    }
+
+    .header p {
+      font-size: 13px;
+      color: var(--on-surface-variant);
+      margin-top: 2px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--on-surface-variant);
+      margin: 20px 0 8px 12px;
+    }
+
+    .section-title:first-of-type {
+      margin-top: 10px;
+    }
+
+    .card-group {
+      background: var(--surface);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .card-item {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .card-item:last-child {
+      border-bottom: none;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .label-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding-right: 12px;
+    }
+
+    .title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--on-surface);
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: var(--on-surface-variant);
+    }
+
+    .value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--on-surface-variant);
+    }
+
+    /* M3 Expressive Custom Slider */
+    .slider-container {
+      position: relative;
+      width: 100%;
+      height: 32px;
+      display: flex;
+      align-items: center;
+    }
+
+    .slider-track {
+      position: absolute;
+      width: 100%;
+      height: 24px;
+      background: var(--track-inactive);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .slider-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 50%;
+      border-radius: 12px 0 0 12px;
+    }
+
+    .slider-thumb {
+      position: absolute;
+      width: 4px;
+      height: 28px;
+      background: #FFFFFF;
+      border-radius: 2px;
+      top: 2px;
+      left: calc(50% - 2px);
+      pointer-events: none;
+      box-shadow: 0 0 4px rgba(0,0,0,0.4);
+    }
+
+    input[type="range"] {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    /* M3 Expressive Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 52px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .switch-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--surface-variant);
+      transition: 0.25s cubic-bezier(0.2, 0, 0, 1);
+      border-radius: 32px;
+      border: 2px solid var(--outline);
+    }
+
+    .switch-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 6px;
+      bottom: 6px;
+      background-color: var(--outline);
+      transition: 0.25s cubic-bezier(0.2, 0, 0, 1);
+      border-radius: 50%;
+    }
+
+    input:checked + .switch-slider {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    input:checked + .switch-slider:before {
+      transform: translateX(20px);
+      background-color: var(--on-primary);
+      width: 24px;
+      height: 24px;
+      left: 2px;
+      bottom: 2px;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--outline);
+      background: var(--bg);
+      color: var(--on-surface);
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Фигуры Lite</h1>
+    <p>Настройки легкой версии живых обоев</p>
+  </div>
+
+  <div class="section-title">Фигуры</div>
+  <div class="card-group">
+    <div class="card-item">
+      <div class="row">
+        <span class="title">Количество фигур</span>
+        <span id="blobCountVal" class="value">3</span>
+      </div>
+      <div class="slider-container">
+        <div class="slider-track">
+          <div id="blobCountFill" class="slider-fill"></div>
+        </div>
+        <div id="blobCountThumb" class="slider-thumb"></div>
+        <input id="blobCount" type="range" min="2" max="5" value="3">
+      </div>
+    </div>
+
+    <div class="card-item">
+      <div class="row">
+        <span class="title">Размер фигур</span>
+        <span id="blobScaleVal" class="value">1.0x</span>
+      </div>
+      <div class="slider-container">
+        <div class="slider-track">
+          <div id="blobScaleFill" class="slider-fill"></div>
+        </div>
+        <div id="blobScaleThumb" class="slider-thumb"></div>
+        <input id="blobScale" type="range" min="0.6" max="1.5" step="0.1" value="1.0">
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Взаимодействие</div>
+  <div class="card-group">
+    <div class="card-item">
+      <label class="row" for="useGyro">
+        <div class="label-block">
+          <span class="title">Реакция на гироскоп</span>
+          <span class="subtitle">Фигуры смещаются при наклоне устройства</span>
+        </div>
+        <div class="switch">
+          <input id="useGyro" type="checkbox">
+          <span class="switch-slider"></span>
+        </div>
+      </label>
+    </div>
+  </div>
+
+  <div class="section-title">Внешний вид</div>
+  <div class="card-group">
+    <div class="card-item">
+      <div class="row" style="margin-bottom: 8px;">
+        <div class="label-block">
+          <span class="title">Тема оформления</span>
+          <span class="subtitle">Выбор цветового режима обоев</span>
+        </div>
+      </div>
+      <select id="themeMode">
+        <option value="light">Светлая</option>
+        <option value="dark">Тёмная</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section-title">Анимация</div>
+  <div class="card-group">
+    <div class="card-item">
+      <div class="row">
+        <div class="label-block">
+          <span class="title">Скорость движения</span>
+          <span class="subtitle">Скорость перемещения фигур</span>
+        </div>
+      </div>
+      <select id="speed">
+        <option value="0.5">Медленно</option>
+        <option value="1.0">Обычно</option>
+        <option value="1.5">Быстро</option>
+      </select>
+    </div>
+  </div>
+
+  <script>
+    function updateSlider(id, val, min, max, displayVal) {
+      const percent = ((val - min) / (max - min)) * 100;
+      document.getElementById(id + 'Fill').style.width = percent + '%';
+      document.getElementById(id + 'Thumb').style.left = `calc(${percent}% - 2px)`;
+      if (displayVal !== undefined) {
+        document.getElementById(id + 'Val').textContent = displayVal;
+      }
+    }
+
+    window.addEventListener('wallpaperEngineReady', (e) => {
+      const engine = window.WallpaperEngine;
+
+      if (e.detail && e.detail.accentColors) {
+        const c = e.detail.accentColors;
+        document.documentElement.style.setProperty('--bg', c.background || '#141218');
+        document.documentElement.style.setProperty('--surface', c.surfaceContainer || '#211F26');
+        document.documentElement.style.setProperty('--surface-variant', c.surfaceContainerHigh || '#36343B');
+        document.documentElement.style.setProperty('--primary', c.primary || '#D0BCFF');
+        document.documentElement.style.setProperty('--on-primary', c.onPrimary || '#381E72');
+        document.documentElement.style.setProperty('--on-surface', c.onSurface || '#E6E0E9');
+        document.documentElement.style.setProperty('--on-surface-variant', c.onSurfaceVariant || '#CAC4D0');
+        document.documentElement.style.setProperty('--outline', c.outline || '#938F99');
+      }
+
+      const blobCount = document.getElementById('blobCount');
+      const blobScale = document.getElementById('blobScale');
+      const useGyro = document.getElementById('useGyro');
+      const themeMode = document.getElementById('themeMode');
+      const speed = document.getElementById('speed');
+
+      blobCount.value = engine.getSetting('blobCount', '3');
+      updateSlider('blobCount', blobCount.value, 2, 5, blobCount.value);
+
+      blobScale.value = engine.getSetting('blobScale', '1.0');
+      updateSlider('blobScale', blobScale.value, 0.6, 1.5, blobScale.value + 'x');
+
+      useGyro.checked = engine.getSetting('useGyro', 'true') === 'true';
+      themeMode.value = engine.getSetting('themeMode', 'light');
+      speed.value = engine.getSetting('speed', '1.0');
+
+      blobCount.addEventListener('input', () => {
+        updateSlider('blobCount', blobCount.value, 2, 5, blobCount.value);
+        engine.saveSetting('blobCount', blobCount.value);
+      });
+
+      blobScale.addEventListener('input', () => {
+        updateSlider('blobScale', blobScale.value, 0.6, 1.5, blobScale.value + 'x');
+        engine.saveSetting('blobScale', blobScale.value);
+      });
+
+      useGyro.addEventListener('change', () => engine.saveSetting('useGyro', useGyro.checked ? 'true' : 'false'));
+      themeMode.addEventListener('change', () => engine.saveSetting('themeMode', themeMode.value));
+      speed.addEventListener('change', () => engine.saveSetting('speed', speed.value));
+    });
+  </script>
+</body>
+</html>
+

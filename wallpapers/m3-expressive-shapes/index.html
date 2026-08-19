@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Material 3 Expressive</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #F8F2FA;
+      transition: background-color 0.8s cubic-bezier(0.2, 0, 0, 1);
+    }
+    canvas { display: block; width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width = 0, height = 0;
+    let isPaused = false;
+    let lastTime = performance.now();
+
+    let speedMult = 1.0;
+    let blobScaleMult = 1.0;
+    let unlockForceMult = 1.0;
+    let targetBlobCount = 4;
+    let themeMode = 'light';
+    let useGyro = true;
+
+    // Смещение от гироскопа
+    let gyroOffsetX = 0;
+    let gyroOffsetY = 0;
+    let targetGyroX = 0;
+    let targetGyroY = 0;
+
+    const darkPalette = {
+      background: '#141218',
+      primary: '#D0BCFF',
+      secondary: '#CCC2DC',
+      tertiary: '#EFB8C8',
+      surfaceContainer: '#362F4A'
+    };
+
+    const lightPalette = {
+      background: '#F7F2FA',
+      primary: '#E8DEF8',
+      secondary: '#E8DDFF',
+      tertiary: '#FFD8E4',
+      surfaceContainer: '#E6E0E9'
+    };
+
+    let colors = { ...lightPalette };
+    let unlockImpulse = 0;
+
+    class ExpressiveShape {
+      constructor(xRatio, yRatio, radiusRatio, colorKey, speedScale, shapeType) {
+        this.x = xRatio;
+        this.y = yRatio;
+        this.baseRadius = radiusRatio;
+        this.colorKey = colorKey;
+        this.speedScale = speedScale;
+        this.shapeType = shapeType;
+
+        const angle = Math.random() * Math.PI * 2;
+        this.vx = Math.cos(angle) * 0.00015 * this.speedScale;
+        this.vy = Math.sin(angle) * 0.00015 * this.speedScale;
+
+        if (shapeType === 'star') {
+          this.pointsCount = 8;
+          this.offsets = Array.from({ length: 8 }, (_, i) => i % 2 === 0 ? 1.2 : 0.45);
+        } else if (shapeType === 'pill') {
+          this.pointsCount = 6;
+          this.offsets = [1.3, 0.7, 0.7, 1.3, 0.7, 0.7];
+        } else if (shapeType === 'poly') {
+          this.pointsCount = 5;
+          this.offsets = [1.1, 0.9, 1.05, 0.85, 1.15];
+        } else if (shapeType === 'drop') {
+          this.pointsCount = 6;
+          this.offsets = [1.4, 0.9, 0.6, 0.5, 0.6, 0.9];
+        } else if (shapeType === 'flower') {
+          this.pointsCount = 12;
+          this.offsets = Array.from({ length: 12 }, (_, i) => i % 2 === 0 ? 1.1 : 0.8);
+        } else {
+          this.pointsCount = 6;
+          this.offsets = Array.from({ length: 6 }, () => Math.random() * 0.3 + 0.85);
+        }
+
+        this.morphPhase = Math.random() * Math.PI * 2;
+      }
+
+      updateAndDraw(dt, currentColors, impulse) {
+        const maxDim = Math.max(width, height);
+        const springEffect = 1 + Math.sin(impulse * Math.PI * 3) * (0.25 * unlockForceMult) * impulse;
+        const radius = this.baseRadius * blobScaleMult * maxDim * springEffect;
+
+        const rX = radius / width;
+        const rY = radius / height;
+
+        this.x += this.vx * speedMult * dt;
+        this.y += this.vy * speedMult * dt;
+
+        if (this.x - rX <= 0) {
+          this.x = rX;
+          this.vx = Math.abs(this.vx);
+        } else if (this.x + rX >= 1) {
+          this.x = 1 - rX;
+          this.vx = -Math.abs(this.vx);
+        }
+
+        if (this.y - rY <= 0) {
+          this.y = rY;
+          this.vy = Math.abs(this.vy);
+        } else if (this.y + rY >= 1) {
+          this.y = 1 - rY;
+          this.vy = -Math.abs(this.vy);
+        }
+
+        this.morphPhase += 0.0012 * dt;
+
+        // Позиция с учётом гироскопа
+        const shiftX = useGyro ? gyroOffsetX * this.speedScale * 60 : 0;
+        const shiftY = useGyro ? gyroOffsetY * this.speedScale * 60 : 0;
+
+        const cx = this.x * width + shiftX;
+        const cy = this.y * height + shiftY;
+
+        ctx.save();
+        
+        ctx.filter = `blur(${Math.round(radius * 0.25)}px)`;
+        ctx.globalCompositeOperation = themeMode === 'dark' ? 'screen' : 'source-over';
+
+        ctx.beginPath();
+        for (let i = 0; i < this.pointsCount; i++) {
+          const a = (i / this.pointsCount) * Math.PI * 2;
+          let distortion = Math.sin(this.morphPhase + i * 1.2) * 0.08;
+          const r = radius * (this.offsets[i] + distortion);
+
+          const px = cx + Math.cos(a) * r;
+          const py = cy + Math.sin(a) * r;
+
+          if (i === 0) {
+            ctx.moveTo(px, py);
+          } else {
+            const prevA = ((i - 1) / this.pointsCount) * Math.PI * 2;
+            const prevDistortion = Math.sin(this.morphPhase + (i - 1) * 1.2) * 0.08;
+            const prevR = radius * (this.offsets[i - 1] + prevDistortion);
+            const prevX = cx + Math.cos(prevA) * prevR;
+            const prevY = cy + Math.sin(prevA) * prevR;
+
+            const cpX = (prevX + px) / 2;
+            const cpY = (prevY + py) / 2;
+            ctx.quadraticCurveTo(prevX, prevY, cpX, cpY);
+          }
+        }
+        ctx.closePath();
+
+        ctx.fillStyle = currentColors[this.colorKey] || currentColors.primary;
+        ctx.globalAlpha = themeMode === 'light' ? 0.65 : 0.75;
+        ctx.fill();
+        
+        ctx.restore();
+      }
+    }
+
+    let blobs = [];
+
+    function rebuildBlobs(count) {
+      const keys = ['primary', 'secondary', 'tertiary', 'surfaceContainer'];
+      const shapeTypes = ['blob', 'star', 'pill', 'poly', 'drop', 'flower'];
+      
+      blobs = [];
+      for (let i = 0; i < count; i++) {
+        const x = 0.25 + Math.random() * 0.5;
+        const y = 0.25 + Math.random() * 0.5;
+        const radius = 0.14 + Math.random() * 0.08;
+        const key = keys[i % keys.length];
+        const shapeType = shapeTypes[i % shapeTypes.length];
+        
+        blobs.push(new ExpressiveShape(x, y, radius, key, 0.8 + Math.random() * 0.5, shapeType));
+      }
+    }
+
+    function loadSettings() {
+      if (!window.WallpaperEngine) return;
+      const engine = window.WallpaperEngine;
+      speedMult = parseFloat(engine.getSetting('speed', '1.0'));
+      blobScaleMult = parseFloat(engine.getSetting('blobScale', '1.0'));
+      unlockForceMult = parseFloat(engine.getSetting('unlockForce', '1.0'));
+      themeMode = engine.getSetting('themeMode', 'light');
+      useGyro = engine.getSetting('useGyro', 'true') === 'true';
+
+      const defaultPalette = themeMode === 'light' ? lightPalette : darkPalette;
+      colors = { ...defaultPalette, ...colors };
+      document.body.style.backgroundColor = colors.background;
+      
+      const newCount = parseInt(engine.getSetting('blobCount', '4'), 10);
+      if (newCount !== targetBlobCount || blobs.length === 0) {
+        targetBlobCount = newCount;
+        rebuildBlobs(targetBlobCount);
+      }
+    }
+
+    function resize() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function updateColors(accentColors) {
+      if (!accentColors) return;
+      colors = { ...colors, ...accentColors };
+      document.body.style.backgroundColor = colors.background;
+    }
+
+    // Обработка данных гироскопа
+    function handleOrientation(e) {
+      if (!useGyro) return;
+      const gamma = e.gamma || 0; // Наклон влево/вправо (-90 .. 90)
+      const beta = e.beta || 0;   // Наклон вперед/назад (-180 .. 180)
+
+      targetGyroX = Math.max(-1, Math.min(1, gamma / 45));
+      targetGyroY = Math.max(-1, Math.min(1, beta / 45));
+    }
+
+    window.addEventListener('deviceorientation', handleOrientation);
+    window.addEventListener('wallpaperGyroscope', (e) => {
+      if (!useGyro || !e.detail) return;
+      targetGyroX = e.detail.x || 0;
+      targetGyroY = e.detail.y || 0;
+    });
+
+    function frame(now) {
+      if (isPaused) return;
+
+      const dt = Math.min(now - lastTime, 100);
+      lastTime = now;
+
+      // Плавное сглаживание гироскопа
+      gyroOffsetX += (targetGyroX - gyroOffsetX) * 0.05;
+      gyroOffsetY += (targetGyroY - gyroOffsetY) * 0.05;
+
+      if (unlockImpulse > 0) {
+        unlockImpulse -= 0.001 * dt;
+        if (unlockImpulse < 0) unlockImpulse = 0;
+      }
+
+      ctx.fillStyle = colors.background;
+      ctx.fillRect(0, 0, width, height);
+
+      blobs.forEach(blob => blob.updateAndDraw(dt, colors, unlockImpulse));
+
+      requestAnimationFrame(frame);
+    }
+
+    window.addEventListener('wallpaperEngineReady', (e) => {
+      loadSettings();
+      if (e.detail && e.detail.accentColors) {
+        updateColors(e.detail.accentColors);
+      }
+    });
+
+    window.addEventListener('wallpaperUpdate', (e) => {
+      loadSettings();
+      if (e.detail && e.detail.accentColors) {
+        updateColors(e.detail.accentColors);
+      }
+    });
+
+    window.addEventListener('wallpaperUnlock', () => {
+      unlockImpulse = 1.0;
+    });
+
+    window.addEventListener('wallpaperPause', () => { isPaused = true; });
+    window.addEventListener('wallpaperResume', () => {
+      if (isPaused) {
+        isPaused = false;
+        lastTime = performance.now();
+        requestAnimationFrame(frame);
+      }
+    });
+
+    rebuildBlobs(4);
+    requestAnimationFrame((now) => {
+      lastTime = now;
+      frame(now);
+    });
+  </script>
+</body>
+</html>
+

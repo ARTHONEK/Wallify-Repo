@@ -1,0 +1,13 @@
+{
+  "name": "Material 3 Expressive Shapes Lite",
+  "description": "Облегчённая версия живых обоев в стиле Material 3 Expressive.",
+  "author": "wafuv",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "cover": "cover.png",
+  "icon": "icon.png",
+  "main": "index.html",
+  "settingsPath": "settings/index.html",
+  "useGyroscope": true,
+  "isLite": true
+}
